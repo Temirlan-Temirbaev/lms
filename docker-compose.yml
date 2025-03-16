@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongodb
+  #   restart: always
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=language-learning
+  #   networks:
+  #     - app-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: qazaqsha-minio
+    restart: always
+    ports:
+      - "9000:9000" 
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server --console-address ":9001" /data
+    networks:
+      - app-network
+
+  # Server application
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: lms-server
+    restart: always
+    ports:
+      - "5001:5001"
+    # depends_on:
+    #   - mongo
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/language-learning
+      - PORT=5001
+      - JWT_SECRET=your_jwt_secret_key
+      - JWT_EXPIRE=30d
+      - JWT_COOKIE_EXPIRE=30
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  minio_data: 
