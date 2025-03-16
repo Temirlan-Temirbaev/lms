@@ -42,13 +42,8 @@ services:
       - "5001:5001"
     # depends_on:
     #   - mongo
-    environment:
-      - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/language-learning
-      - PORT=5001
-      - JWT_SECRET=your_jwt_secret_key
-      - JWT_EXPIRE=30d
-      - JWT_COOKIE_EXPIRE=30
+    env_file:
+      - ./server/.env
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
