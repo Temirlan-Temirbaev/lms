@@ -135,7 +135,7 @@ const CourseDetailScreen = ({ route, navigation }) => {
         </View>
         <View style={styles.itemTextContainer}>
           <Text style={styles.itemTitle}>{item.title}</Text>
-          <Text style={styles.itemDescription}>{item.description}</Text>
+          {/* <Text style={styles.itemDescription}>{item.description}</Text> */}
           {isTestCompleted(item._id) && (
             <Text style={styles.scoreText}>
               Score: {parseInt(getTestScore(item._id))}%

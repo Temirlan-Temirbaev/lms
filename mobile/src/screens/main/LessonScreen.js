@@ -23,17 +23,6 @@ const LessonScreen = ({ route, navigation }) => {
   const [completing, setCompleting] = useState(false);
   const { user, refreshUser } = useAuth();
 
-  const mockLessonData = {
-    "_id": "67d735f23fb6502bc9b23e4f",
-    "title": "Introduction to Basics",
-    "content": "# Greetings and Introductions\n\nHello! Welcome to your first language lesson. In this lesson, we will learn basic greetings and introductions.\n\n## Common Greetings\n\n- **Hello** = Hola\n- **Good morning** = Buenos días\n- **Good afternoon** = Buenas tardes\n- **Good evening** = Buenas noches\n- **How are you?** = ¿Cómo estás?\n- **I'm fine, thank you** = Estoy bien, gracias\n- **What's your name?** = ¿Cómo te llamas?\n- **My name is...** = Me llamo...\n- **Nice to meet you** = Encantado/a de conocerte\n\n## Practice\n\nTry introducing yourself using the phrases above. Remember to practice pronunciation!\n\n### Image Example\n\n![Spanish Greetings](http://s3.tebi.io/i.51sec.org/chrome_Es4dceCxap.png)\n\n### Listen to Pronunciation\n\n[Click to Listen](https://storage.yandexcloud.kz/pleep-bucket/1742297426383Eminem%20-%20Lose%20Yourself.mp3)\n",
-    "course": "67d735f23fb6502bc9b23e47",
-    "order": 1,
-    "createdAt": "2025-03-16T20:34:58.893Z",
-    "updatedAt": "2025-03-16T20:34:58.893Z",
-    "__v": 0
-  };
-
   useEffect(() => {
     fetchLesson();
   }, [lessonId]);
@@ -113,6 +102,53 @@ const LessonScreen = ({ route, navigation }) => {
     },
   };
 
+  const tableStyles = StyleSheet.create({
+    table: {
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+      borderRadius: 8,
+      marginVertical: 10,
+      backgroundColor: '#fff',
+    },
+    tableHeader: {
+      backgroundColor: '#f5f5f5',
+      borderBottomWidth: 1,
+      borderBottomColor: '#e0e0e0',
+    },
+    tableBody: {
+    },
+    tableRow: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: '#e0e0e0',
+    },
+    tableHeaderCell: {
+      flex: 1,
+      padding: 10,
+      borderRightWidth: 1,
+      borderRightColor: '#e0e0e0',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    tableCell: {
+      flex: 1,
+      padding: 10,
+      borderRightWidth: 1,
+      borderRightColor: '#e0e0e0',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    tableHeaderText: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: '#333',
+    },
+    tableCellText: {
+      fontSize: 14,
+      color: '#666',
+    },
+  });
+
   const renderRules = {
     image: (node) => {
       const imageUrl = node.attributes.src;
@@ -133,6 +169,81 @@ const LessonScreen = ({ route, navigation }) => {
         <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
       );
     },
+    table: (node, children, parent, styles) => (
+      <View style={tableStyles.table}>
+        {children}
+      </View>
+    ),
+    
+    thead: (node, children, parent, styles) => (
+      <View style={tableStyles.tableHeader}>
+        {children}
+      </View>
+    ),
+    
+    tbody: (node, children, parent, styles) => (
+      <View style={tableStyles.tableBody}>
+        {children}
+      </View>
+    ),
+    
+    tr: (node, children, parent, styles) => (
+      <View style={tableStyles.tableRow}>
+        {children}
+      </View>
+    ),
+    
+    th: (node, children, parent, styles) => {
+      // Check if the header content is an image
+      const hasImage = node.children?.[0]?.type === 'image';
+      
+      if (hasImage) {
+        const imageNode = node.children[0];
+        return (
+          <View style={tableStyles.tableHeaderCell}>
+            <Image
+              source={{ uri: imageNode.attributes.src }}
+              style={{ width: '100%', height: 100, resizeMode: 'contain' }}
+            />
+          </View>
+        );
+      }
+
+      // Regular text header
+      return (
+        <View style={tableStyles.tableHeaderCell}>
+          <Text style={tableStyles.tableHeaderText}>
+            {children}
+          </Text>
+        </View>
+      );
+    },
+    
+    td: (node, children, parent, styles) => {
+      // Check if the cell content is an image
+      const hasImage = node.children?.[0]?.type === 'image';
+      
+      if (hasImage) {
+        const imageNode = node.children[0];
+        return (
+          <View style={tableStyles.tableCell}>
+            <Image
+              source={{ uri: imageNode.attributes.src }}
+              style={{ width: '100%', height: 100, resizeMode: 'contain' }}
+            />
+          </View>
+        );
+      }
+
+      // Regular text cell
+      return (
+        <View style={tableStyles.tableCell}>
+          <Text style={tableStyles.tableCellText}>
+            {children}
+          </Text>
+        </View>
+      );
+    },
   };
 
   if (loading) {
@@ -151,7 +262,7 @@ const LessonScreen = ({ route, navigation }) => {
         style={markdownStyles} 
         rules={renderRules}
         >
-          {mockLessonData.content.toString()}
+          {lesson.content.toString()}
         </Markdown>
         </View>
       </ScrollView>
