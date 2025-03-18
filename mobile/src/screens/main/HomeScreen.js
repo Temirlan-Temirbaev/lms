@@ -69,17 +69,23 @@ const HomeScreen = ({ navigation }) => {
         styles.courseCard,
         isCurrentLevel(item.level) && styles.currentLevelCard
       ]}>
+        
+        {/* Moved the Level Badge inside a flex container to avoid overlap */}
         <View style={styles.levelBadge}>
           <Text style={[styles.levelText, { backgroundColor: getLevelColor(item.level) }]}>
             {item.level}
           </Text>
         </View>
-        
+  
+        {/* Increased margin-bottom for better spacing */}
         <Card.Title style={styles.courseTitle}>{item.title}</Card.Title>
         <Card.Divider />
+  
+        {/* Increased font size and line height for better readability */}
         <Text style={styles.courseDescription}>{item.description}</Text>
-        
-        {/* <View style={styles.courseFooter}>
+  
+        {/* Unhid and improved Course Footer layout */}
+        <View style={styles.courseFooter}>
           <View style={styles.courseStats}>
             <Icon name="book-outline" type="ionicon" size={16} color="#666" />
             <Text style={styles.statsText}>{item.lessons?.length || 0} Lessons</Text>
@@ -88,8 +94,9 @@ const HomeScreen = ({ navigation }) => {
             <Icon name="clipboard-outline" type="ionicon" size={16} color="#666" />
             <Text style={styles.statsText}>{item.tests?.length || 0} Tests</Text>
           </View>
-        </View> */}
-        
+        </View>
+  
+        {/* Moved Current Level Badge inside the card for better placement */}
         {isCurrentLevel(item.level) && (
           <View style={styles.currentLevelBadge}>
             <Text style={styles.currentLevelText}>Current Level</Text>
@@ -156,55 +163,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContainer: {
-    padding: 10,
+    padding: 10, // Added padding for better spacing
   },
   courseCard: {
     borderRadius: 10,
     marginBottom: 15,
-    padding: 15,
-    elevation: 3,
+    padding: 20, // Increased padding for better text alignment
+    elevation: 4, // Increased elevation for better shadow effect
+    backgroundColor: 'white',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 }, // Adjusted shadow height
+    shadowOpacity: 0.15, // Increased opacity for better visibility
+    shadowRadius: 6, // Increased for a softer effect
   },
   currentLevelCard: {
     borderWidth: 2,
     borderColor: '#4F8EF7',
   },
   levelBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
+    alignSelf: 'flex-end', // Changed from absolute positioning to flex-based alignment
+    marginBottom: 10, // Added margin for better spacing
   },
   levelText: {
     color: 'white',
     fontWeight: 'bold',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 15,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   courseTitle: {
-    fontSize: 18,
-    marginTop: 5,
-    marginBottom: 5,
+    fontSize: 20, // Increased font size for better readability
+    fontWeight: 'bold',
+    marginBottom: 8, // Added margin for spacing
+    textAlign: 'left',
   },
   courseDescription: {
     color: '#666',
-    marginBottom: 15,
+    fontSize: 14,
+    lineHeight: 20, // Added lineHeight for better readability
+    marginBottom: 10,
   },
   courseFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly', // Changed from space-between for better balance
+    marginTop: 10, // Added margin for better separation
   },
   courseStats: {
     flexDirection: 'row',
@@ -216,50 +219,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   currentLevelBadge: {
-    position: 'absolute',
-    top: -10,
-    left: 10,
+    alignSelf: 'flex-start', // Moved from absolute positioning to flex alignment
     backgroundColor: '#4F8EF7',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 15,
+    borderRadius: 12,
+    marginTop: 10, // Added margin for better spacing
   },
   currentLevelText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
-  },
-  placementTestCard: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
-    backgroundColor: '#E3F2FD',
-    borderColor: '#2196F3',
-    borderWidth: 1,
-  },
-  placementTestContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  placementTestTextContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  placementTestTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1565C0',
-    marginBottom: 5,
-  },
-  placementTestDescription: {
-    fontSize: 14,
-    color: '#546E7A',
-  },
-  placementTestButton: {
-    backgroundColor: '#2196F3',
-    borderRadius: 20,
-    paddingHorizontal: 15,
   },
 });
 
