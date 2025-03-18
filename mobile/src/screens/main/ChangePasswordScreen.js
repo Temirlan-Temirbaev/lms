@@ -1,139 +1,104 @@
 import React, { useState } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  TextInput,
   Alert,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
-import { Input, Button } from '@rneui/themed';
-import { useAuth } from '../../context/AuthContext';
+import { Button } from '@rneui/themed';
+import * as api from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 const ChangePasswordScreen = ({ navigation }) => {
-  const { changePassword } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [secureTextEntry, setSecureTextEntry] = useState({
-    current: true,
-    new: true,
-    confirm: true,
-  });
-
-  const toggleSecureEntry = (field) => {
-    setSecureTextEntry({
-      ...secureTextEntry,
-      [field]: !secureTextEntry[field],
-    });
-  };
+  const { t } = useTranslation();
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('profile.fillAllFields'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'New passwords do not match');
+      Alert.alert(t('common.error'), t('auth.passwordsDoNotMatch'));
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Error', 'New password must be at least 6 characters long');
+      Alert.alert(t('common.error'), t('auth.passwordTooShort'));
       return;
     }
 
     setLoading(true);
     try {
-      await changePassword(currentPassword, newPassword);
-      Alert.alert('Success', 'Password changed successfully');
+      await api.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      
+      Alert.alert(t('common.success'), t('profile.passwordChanged'));
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to change password');
+      Alert.alert(t('common.error'), t('profile.passwordChangeFailed'));
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.formContainer}>
-          <Input
-            label="Current Password"
-            placeholder="Enter your current password"
-            leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
-            rightIcon={{
-              type: 'ionicon',
-              name: secureTextEntry.current ? 'eye-outline' : 'eye-off-outline',
-              onPress: () => toggleSecureEntry('current'),
-            }}
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-            secureTextEntry={secureTextEntry.current}
-            autoCapitalize="none"
-            autoCorrect={false}
-            labelStyle={styles.inputLabel}
-          />
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.contentContainer}>
+          <View style={styles.formContainer}>
+            <Text style={styles.label}>{t('profile.currentPassword')}</Text>
+            <TextInput
+              style={styles.input}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              placeholder={t('profile.enterCurrentPassword')}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-          <Input
-            label="New Password"
-            placeholder="Enter your new password"
-            leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
-            rightIcon={{
-              type: 'ionicon',
-              name: secureTextEntry.new ? 'eye-outline' : 'eye-off-outline',
-              onPress: () => toggleSecureEntry('new'),
-            }}
-            value={newPassword}
-            onChangeText={setNewPassword}
-            secureTextEntry={secureTextEntry.new}
-            autoCapitalize="none"
-            autoCorrect={false}
-            labelStyle={styles.inputLabel}
-          />
+            <Text style={styles.label}>{t('profile.newPassword')}</Text>
+            <TextInput
+              style={styles.input}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder={t('profile.enterNewPassword')}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-          <Input
-            label="Confirm New Password"
-            placeholder="Confirm your new password"
-            leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
-            rightIcon={{
-              type: 'ionicon',
-              name: secureTextEntry.confirm ? 'eye-outline' : 'eye-off-outline',
-              onPress: () => toggleSecureEntry('confirm'),
-            }}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry={secureTextEntry.confirm}
-            autoCapitalize="none"
-            autoCorrect={false}
-            labelStyle={styles.inputLabel}
-          />
-
-          <Button
-            title="Change Password"
-            loading={loading}
-            onPress={handleChangePassword}
-            buttonStyle={styles.changeButton}
-            containerStyle={styles.buttonContainer}
-          />
-
-          <Button
-            title="Cancel"
-            onPress={() => navigation.goBack()}
-            buttonStyle={styles.cancelButton}
-            containerStyle={styles.buttonContainer}
-            type="outline"
-          />
+            <Text style={styles.label}>{t('profile.confirmNewPassword')}</Text>
+            <TextInput
+              style={styles.input}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder={t('profile.confirmNewPasswordPlaceholder')}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title={t('common.save')}
+          onPress={handleChangePassword}
+          loading={loading}
+          buttonStyle={styles.saveButton}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -143,28 +108,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContainer: {
-    flexGrow: 1,
+    flex: 1,
+  },
+  contentContainer: {
     padding: 20,
   },
   formContainer: {
-    width: '100%',
+    marginBottom: 20,
   },
-  inputLabel: {
-    color: '#333',
+  label: {
     fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
   },
   buttonContainer: {
-    marginTop: 20,
-    width: '100%',
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
   },
-  changeButton: {
+  saveButton: {
     backgroundColor: '#4F8EF7',
-    borderRadius: 25,
-    height: 50,
-  },
-  cancelButton: {
-    borderColor: '#9E9E9E',
-    borderWidth: 1,
     borderRadius: 25,
     height: 50,
   },

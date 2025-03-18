@@ -163,7 +163,7 @@ const ProgressScreen = () => {
                   <Text style={styles.testDate}>{new Date(item.date).toLocaleDateString()}</Text>
                 </View>
                 <View style={[styles.scoreContainer, { backgroundColor: getScoreColor(item.score) }]}>
-                  <Text style={styles.scoreText}>{item.score}%</Text>
+                  <Text style={styles.scoreText}>{parseInt(item.score)}%</Text>
                 </View>
               </View>
             )}

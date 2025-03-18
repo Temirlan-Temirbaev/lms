@@ -141,7 +141,7 @@ const TestResultScreen = ({ route, navigation }) => {
               styles.scoreText,
               { color: getScoreColor(results.data.score) }
             ]}>
-              {Math.round(results.data.score)}%
+              {parseInt(results.data.score).toFixed(2)}%
             </Text>
           </View>
           
@@ -150,7 +150,7 @@ const TestResultScreen = ({ route, navigation }) => {
           </Text>
           
           <Text style={styles.scoreDetails}>
-            You earned {results.data.earnedPoints} out of {results.data.totalPoints} points
+            You earned {parseInt(results.data.earnedPoints).toFixed(2)} out of {parseInt(results.data.totalPoints).toFixed(2)} points
           </Text>
         </View>
 

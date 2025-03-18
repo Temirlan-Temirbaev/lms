@@ -138,7 +138,7 @@ const CourseDetailScreen = ({ route, navigation }) => {
           <Text style={styles.itemDescription}>{item.description}</Text>
           {isTestCompleted(item._id) && (
             <Text style={styles.scoreText}>
-              Score: {getTestScore(item._id)}%
+              Score: {parseInt(getTestScore(item._id))}%
             </Text>
           )}
         </View>
@@ -175,8 +175,8 @@ const CourseDetailScreen = ({ route, navigation }) => {
       <Tab
         value={tabIndex}
         onChange={setTabIndex}
-        indicatorStyle={{ backgroundColor: '#4F8EF7' }}
-        variant="primary"
+        indicatorStyle={{ backgroundColor: 'white' }}
+        // variant="primary"
       >
         <Tab.Item
           title="Lessons"

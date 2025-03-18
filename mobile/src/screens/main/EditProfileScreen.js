@@ -1,89 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  TextInput,
   Alert,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
-import { Input, Button } from '@rneui/themed';
+import { Button, Avatar } from '@rneui/themed';
 import { useAuth } from '../../context/AuthContext';
+import * as api from '../../api/api';
+import { useTranslation } from 'react-i18next';
 
 const EditProfileScreen = ({ navigation }) => {
-  const { user, updateProfile } = useAuth();
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const { user, refreshUser } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
 
   const handleUpdateProfile = async () => {
-    if (!name || !email) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!name.trim()) {
+      Alert.alert(t('common.error'), t('profile.nameRequired'));
       return;
     }
 
     setLoading(true);
     try {
-      await updateProfile({ name, email });
-      Alert.alert('Success', 'Profile updated successfully');
+      const userData = {
+        name,
+        email,
+      };
+
+      await api.updateProfile(userData);
+      await refreshUser();
+      Alert.alert(t('common.success'), t('profile.profileUpdated'));
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to update profile');
+      Alert.alert(t('common.error'), t('profile.updateFailed'));
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.formContainer}>
-          <Input
-            label="Name"
-            placeholder="Enter your name"
-            leftIcon={{ type: 'ionicon', name: 'person-outline' }}
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            autoCorrect={false}
-            labelStyle={styles.inputLabel}
-          />
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.contentContainer}>
+        
+          <View style={styles.formContainer}>
+            <Text style={styles.label}>{t('profile.name')}</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder={t('profile.enterName')}
+            />
 
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            leftIcon={{ type: 'ionicon', name: 'mail-outline' }}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-            labelStyle={styles.inputLabel}
-          />
-
-          <Button
-            title="Update Profile"
-            loading={loading}
-            onPress={handleUpdateProfile}
-            buttonStyle={styles.updateButton}
-            containerStyle={styles.buttonContainer}
-          />
-
-          <Button
-            title="Cancel"
-            onPress={() => navigation.goBack()}
-            buttonStyle={styles.cancelButton}
-            containerStyle={styles.buttonContainer}
-            type="outline"
-          />
+            <Text style={styles.label}>{t('auth.email')}</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder={t('profile.enterEmail')}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title={t('common.save')}
+          onPress={handleUpdateProfile}
+          loading={loading}
+          buttonStyle={styles.saveButton}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -93,28 +101,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContainer: {
-    flexGrow: 1,
+    flex: 1,
+  },
+  contentContainer: {
     padding: 20,
   },
-  formContainer: {
-    width: '100%',
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
-  inputLabel: {
-    color: '#333',
+  avatar: {
+    backgroundColor: '#e0e0e0',
+  },
+  changeAvatarButton: {
+    marginTop: 10,
+  },
+  changeAvatarText: {
+    color: '#4F8EF7',
     fontSize: 16,
   },
-  buttonContainer: {
-    marginTop: 20,
-    width: '100%',
+  formContainer: {
+    marginBottom: 20,
   },
-  updateButton: {
-    backgroundColor: '#4F8EF7',
-    borderRadius: 25,
-    height: 50,
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
   },
-  cancelButton: {
-    borderColor: '#9E9E9E',
+  input: {
     borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
+  },
+  saveButton: {
+    backgroundColor: '#4F8EF7',
     borderRadius: 25,
     height: 50,
   },

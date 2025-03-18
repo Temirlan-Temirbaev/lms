@@ -79,7 +79,7 @@ const HomeScreen = ({ navigation }) => {
         <Card.Divider />
         <Text style={styles.courseDescription}>{item.description}</Text>
         
-        <View style={styles.courseFooter}>
+        {/* <View style={styles.courseFooter}>
           <View style={styles.courseStats}>
             <Icon name="book-outline" type="ionicon" size={16} color="#666" />
             <Text style={styles.statsText}>{item.lessons?.length || 0} Lessons</Text>
@@ -88,7 +88,7 @@ const HomeScreen = ({ navigation }) => {
             <Icon name="clipboard-outline" type="ionicon" size={16} color="#666" />
             <Text style={styles.statsText}>{item.tests?.length || 0} Tests</Text>
           </View>
-        </View>
+        </View> */}
         
         {isCurrentLevel(item.level) && (
           <View style={styles.currentLevelBadge}>
