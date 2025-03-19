@@ -11,13 +11,62 @@ import {
   TextInput,
   FlatList,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Button, Icon, Divider, Overlay } from '@rneui/themed';
 import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
+import CustomOverlay from '../../components/CustomOverlay';
+import Markdown from 'react-native-markdown-display';
 // import DraggableFlatList from 'react-native-draggable-flatlist';
 
 const { width } = Dimensions.get('window');
+
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+  },
+  heading1: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#4F8EF7',
+  },
+  heading2: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  paragraph: {
+    marginBottom: 16,
+  },
+};
+
+const renderRules = {
+  image: (node) => {
+    const imageUrl = node.attributes.src;
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
+      />
+    );
+  },
+  link: (node, children, parent, styles) => {
+    const url = node.attributes.href;
+    if (url.endsWith('.mp3') || url.endsWith('.wav')) {
+      return <AudioSlider audio={url} />;
+    }
+    return (
+      <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
+    );
+  },
+};
 
 const TestScreen = ({ route, navigation }) => {
   const { testId } = route.params;
@@ -30,6 +79,11 @@ const TestScreen = ({ route, navigation }) => {
   const [timerActive, setTimerActive] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { refreshUser } = useAuth();
+  const [showCategorySelection, setShowCategorySelection] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
 
   useEffect(() => {
     fetchTest();
@@ -62,8 +116,8 @@ const TestScreen = ({ route, navigation }) => {
       setTimeLeft(response.data.timeLimit * 60);
       setTimerActive(true);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load test');
-      console.error(error);
+      setErrorMessage('Failed to load test');
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -73,14 +127,7 @@ const TestScreen = ({ route, navigation }) => {
     // Check if all questions are answered
     const unansweredQuestions = answers.filter(answer => answer === null).length;
     if (unansweredQuestions > 0) {
-      Alert.alert(
-        'Incomplete Test',
-        `You have ${unansweredQuestions} unanswered question(s). Are you sure you want to submit?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Submit Anyway', onPress: submitTest }
-        ]
-      );
+      setShowIncompleteWarning(true);
     } else {
       submitTest();
     }
@@ -129,7 +176,16 @@ const TestScreen = ({ route, navigation }) => {
 
   const renderMultipleChoiceQuestion = (question) => (
     <View style={styles.questionContainer}>
-      <Text style={styles.questionText}>{question.question}</Text>
+      <Text style={styles.questionText}>
+        {question.question}
+      </Text>
+      {question.content ? (
+        <View style={styles.contentContainer}>
+          <Markdown style={markdownStyles} rules={renderRules}>
+            {question.content}
+          </Markdown>
+        </View>
+      ) : null}
       {question.options.map((option, index) => (
         <TouchableOpacity
           key={index}
@@ -149,12 +205,20 @@ const TestScreen = ({ route, navigation }) => {
   );
 
   const renderMatchingQuestion = (question) => {
-    // Initialize answers if not already set
     const currentAnswers = answers[currentQuestionIndex] || Array(question.options.length).fill('');
     
     return (
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>{question.question}</Text>
+        <Text style={styles.questionText}>
+          {question.question}
+        </Text>
+        {question.content ? (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        ) : null}
         <Text style={styles.instructionText}>Match each item on the left with its corresponding item on the right</Text>
         
         {question.options.map((option, index) => (
@@ -189,7 +253,16 @@ const TestScreen = ({ route, navigation }) => {
     
     return (
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>{question.question}</Text>
+        <Text style={styles.questionText}>
+          {question.question}
+        </Text>
+        {question.content ? (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        ) : null}
         <Text style={styles.instructionText}>Drag items to reorder them</Text>
         <FlatList
           data={currentAnswer}
@@ -245,18 +318,25 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderFillInBlanksQuestion = (question) => {
-    // Check if the question has multiple blanks by looking for _____ pattern
     const hasMultipleBlanks = (question.question.match(/_____/g) || []).length > 1;
     
     if (hasMultipleBlanks) {
       return renderMultipleFillInBlanksQuestion(question);
     } else {
-      // Get the current answer or initialize with empty string
       const currentAnswer = answers[currentQuestionIndex] || '';
       
       return (
         <View style={styles.questionContainer}>
-          <Text style={styles.questionText}>{question.question}</Text>
+          <Text style={styles.questionText}>
+            {question.question}
+          </Text>
+          {question.content ? (
+            <View style={styles.contentContainer}>
+              <Markdown style={markdownStyles} rules={renderRules}>
+                {question.content}
+              </Markdown>
+            </View>
+          ) : null}
           <Text style={styles.instructionText}>Fill in the blank with the appropriate word or phrase</Text>
           
           <View style={styles.fillBlanksContainer}>
@@ -279,13 +359,8 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderMultipleFillInBlanksQuestion = (question) => {
-    // Initialize answers object if not already set
     const currentAnswers = answers[currentQuestionIndex] || {};
-    
-    // Split the question text by the blank placeholder
     const parts = question.question.split('_____');
-    
-    // Create an array of blank IDs based on the number of blanks
     const blankIds = Array.from({ length: parts.length - 1 }, (_, i) => `blank${i + 1}`);
     
     const handleBlankChange = (blankId, text) => {
@@ -296,7 +371,16 @@ const TestScreen = ({ route, navigation }) => {
     
     return (
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>Fill in the blanks with the appropriate words or phrases</Text>
+        <Text style={styles.questionText}>
+          Fill in the blanks with the appropriate words or phrases
+        </Text>
+        {question.content ? (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        ) : null}
         <Text style={styles.instructionText}>Complete the sentence with the correct words</Text>
         
         <View style={styles.multipleBlanksContainer}>
@@ -325,12 +409,20 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderInputQuestion = (question) => {
-    // Get the current answer or initialize with empty string
     const currentAnswer = answers[currentQuestionIndex] || '';
     
     return (
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>{question.question}</Text>
+        <Text style={styles.questionText}>
+          {question.question}
+        </Text>
+        {question.content ? (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        ) : null}
         <Text style={styles.instructionText}>Type your answer in the field below</Text>
         
         <View style={styles.inputContainer}>
@@ -352,10 +444,7 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderCategoriesQuestion = (question) => {
-    // Initialize answers if not already set
     const currentAnswers = answers[currentQuestionIndex] || {};
-    
-    // Get all categories from the correct answer structure
     const categories = Object.keys(question.correctAnswer);
     
     // Initialize categories in the current answer if they don't exist
@@ -394,7 +483,16 @@ const TestScreen = ({ route, navigation }) => {
     
     return (
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>{question.question}</Text>
+        <Text style={styles.questionText}>
+          {question.question}
+        </Text>
+        {question.content ? (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        ) : null}
         <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text>
         
         {/* Uncategorized options */}
@@ -406,15 +504,8 @@ const TestScreen = ({ route, navigation }) => {
                 key={index}
                 style={styles.categoryItem}
                 onPress={() => {
-                  // Show a dialog to select which category to add this to
-                  Alert.alert(
-                    'Select Category',
-                    `Add "${option}" to which category?`,
-                    categories.map(category => ({
-                      text: category,
-                      onPress: () => handleAddToCategory(option, category)
-                    }))
-                  );
+                  setSelectedOption(option);
+                  setShowCategorySelection(true);
                 }}
               >
                 <Text style={styles.categoryItemText}>{option}</Text>
@@ -441,6 +532,28 @@ const TestScreen = ({ route, navigation }) => {
             </View>
           </View>
         ))}
+
+        {/* Category Selection Overlay */}
+        <CustomOverlay
+          isVisible={showCategorySelection}
+          onClose={() => setShowCategorySelection(false)}
+          title="Select Category"
+          message={`Add "${selectedOption}" to which category?`}
+          scrollable={true}
+        >
+          {categories.map((category, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.categorySelectionButton}
+              onPress={() => {
+                handleAddToCategory(selectedOption, category);
+                setShowCategorySelection(false);
+              }}
+            >
+              <Text style={styles.categorySelectionText}>{category}</Text>
+            </TouchableOpacity>
+          ))}
+        </CustomOverlay>
       </View>
     );
   };
@@ -525,30 +638,61 @@ const TestScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      <Overlay
+      <CustomOverlay
         isVisible={showConfirmation}
-        onBackdropPress={() => setShowConfirmation(false)}
-        overlayStyle={styles.overlay}
-      >
-        <Text style={styles.overlayTitle}>Submit Test?</Text>
-        <Text style={styles.overlayText}>
-          Are you sure you want to submit your test? You won't be able to change your answers after submission.
-        </Text>
-        <View style={styles.overlayButtons}>
-          <Button
-            title="Cancel"
-            onPress={() => setShowConfirmation(false)}
-            buttonStyle={styles.cancelButton}
-            titleStyle={styles.cancelButtonText}
-          />
-          <Button
-            title="Submit"
-            loading={submitting}
-            onPress={handleSubmitTest}
-            buttonStyle={styles.submitButton}
-          />
-        </View>
-      </Overlay>
+        onClose={() => setShowConfirmation(false)}
+        title="Submit Test?"
+        message="Are you sure you want to submit your test? You won't be able to change your answers after submission."
+        buttons={[
+          {
+            text: 'Cancel',
+            onPress: () => setShowConfirmation(false),
+            type: 'cancel'
+          },
+          {
+            text: 'Submit',
+            onPress: handleSubmitTest,
+            loading: submitting,
+            style: { backgroundColor: '#4CAF50' }
+          }
+        ]}
+      />
+
+      <CustomOverlay
+        isVisible={showError}
+        onClose={() => setShowError(false)}
+        title="Error"
+        message={errorMessage}
+        buttons={[
+          {
+            text: 'OK',
+            onPress: () => setShowError(false),
+            style: { backgroundColor: '#4F8EF7' }
+          }
+        ]}
+      />
+
+      <CustomOverlay
+        isVisible={showIncompleteWarning}
+        onClose={() => setShowIncompleteWarning(false)}
+        title="Incomplete Test"
+        message={`You have ${answers.filter(answer => answer === null).length} unanswered question(s). Are you sure you want to submit?`}
+        buttons={[
+          {
+            text: 'Cancel',
+            onPress: () => setShowIncompleteWarning(false),
+            type: 'cancel'
+          },
+          {
+            text: 'Submit Anyway',
+            onPress: () => {
+              setShowIncompleteWarning(false);
+              handleSubmitTest();
+            },
+            style: { backgroundColor: '#4CAF50' }
+          }
+        ]}
+      />
     </SafeAreaView>
   );
 };
@@ -593,6 +737,14 @@ const styles = StyleSheet.create({
   },
   questionContainer: {
     padding: 20,
+  },
+  contentContainer: {
+    marginTop: 15,
+    marginBottom: 20,
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#e0e0e0',
   },
   questionText: {
     fontSize: 18,
@@ -741,60 +893,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     height: 1,
   },
-  overlay: {
-    width: width - 60,
-    padding: 20,
-    borderRadius: 10,
-  },
-  overlayTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  overlayText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  overlayButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cancelButton: {
-    width: (width - 100) / 2,
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  cancelButtonText: {
-    color: '#666',
-  },
-  submitButton: {
-    width: (width - 100) / 2,
-    backgroundColor: '#4CAF50',
-  },
-  matchingLeftContainer: {
-    flex: 1,
-  },
-  matchingRightContainer: {
-    flex: 1,
-  },
-  multipleBlanksContainer: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 10,
-    padding: 10,
-  },
-  blankPartText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  multipleBlankInput: {
-    height: 50,
-    fontSize: 16,
-  },
   categoriesSection: {
     marginBottom: 20,
   },
@@ -823,6 +921,16 @@ const styles = StyleSheet.create({
   categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  categorySelectionButton: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  categorySelectionText: {
+    fontSize: 16,
+    color: '#4F8EF7',
+    textAlign: 'center',
   },
 });
 
