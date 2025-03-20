@@ -9,18 +9,21 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { Button, Avatar } from '@rneui/themed';
 import { useAuth } from '../../context/AuthContext';
 import * as api from '../../api/api';
 import { useTranslation } from 'react-i18next';
+import { CustomOverlay } from '../../components/CustomOverlay';
+import { colors } from '../../theme/colors';
 
 const EditProfileScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -31,36 +34,46 @@ const EditProfileScreen = ({ navigation }) => {
 
   const handleUpdateProfile = async () => {
     if (!name.trim()) {
-      Alert.alert(t('common.error'), t('profile.nameRequired'));
+      CustomOverlay({
+        title: t('common.error'),
+        message: t('profile.nameRequired'),
+        platform: Platform.OS
+      });
       return;
     }
 
     setLoading(true);
     try {
-      const userData = {
-        name,
-        email,
-      };
-
+      const userData = { name, email };
       await api.updateProfile(userData);
       await refreshUser();
-      Alert.alert(t('common.success'), t('profile.profileUpdated'));
-      navigation.goBack();
+      CustomOverlay({
+        title: t('common.success'),
+        message: t('profile.profileUpdated'),
+        platform: Platform.OS,
+        buttons: [
+          {
+            text: t('common.ok'),
+            onPress: () => navigation.goBack()
+          }
+        ]
+      });
     } catch (error) {
-      Alert.alert(t('common.error'), t('profile.updateFailed'));
+      CustomOverlay({
+        title: t('common.error'),
+        message: t('profile.updateFailed'),
+        platform: Platform.OS
+      });
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.contentContainer}>
-        
           <View style={styles.formContainer}>
             <Text style={styles.label}>{t('profile.name')}</Text>
             <TextInput
@@ -85,7 +98,7 @@ const EditProfileScreen = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <Button
-          title={t('common.save')}
+          title={t('profile.save')}
           onPress={handleUpdateProfile}
           loading={loading}
           buttonStyle={styles.saveButton}
@@ -98,7 +111,7 @@ const EditProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   scrollContainer: {
     flex: 1,
@@ -111,13 +124,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   avatar: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.lightGray,
   },
   changeAvatarButton: {
     marginTop: 10,
   },
   changeAvatarText: {
-    color: '#4F8EF7',
+    color: colors.primary,
     fontSize: 16,
   },
   formContainer: {
@@ -127,24 +140,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: '#333',
+    color: colors.black,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
     borderRadius: 5,
     padding: 12,
     fontSize: 16,
     marginBottom: 20,
+    color: colors.black,
   },
   buttonContainer: {
     padding: 15,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    borderTopColor: colors.border,
+    backgroundColor: colors.white,
   },
   saveButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     borderRadius: 25,
     height: 50,
   },

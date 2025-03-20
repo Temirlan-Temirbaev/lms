@@ -7,12 +7,15 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { Input, Button } from '@rneui/themed';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { colors } from '../../theme/colors';
+import CustomOverlay from '../../components/CustomOverlay';
 
 const RegisterScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,17 +25,29 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      CustomOverlay({
+        title: t('auth.error'),
+        message: t('auth.fillAllFields'),
+        platform: Platform.OS
+      });
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      CustomOverlay({
+        title: t('auth.error'),
+        message: t('auth.passwordsNotMatch'),
+        platform: Platform.OS
+      });
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      CustomOverlay({
+        title: t('auth.error'),
+        message: t('auth.passwordTooShort'),
+        platform: Platform.OS
+      });
       return;
     }
 
@@ -40,7 +55,11 @@ const RegisterScreen = ({ navigation }) => {
     try {
       await register(name, email, password);
     } catch (error) {
-      Alert.alert('Registration Failed', error.message || 'Please try again');
+      CustomOverlay({
+        title: t('auth.registrationFailed'),
+        message: t('auth.tryAgain'),
+        platform: Platform.OS
+      });
     } finally {
       setLoading(false);
     }
@@ -54,13 +73,13 @@ const RegisterScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Language Learning</Text>
-          <Text style={styles.subHeaderText}>Create a new account</Text>
+          <Text style={styles.headerText}>{t('auth.appName')}</Text>
+          <Text style={styles.subHeaderText}>{t('auth.registerTitle')}</Text>
         </View>
 
         <View style={styles.formContainer}>
           <Input
-            placeholder="Full Name"
+            placeholder={t('auth.fullName')}
             leftIcon={{ type: 'ionicon', name: 'person-outline' }}
             value={name}
             onChangeText={setName}
@@ -69,7 +88,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder="Email"
+            placeholder={t('auth.email')}
             leftIcon={{ type: 'ionicon', name: 'mail-outline' }}
             value={email}
             onChangeText={setEmail}
@@ -79,7 +98,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder="Password"
+            placeholder={t('auth.password')}
             leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
             value={password}
             onChangeText={setPassword}
@@ -89,7 +108,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder="Confirm Password"
+            placeholder={t('auth.confirmPassword')}
             leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -99,7 +118,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Button
-            title="Register"
+            title={t('auth.register')}
             loading={loading}
             onPress={handleRegister}
             buttonStyle={styles.registerButton}
@@ -107,9 +126,9 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>{t('auth.hasAccount')} </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Sign in</Text>
+              <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -121,7 +140,7 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -135,12 +154,12 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#4F8EF7',
+    color: colors.primary,
     marginBottom: 10,
   },
   subHeaderText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.darkGray,
   },
   formContainer: {
     width: '100%',
@@ -150,7 +169,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   registerButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     borderRadius: 25,
     height: 50,
   },
@@ -160,10 +179,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   loginText: {
-    color: '#666',
+    color: colors.darkGray,
   },
   loginLink: {
-    color: '#4F8EF7',
+    color: colors.primary,
     fontWeight: 'bold',
   },
 });

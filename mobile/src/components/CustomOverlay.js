@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { Overlay, Button, Icon } from '@rneui/themed';
+import { colors } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -85,11 +86,11 @@ const styles = StyleSheet.create({
   overlay: {
     width: width * 0.85,
     minHeight: 300,
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 10,
     padding: 0,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     minHeight: 300,
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 10,
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -110,8 +111,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    backgroundColor: 'white',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.white,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     minHeight: 70,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#333',
+    color: colors.black,
     paddingHorizontal: 40,
   },
   closeButton: {
@@ -130,15 +131,15 @@ const styles = StyleSheet.create({
     top: 12,
     padding: 5,
     zIndex: 1,
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
   },
   message: {
     fontSize: 16,
-    color: '#666',
+    color: colors.darkGray,
     textAlign: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     minHeight: 50,
   },
   scrollView: {
@@ -174,21 +175,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 10,
     height: 40,
+    backgroundColor: colors.primary,
   },
   singleButton: {
     minWidth: width * 0.85 - 30,
   },
   cancelButton: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.lightGray,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
   },
   buttonText: {
     fontSize: 16,
-    color: 'white',
+    color: colors.white,
   },
   cancelButtonText: {
-    color: '#666',
+    color: colors.darkGray,
   },
 });
 

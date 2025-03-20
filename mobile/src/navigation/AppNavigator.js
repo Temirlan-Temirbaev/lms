@@ -3,6 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from '@rneui/themed';
+import { useTranslation } from 'react-i18next';
+import { colors } from '../theme/colors';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -33,106 +36,198 @@ const PlacementTestStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Auth Navigator
-const AuthNavigator = () => (
-  <AuthStack.Navigator
-    screenOptions={{
-      headerShown: false,
-    }}
-  >
-    <AuthStack.Screen name="Login" component={LoginScreen} />
-    <AuthStack.Screen name="Register" component={RegisterScreen} />
-  </AuthStack.Navigator>
-);
+const AuthNavigator = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerStyle: {
+          backgroundColor: colors.white,
+        },
+        headerTintColor: colors.primary,
+        headerTitleStyle: {
+          color: colors.black,
+        },
+      }}
+    >
+      <AuthStack.Screen 
+        name="Login" 
+        component={LoginScreen}
+        options={{ title: t('navigation.login') }}
+      />
+      <AuthStack.Screen 
+        name="Register" 
+        component={RegisterScreen}
+        options={{ title: t('navigation.register') }}
+      />
+    </AuthStack.Navigator>
+  );
+};
 
 // Home Stack Navigator
-const HomeStackNavigator = () => (
-  <HomeStack.Navigator>
-    <HomeStack.Screen 
-      name="HomeScreen" 
-      component={HomeScreen} 
-      options={{ title: 'Courses' }}
-    />
-    <HomeStack.Screen 
-      name="CourseDetail" 
-      component={CourseDetailScreen} 
-      options={({ route }) => ({ title: route.params?.title || 'Course Details' })}
-    />
-    <HomeStack.Screen 
-      name="Lesson" 
-      component={LessonScreen} 
-      options={({ route }) => ({ title: route.params?.title || 'Lesson' })}
-    />
-    <HomeStack.Screen 
-      name="Test" 
-      component={TestScreen} 
-      options={({ route }) => ({ title: route.params?.title || 'Test' })}
-    />
-    <HomeStack.Screen 
-      name="TestResult" 
-      component={TestResultScreen} 
-      options={{ title: 'Test Results' }}
-    />
-  </HomeStack.Navigator>
-);
+const HomeStackNavigator = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <HomeStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.white,
+        },
+        headerTintColor: colors.primary,
+        headerTitleStyle: {
+          color: colors.black,
+        },
+        headerShadowVisible: false,
+        headerBackTitle: t('common.back'),
+      }}
+    >
+      <HomeStack.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+        options={{ title: t('navigation.courses') }}
+      />
+      <HomeStack.Screen 
+        name="CourseDetail" 
+        component={CourseDetailScreen} 
+        options={({ route }) => ({ 
+          title: route.params?.title || t('navigation.courseDetails')
+        })}
+      />
+      <HomeStack.Screen 
+        name="Lesson" 
+        component={LessonScreen} 
+        options={({ route }) => ({ 
+          title: route.params?.title || t('navigation.lesson')
+        })}
+      />
+      <HomeStack.Screen 
+        name="Test" 
+        component={TestScreen} 
+        options={({ route }) => ({ 
+          title: route.params?.title || t('navigation.test')
+        })}
+      />
+      <HomeStack.Screen 
+        name="TestResult" 
+        component={TestResultScreen} 
+        options={{ title: t('navigation.testResults') }}
+      />
+    </HomeStack.Navigator>
+  );
+};
 
 // Profile Stack Navigator
-const ProfileStackNavigator = () => (
-  <ProfileStack.Navigator>
-    <ProfileStack.Screen 
-      name="ProfileScreen" 
-      component={ProfileScreen} 
-      options={{ title: 'Profile' }}
-    />
-    <ProfileStack.Screen 
-      name="EditProfile" 
-      component={EditProfileScreen} 
-      options={{ title: 'Edit Profile' }}
-    />
-    <ProfileStack.Screen 
-      name="ChangePassword" 
-      component={ChangePasswordScreen} 
-      options={{ title: 'Change Password' }}
-    />
-    <ProfileStack.Screen 
-      name="Progress" 
-      component={ProgressScreen} 
-      options={{ title: 'My Progress' }}
-    />
-  </ProfileStack.Navigator>
-);
+const ProfileStackNavigator = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.white,
+        },
+        headerTintColor: colors.primary,
+        headerTitleStyle: {
+          color: colors.black,
+        },
+        headerShadowVisible: false,
+        headerBackTitle: t('common.back'),
+      }}
+    >
+      <ProfileStack.Screen 
+        name="ProfileScreen" 
+        component={ProfileScreen} 
+        options={{ title: t('navigation.profile') }}
+      />
+      <ProfileStack.Screen 
+        name="EditProfile" 
+        component={EditProfileScreen} 
+        options={{ title: t('navigation.editProfile') }}
+      />
+      <ProfileStack.Screen 
+        name="ChangePassword" 
+        component={ChangePasswordScreen} 
+        options={{ title: t('navigation.changePassword') }}
+      />
+      <ProfileStack.Screen 
+        name="Progress" 
+        component={ProgressScreen} 
+        options={{ title: t('navigation.myProgress') }}
+      />
+    </ProfileStack.Navigator>
+  );
+};
 
 // Placement Test Stack Navigator
-const PlacementTestNavigator = () => (
-  <PlacementTestStack.Navigator screenOptions={{ headerShown: false }}>
-    <PlacementTestStack.Screen name="PlacementTest" component={PlacementTestScreen} />
-    <PlacementTestStack.Screen name="PlacementTestResult" component={PlacementTestResultScreen} />
-  </PlacementTestStack.Navigator>
-);
+const PlacementTestNavigator = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <PlacementTestStack.Navigator 
+      screenOptions={{
+        headerShown: false,
+        headerStyle: {
+          backgroundColor: colors.white,
+        },
+        headerTintColor: colors.primary,
+        headerTitleStyle: {
+          color: colors.black,
+        },
+      }}
+    >
+      <PlacementTestStack.Screen 
+        name="PlacementTest" 
+        component={PlacementTestScreen}
+        options={{ title: t('navigation.placementTest') }}
+      />
+      <PlacementTestStack.Screen 
+        name="PlacementTestResult" 
+        component={PlacementTestResultScreen}
+        options={{ title: t('navigation.placementTestResult') }}
+      />
+    </PlacementTestStack.Navigator>
+  );
+};
 
 // Tab Navigator
-const TabNavigator = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      tabBarIcon: ({ focused, color, size }) => {
-        let iconName;
+const TabNavigator = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
 
-        if (route.name === 'Home') {
-          iconName = focused ? 'home' : 'home-outline';
-        } else if (route.name === 'Profile') {
-          iconName = focused ? 'person' : 'person-outline';
-        }
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
 
-        return <Icon name={iconName} type="ionicon" size={size} color={color} />;
-      },
-      tabBarActiveTintColor: '#4F8EF7',
-      tabBarInactiveTintColor: 'gray',
-      headerShown: false,
-    })}
-  >
-    <Tab.Screen name="Home" component={HomeStackNavigator} />
-    <Tab.Screen name="Profile" component={ProfileStackNavigator} />
-  </Tab.Navigator>
-);
+          return <Icon name={iconName} type="ionicon" size={size} color={color} />;
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.darkGray,
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen 
+        name="Home" 
+        component={HomeStackNavigator}
+        options={{ title: t('navigation.home') }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileStackNavigator}
+        options={{ title: t('navigation.profile') }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 // Main Navigator
 const MainNavigator = () => {

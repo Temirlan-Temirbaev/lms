@@ -16,14 +16,66 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Button, Icon, Overlay, Divider } from '@rneui/themed';
 import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { colors } from '../../theme/colors';
+import CustomOverlay from '../../components/CustomOverlay';
+import Markdown from 'react-native-markdown-display';
 
 const { width, height } = Dimensions.get('window');
 
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+  },
+  heading1: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    color: colors.primary,
+  },
+  heading2: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  paragraph: {
+    marginBottom: 16,
+  },
+};
+
+const renderRules = {
+  image: (node) => {
+    const imageUrl = node.attributes.src;
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
+      />
+    );
+  },
+  link: (node, children, parent, styles) => {
+    const url = node.attributes.href;
+    if (url.endsWith('.mp3') || url.endsWith('.wav')) {
+      return <AudioSlider audio={url} />;
+    }
+    return (
+      <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
+    );
+  },
+};
+
 const PlacementTestScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -87,8 +139,12 @@ const PlacementTestScreen = ({ navigation }) => {
       setAnswers(initialAnswers);
     } catch (error) {
       console.error('Error fetching placement test:', error);
-      setError('Failed to load placement test. Please try again later.');
-      Alert.alert('Error', 'Failed to load placement test');
+      setError(t('placementTest.loadError'));
+      CustomOverlay({
+        title: t('placementTest.error'),
+        message: t('placementTest.loadError'),
+        platform: Platform.OS
+      });
     } finally {
       setLoading(false);
     }
@@ -115,7 +171,11 @@ const PlacementTestScreen = ({ navigation }) => {
       navigation.replace('PlacementTestResult', { results: response });
     } catch (error) {
       console.error('Error submitting test:', error);
-      Alert.alert('Error', 'Failed to submit test. Please try again.');
+      CustomOverlay({
+        title: t('placementTest.error'),
+        message: t('placementTest.submitError'),
+        platform: Platform.OS
+      });
     } finally {
       setSubmitting(false);
     }
@@ -155,6 +215,13 @@ const PlacementTestScreen = ({ navigation }) => {
   const renderMultipleChoiceQuestion = (question) => (
     <View style={styles.questionContent}>
       <Text style={styles.questionText}>{question.question}</Text>
+      {question.content && (
+        <View style={styles.contentContainer}>
+          <Markdown style={markdownStyles} rules={renderRules}>
+            {question.content}
+          </Markdown>
+        </View>
+      )}
       {question.options.map((option, index) => (
         <TouchableOpacity
           key={index}
@@ -201,6 +268,13 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
+        {question.content && (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        )}
         <View style={styles.matchingContainer}>
           {items.map((item, index) => (
             <View key={index} style={styles.matchingRow}>
@@ -252,6 +326,13 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
+        {question.content && (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        )}
         <View style={styles.orderingContainer}>
           {currentAnswer.map((item, index) => (
             <View key={index} style={styles.orderingItemContainer}>
@@ -291,11 +372,18 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
+        {question.content && (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        )}
         <TextInput
           style={styles.textInput}
           value={answers[question._id]?.answer || ''}
           onChangeText={(text) => handleAnswerSelect(text)}
-          placeholder="Type your answer here"
+          placeholder={t('placementTest.typeAnswer')}
           autoCapitalize="none"
         />
       </View>
@@ -334,10 +422,16 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
-        
+        {question.content && (
+          <View style={styles.contentContainer}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {question.content}
+            </Markdown>
+          </View>
+        )}
         {/* Uncategorized items */}
         <View style={styles.uncategorizedContainer}>
-          <Text style={styles.categoryTitle}>Available Items:</Text>
+          <Text style={styles.categoryTitle}>{t('placementTest.availableItems')}:</Text>
           <View style={styles.itemsContainer}>
             {uncategorizedItems.map((item, index) => (
               <View key={index} style={styles.uncategorizedItem}>
@@ -349,7 +443,7 @@ const PlacementTestScreen = ({ navigation }) => {
                       style={styles.addToCategoryButton}
                       onPress={() => handleAddToCategory(item, category)}
                     >
-                      <Text style={styles.addToCategoryText}>Add to {category}</Text>
+                      <Text style={styles.addToCategoryText}>{t('placementTest.addTo', { category })}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -383,7 +477,7 @@ const PlacementTestScreen = ({ navigation }) => {
   
   const renderQuestion = () => {
     if (!test || !test.questions || test.questions.length === 0) {
-      return <Text style={styles.errorText}>No questions available</Text>;
+      return <Text style={styles.errorText}>{t('placementTest.noQuestions')}</Text>;
     }
     
     const currentQuestion = test.questions[currentQuestionIndex];
@@ -400,7 +494,7 @@ const PlacementTestScreen = ({ navigation }) => {
       case 'categories':
         return renderCategoriesQuestion(currentQuestion);
       default:
-        return <Text style={styles.errorText}>Unsupported question type</Text>;
+        return <Text style={styles.errorText}>{t('placementTest.unsupportedType')}</Text>;
     }
   };
   
@@ -408,7 +502,7 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4F8EF7" />
-        <Text style={styles.loadingText}>Loading placement test...</Text>
+        <Text style={styles.loadingText}>{t('placementTest.loading')}</Text>
       </View>
     );
   }
@@ -417,9 +511,9 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.errorContainer}>
         <Icon name="alert-circle" type="ionicon" size={60} color="#f44336" />
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={styles.errorText}>{t('placementTest.loadError')}</Text>
         <Button
-          title="Try Again"
+          title={t('placementTest.tryAgain')}
           onPress={fetchPlacementTest}
           buttonStyle={styles.retryButton}
         />
@@ -437,12 +531,17 @@ const PlacementTestScreen = ({ navigation }) => {
           <View style={styles.testInfo}>
             <Text style={styles.testTitle}>{test.title}</Text>
             <Text style={styles.questionCounter}>
-              Question {currentQuestionIndex + 1} of {test.questions.length}
+              {t('placementTest.questionCount', {
+                current: currentQuestionIndex + 1,
+                total: test.questions.length
+              })}
             </Text>
           </View>
           <View style={styles.timerContainer}>
             <Icon name="time-outline" type="ionicon" size={20} color="#4F8EF7" />
-            <Text style={styles.timerText}>{formatTime(timer)}</Text>
+            <Text style={styles.timerText}>
+              {t('placementTest.timeLeft')}: {formatTime(timer)}
+            </Text>
           </View>
         </View>
         
@@ -473,7 +572,7 @@ const PlacementTestScreen = ({ navigation }) => {
         
         <View style={styles.footer}>
           <Button
-            title="Previous"
+            title={t('placementTest.previous')}
             onPress={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
             buttonStyle={[
@@ -491,7 +590,7 @@ const PlacementTestScreen = ({ navigation }) => {
           
           {currentQuestionIndex === test.questions.length - 1 ? (
             <Button
-              title="Submit"
+              title={t('placementTest.submit')}
               onPress={handleSubmitTest}
               buttonStyle={styles.submitButton}
               icon={{
@@ -504,7 +603,7 @@ const PlacementTestScreen = ({ navigation }) => {
             />
           ) : (
             <Button
-              title="Next"
+              title={t('placementTest.next')}
               onPress={handleNextQuestion}
               buttonStyle={styles.navigationButton}
               icon={{
@@ -526,20 +625,20 @@ const PlacementTestScreen = ({ navigation }) => {
       >
         <View style={styles.confirmDialog}>
           <Icon name="help-circle" type="ionicon" size={50} color="#FFC107" />
-          <Text style={styles.confirmTitle}>Submit Test?</Text>
+          <Text style={styles.confirmTitle}>{t('placementTest.confirmSubmit')}</Text>
           <Text style={styles.confirmText}>
-            Are you sure you want to submit your answers? You won't be able to change them after submission.
+            {t('placementTest.confirmMessage')}
           </Text>
           <View style={styles.confirmButtons}>
             <Button
-              title="Cancel"
+              title={t('placementTest.cancel')}
               onPress={() => setShowConfirmDialog(false)}
               buttonStyle={styles.cancelButton}
               titleStyle={styles.cancelButtonText}
               type="outline"
             />
             <Button
-              title="Submit"
+              title={t('placementTest.submit')}
               onPress={submitTest}
               loading={submitting}
               buttonStyle={styles.confirmButton}
@@ -554,7 +653,7 @@ const PlacementTestScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -565,7 +664,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
   },
   testInfo: {
     flex: 1,
@@ -573,17 +672,17 @@ const styles = StyleSheet.create({
   testTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.black,
   },
   questionCounter: {
     fontSize: 14,
-    color: '#666',
+    color: colors.darkGray,
     marginTop: 5,
   },
   timerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.timer.background,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
@@ -592,39 +691,44 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4F8EF7',
+    color: colors.timer.text,
   },
   progressBarContainer: {
     height: 5,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
     width: '100%',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
   },
   scrollContainer: {
     flex: 1,
   },
   contentContainer: {
-    padding: 15,
+    marginTop: 15,
+    marginBottom: 20,
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
   },
   questionContainer: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: colors.background,
     borderRadius: 10,
     padding: 15,
     marginBottom: 20,
   },
   levelBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
     marginBottom: 10,
   },
   levelText: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 'bold',
     fontSize: 12,
   },
@@ -634,27 +738,27 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.black,
     marginBottom: 20,
   },
   optionButton: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
   },
   selectedOption: {
-    backgroundColor: '#E3F2FD',
-    borderColor: '#2196F3',
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
+    color: colors.black,
   },
   selectedOptionText: {
-    color: '#2196F3',
+    color: colors.primary,
     fontWeight: 'bold',
   },
   footer: {
@@ -662,19 +766,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 15,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: colors.border,
   },
   navigationButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     paddingHorizontal: 20,
     borderRadius: 25,
     minWidth: 120,
   },
   disabledButton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     paddingHorizontal: 20,
     borderRadius: 25,
     minWidth: 120,
@@ -687,7 +791,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: colors.darkGray,
   },
   errorContainer: {
     flex: 1,
@@ -697,12 +801,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.error,
     textAlign: 'center',
     marginVertical: 20,
   },
   retryButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     paddingHorizontal: 30,
     borderRadius: 25,
   },

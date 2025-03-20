@@ -18,6 +18,8 @@ import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import CustomOverlay from '../../components/CustomOverlay';
 import Markdown from 'react-native-markdown-display';
+import { useTranslation } from 'react-i18next';
+import { colors } from '../../theme/colors';
 // import DraggableFlatList from 'react-native-draggable-flatlist';
 
 const { width } = Dimensions.get('window');
@@ -33,7 +35,7 @@ const markdownStyles = {
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
-    color: '#4F8EF7',
+    color: colors.primary,
   },
   heading2: {
     fontSize: 24,
@@ -84,6 +86,7 @@ const TestScreen = ({ route, navigation }) => {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchTest();
@@ -143,7 +146,11 @@ const TestScreen = ({ route, navigation }) => {
         testId: testId,
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit test');
+      CustomOverlay({
+        title: t('test.error'),
+        message: 'Failed to submit test',
+        platform: Platform.OS
+      });
       console.error(error);
     } finally {
       setSubmitting(false);
@@ -176,8 +183,9 @@ const TestScreen = ({ route, navigation }) => {
 
   const renderMultipleChoiceQuestion = (question) => (
     <View style={styles.questionContainer}>
-      <Text style={styles.questionText}>
-        {question.question}
+      <Text style={styles.questionText}>{question.question}</Text>
+      <Text style={styles.instructionText}>
+        {t('test.instructions.multipleChoice')}
       </Text>
       {question.content ? (
         <View style={styles.contentContainer}>
@@ -197,7 +205,7 @@ const TestScreen = ({ route, navigation }) => {
         >
           <Text style={styles.optionText}>{option}</Text>
           {answers[currentQuestionIndex] === option && (
-            <Icon name="checkmark-circle" type="ionicon" size={20} color="#4F8EF7" />
+            <Icon name="checkmark-circle" type="ionicon" size={20} color={colors.primary} />
           )}
         </TouchableOpacity>
       ))}
@@ -219,7 +227,7 @@ const TestScreen = ({ route, navigation }) => {
             </Markdown>
           </View>
         ) : null}
-        <Text style={styles.instructionText}>Match each item on the left with its corresponding item on the right</Text>
+        {/* <Text style={styles.instructionText}>Match each item on the left with its corresponding item on the right</Text> */}
         
         {question.options.map((option, index) => (
           <View key={index} style={styles.matchingItem}>
@@ -263,7 +271,7 @@ const TestScreen = ({ route, navigation }) => {
             </Markdown>
           </View>
         ) : null}
-        <Text style={styles.instructionText}>Drag items to reorder them</Text>
+        {/* <Text style={styles.instructionText}>Drag items to reorder them</Text> */}
         <FlatList
           data={currentAnswer}
           keyExtractor={(item, index) => `${item}-${index}`}
@@ -288,7 +296,7 @@ const TestScreen = ({ route, navigation }) => {
                     name="chevron-up"
                     type="ionicon"
                     size={24}
-                    color={index === 0 ? '#ccc' : '#666'}
+                    color={index === 0 ? '#ccc' : colors.primary}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -305,7 +313,7 @@ const TestScreen = ({ route, navigation }) => {
                     name="chevron-down"
                     type="ionicon"
                     size={24}
-                    color={index === currentAnswer.length - 1 ? '#ccc' : '#666'}
+                    color={index === currentAnswer.length - 1 ? '#ccc' : colors.primary}
                   />
                 </TouchableOpacity>
               </View>
@@ -339,9 +347,9 @@ const TestScreen = ({ route, navigation }) => {
           ) : null}
           <Text style={styles.instructionText}>Fill in the blank with the appropriate word or phrase</Text>
           
-          <View style={styles.fillBlanksContainer}>
+          <View style={styles.inputContainer}>
             <TextInput
-              style={styles.fillBlanksInput}
+              style={[styles.inputAnswer, { height: 40 }]}
               placeholder="Type your answer here"
               value={currentAnswer}
               onChangeText={(text) => handleAnswerSelect(text)}
@@ -350,7 +358,7 @@ const TestScreen = ({ route, navigation }) => {
             />
           </View>
           
-          <Text style={styles.fillBlanksHint}>
+          <Text style={styles.inputHint}>
             Tip: Your answer should be a single word or short phrase
           </Text>
         </View>
@@ -388,20 +396,22 @@ const TestScreen = ({ route, navigation }) => {
             <React.Fragment key={index}>
               <Text style={styles.blankPartText}>{part}</Text>
               {index < parts.length - 1 && (
-                <TextInput
-                  style={styles.multipleBlankInput}
-                  placeholder="Type here"
-                  value={currentAnswers[`blank${index + 1}`] || ''}
-                  onChangeText={(text) => handleBlankChange(`blank${index + 1}`, text)}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[styles.inputAnswer, { height: 40 }]}
+                    placeholder="Type here"
+                    value={currentAnswers[`blank${index + 1}`] || ''}
+                    onChangeText={(text) => handleBlankChange(`blank${index + 1}`, text)}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
               )}
             </React.Fragment>
           ))}
         </View>
         
-        <Text style={styles.fillBlanksHint}>
+        <Text style={styles.inputHint}>
           Tip: Pay attention to verb conjugations and agreements
         </Text>
       </View>
@@ -443,9 +453,26 @@ const TestScreen = ({ route, navigation }) => {
     );
   };
 
+  const renderCategoryItem = (item) => {
+    // Check if the item is an object containing image URL and text
+    if (typeof item === 'object' && item.image) {
+      return (
+        <View style={styles.categoryItemContent}>
+          <Image 
+            source={{ uri: item.image }}
+            style={styles.categoryItemImage}
+          />
+          {item.text && <Text style={styles.categoryItemText}>{item.text}</Text>}
+        </View>
+      );
+    }
+    // If it's just a string, render as before
+    return <Text style={styles.categoryItemText}>{item}</Text>;
+  };
+
   const renderCategoriesQuestion = (question) => {
     const currentAnswers = answers[currentQuestionIndex] || {};
-    const categories = Object.keys(question.correctAnswer);
+    const categories = Object.keys(question.correctAnswer || {});
     
     // Initialize categories in the current answer if they don't exist
     categories.forEach(category => {
@@ -454,11 +481,31 @@ const TestScreen = ({ route, navigation }) => {
       }
     });
     
+    // Render category title - if it starts with @ it's an image
+    const renderCategoryTitle = (category) => {
+      if (category.startsWith('https')) {
+        return (
+          <Image
+            source={{ uri: category }}
+            style={{ width: 100, height: 100, resizeMode: 'contain' }}
+          />
+        );
+      }
+      return <Text style={styles.categoryTitle}>{category}</Text>;
+    };
+
     // Get all options that haven't been categorized yet
-    const uncategorizedOptions = question.options.filter(option => {
-      return !Object.values(currentAnswers).some(categoryItems => 
-        categoryItems.includes(option)
-      );
+    const uncategorizedOptions = (question.options || []).filter(option => {
+      // Check if the option exists in any category
+      return !Object.values(currentAnswers).some(categoryItems => {
+        if (!categoryItems) return false;
+        return categoryItems.some(item => {
+          if (typeof item === 'object' && typeof option === 'object') {
+            return item.image === option.image;
+          }
+          return item === option;
+        });
+      });
     });
     
     const handleAddToCategory = (option, category) => {
@@ -466,10 +513,17 @@ const TestScreen = ({ route, navigation }) => {
       
       // Remove the option from any other category it might be in
       Object.keys(newAnswers).forEach(cat => {
-        newAnswers[cat] = newAnswers[cat].filter(item => item !== option);
+        if (!newAnswers[cat]) newAnswers[cat] = [];
+        newAnswers[cat] = newAnswers[cat].filter(item => {
+          if (typeof item === 'object' && typeof option === 'object') {
+            return item.image !== option.image;
+          }
+          return item !== option;
+        });
       });
       
       // Add the option to the selected category
+      if (!newAnswers[category]) newAnswers[category] = [];
       newAnswers[category] = [...newAnswers[category], option];
       
       handleAnswerSelect(newAnswers);
@@ -477,10 +531,16 @@ const TestScreen = ({ route, navigation }) => {
     
     const handleRemoveFromCategory = (option, category) => {
       const newAnswers = { ...currentAnswers };
-      newAnswers[category] = newAnswers[category].filter(item => item !== option);
+      if (!newAnswers[category]) newAnswers[category] = [];
+      newAnswers[category] = newAnswers[category].filter(item => {
+        if (typeof item === 'object' && typeof option === 'object') {
+          return item.image !== option.image;
+        }
+        return item !== option;
+      });
       handleAnswerSelect(newAnswers);
     };
-    
+
     return (
       <View style={styles.questionContainer}>
         <Text style={styles.questionText}>
@@ -493,11 +553,11 @@ const TestScreen = ({ route, navigation }) => {
             </Markdown>
           </View>
         ) : null}
-        <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text>
+        {/* <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text> */}
         
         {/* Uncategorized options */}
         <View style={styles.categoriesSection}>
-          <Text style={styles.categoryTitle}>Available Items:</Text>
+          <Text style={styles.categoryTitle}>{t('test.availableItems')}:</Text>
           <View style={styles.uncategorizedContainer}>
             {uncategorizedOptions.map((option, index) => (
               <TouchableOpacity
@@ -508,7 +568,7 @@ const TestScreen = ({ route, navigation }) => {
                   setShowCategorySelection(true);
                 }}
               >
-                <Text style={styles.categoryItemText}>{option}</Text>
+                {renderCategoryItem(option)}
               </TouchableOpacity>
             ))}
           </View>
@@ -517,16 +577,22 @@ const TestScreen = ({ route, navigation }) => {
         {/* Categories */}
         {categories.map((category, categoryIndex) => (
           <View key={categoryIndex} style={styles.categoriesSection}>
-            <Text style={styles.categoryTitle}>{category}:</Text>
+            {renderCategoryTitle(category)}
             <View style={styles.categoryContainer}>
-              {currentAnswers[category].map((item, itemIndex) => (
+              {(currentAnswers[category] || []).map((item, itemIndex) => (
                 <TouchableOpacity
                   key={itemIndex}
                   style={styles.categoryItem}
                   onPress={() => handleRemoveFromCategory(item, category)}
                 >
-                  <Text style={styles.categoryItemText}>{item}</Text>
-                  <Icon name="close-circle" type="ionicon" size={16} color="#F44336" />
+                  {renderCategoryItem(item)}
+                  <Icon 
+                    name="close-circle" 
+                    type="ionicon" 
+                    size={16} 
+                    color="#F44336"
+                    style={styles.categoryItemRemoveIcon}
+                  />
                 </TouchableOpacity>
               ))}
             </View>
@@ -537,8 +603,8 @@ const TestScreen = ({ route, navigation }) => {
         <CustomOverlay
           isVisible={showCategorySelection}
           onClose={() => setShowCategorySelection(false)}
-          title="Select Category"
-          message={`Add "${selectedOption}" to which category?`}
+          title={t('test.selectCategory')}
+          message="Select a category for this item"
           scrollable={true}
         >
           {categories.map((category, index) => (
@@ -550,7 +616,7 @@ const TestScreen = ({ route, navigation }) => {
                 setShowCategorySelection(false);
               }}
             >
-              <Text style={styles.categorySelectionText}>{category}</Text>
+              {renderCategoryTitle(category)}
             </TouchableOpacity>
           ))}
         </CustomOverlay>
@@ -560,7 +626,7 @@ const TestScreen = ({ route, navigation }) => {
 
   const renderQuestion = () => {
     if (!test || !test.questions || test.questions.length === 0) {
-      return <Text style={styles.errorText}>No questions available</Text>;
+      return <Text style={styles.errorText}>{t('test.noQuestions')}</Text>;
     }
 
     const question = test.questions[currentQuestionIndex];
@@ -579,14 +645,15 @@ const TestScreen = ({ route, navigation }) => {
       case 'categories':
         return renderCategoriesQuestion(question);
       default:
-        return <Text style={styles.errorText}>Unknown question type</Text>;
+        return <Text style={styles.errorText}>{t('test.unknownType')}</Text>;
     }
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4F8EF7" />
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>{t('test.loading')}</Text>
       </View>
     );
   }
@@ -595,11 +662,16 @@ const TestScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.timerContainer}>
-          <Icon name="time-outline" type="ionicon" size={20} color="#FF5722" />
-          <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+          <Icon name="time-outline" type="ionicon" size={20} color={colors.timer.text} />
+          <Text style={styles.timerText}>
+            {t('test.timeLeft')}: {formatTime(timeLeft)}
+          </Text>
         </View>
         <Text style={styles.progressText}>
-          Question {currentQuestionIndex + 1} of {test.questions.length}
+          {t('test.questionProgress', {
+            current: currentQuestionIndex + 1,
+            total: test.questions.length
+          })}
         </Text>
       </View>
 
@@ -609,7 +681,7 @@ const TestScreen = ({ route, navigation }) => {
 
       <View style={styles.navigationContainer}>
         <Button
-          title="Previous"
+          title={t('test.previous')}
           disabled={currentQuestionIndex === 0}
           onPress={handlePreviousQuestion}
           buttonStyle={[styles.navButton, styles.prevButton]}
@@ -619,7 +691,7 @@ const TestScreen = ({ route, navigation }) => {
         
         {currentQuestionIndex === test.questions.length - 1 ? (
           <Button
-            title="Finish"
+            title={t('test.finish')}
             onPress={() => setShowConfirmation(true)}
             buttonStyle={[styles.navButton, styles.finishButton]}
             titleStyle={styles.navButtonText}
@@ -628,7 +700,7 @@ const TestScreen = ({ route, navigation }) => {
           />
         ) : (
           <Button
-            title="Next"
+            title={t('test.next')}
             onPress={handleNextQuestion}
             buttonStyle={[styles.navButton, styles.nextButton]}
             titleStyle={styles.navButtonText}
@@ -641,19 +713,19 @@ const TestScreen = ({ route, navigation }) => {
       <CustomOverlay
         isVisible={showConfirmation}
         onClose={() => setShowConfirmation(false)}
-        title="Submit Test?"
-        message="Are you sure you want to submit your test? You won't be able to change your answers after submission."
+        title={t('test.submitTitle')}
+        message={t('test.submitMessage')}
         buttons={[
           {
-            text: 'Cancel',
+            text: t('test.cancel'),
             onPress: () => setShowConfirmation(false),
             type: 'cancel'
           },
           {
-            text: 'Submit',
+            text: t('test.submit'),
             onPress: handleSubmitTest,
             loading: submitting,
-            style: { backgroundColor: '#4CAF50' }
+            style: { backgroundColor: colors.success }
           }
         ]}
       />
@@ -661,13 +733,13 @@ const TestScreen = ({ route, navigation }) => {
       <CustomOverlay
         isVisible={showError}
         onClose={() => setShowError(false)}
-        title="Error"
+        title={t('test.error')}
         message={errorMessage}
         buttons={[
           {
-            text: 'OK',
+            text: t('test.ok'),
             onPress: () => setShowError(false),
-            style: { backgroundColor: '#4F8EF7' }
+            style: { backgroundColor: colors.primary }
           }
         ]}
       />
@@ -675,21 +747,23 @@ const TestScreen = ({ route, navigation }) => {
       <CustomOverlay
         isVisible={showIncompleteWarning}
         onClose={() => setShowIncompleteWarning(false)}
-        title="Incomplete Test"
-        message={`You have ${answers.filter(answer => answer === null).length} unanswered question(s). Are you sure you want to submit?`}
+        title={t('test.incompleteTitle')}
+        message={t('test.incompleteMessage', {
+          count: answers.filter(answer => answer === null).length
+        })}
         buttons={[
           {
-            text: 'Cancel',
+            text: t('test.cancel'),
             onPress: () => setShowIncompleteWarning(false),
             type: 'cancel'
           },
           {
-            text: 'Submit Anyway',
+            text: t('test.submitAnyway'),
             onPress: () => {
               setShowIncompleteWarning(false);
-              handleSubmitTest();
+              submitTest();
             },
-            style: { backgroundColor: '#4CAF50' }
+            style: { backgroundColor: colors.success }
           }
         ]}
       />
@@ -700,7 +774,7 @@ const TestScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -713,12 +787,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
   },
   timerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0',
+    backgroundColor: colors.timer.background,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
@@ -726,7 +800,7 @@ const styles = StyleSheet.create({
   timerText: {
     marginLeft: 5,
     fontWeight: 'bold',
-    color: '#FF5722',
+    color: colors.timer.text,
   },
   progressText: {
     fontSize: 14,
@@ -744,7 +818,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
   },
   questionText: {
     fontSize: 18,
@@ -759,13 +833,13 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
     borderRadius: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: colors.background,
   },
   selectedOption: {
-    borderColor: '#4F8EF7',
-    backgroundColor: '#E3F2FD',
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   optionText: {
     fontSize: 16,
@@ -780,6 +854,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
+  matchingLeftContainer: {
+    flex: 1,
+  },
+  matchingRightContainer: {
+    flex: 1,
+  },
   matchingOption: {
     flex: 1,
     fontSize: 16,
@@ -789,13 +869,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
     borderRadius: 5,
     paddingHorizontal: 10,
   },
   matchingInputFilled: {
-    borderColor: '#4F8EF7',
-    backgroundColor: '#E3F2FD',
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   instructionText: {
     fontSize: 14,
@@ -813,7 +893,7 @@ const styles = StyleSheet.create({
     width: 30,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4F8EF7',
+    color: colors.primary,
   },
   orderingContent: {
     flex: 1,
@@ -864,7 +944,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 15,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: colors.border,
   },
   navButton: {
     width: width / 2 - 25,
@@ -872,13 +952,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   prevButton: {
-    backgroundColor: '#9E9E9E',
+    backgroundColor: colors.gray,
   },
   nextButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
   },
   finishButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
   },
   navButtonText: {
     fontSize: 16,
@@ -913,24 +993,44 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 5,
     backgroundColor: '#f9f9f9',
+    position: 'relative',
+  },
+  categoryItemContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryItemImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 5,
   },
   categoryItemText: {
     fontSize: 16,
     color: '#333',
+    textAlign: 'center',
   },
   categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
+  categoryItemRemoveIcon: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
   categorySelectionButton: {
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    alignItems: 'center',
   },
-  categorySelectionText: {
+  loadingText: {
+    marginTop: 10,
     fontSize: 16,
-    color: '#4F8EF7',
-    textAlign: 'center',
+    color: '#666',
   },
 });
 

@@ -5,50 +5,98 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { Avatar, Icon, Divider, Button } from '@rneui/themed';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import CustomOverlay from '../../components/CustomOverlay';
+import { colors } from '../../theme/colors';
 
 const ProfileScreen = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [isLogoutVisible, setIsLogoutVisible] = useState(false);
+  const [isLanguageVisible, setIsLanguageVisible] = useState(false);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          onPress: async () => {
-            setLoading(true);
-            await logout();
-            setLoading(false);
-          },
-          style: 'destructive',
-        },
-      ],
-      { cancelable: true }
-    );
+  const handleLogout = async () => {
+    setLoading(true);
+    await logout();
+    setLoading(false);
+    setIsLogoutVisible(false);
+  };
+
+  const changeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
+    setIsLanguageVisible(false);
   };
 
   const getLevelColor = (level) => {
-    const levels = {
-      'A1': '#4CAF50',
-      'A2': '#8BC34A',
-      'B1': '#FFC107',
-      'B2': '#FF9800',
-    };
-    return levels[level] || '#4F8EF7';
+    return colors.levels[level] || colors.primary;
   };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Logout Overlay */}
+      <CustomOverlay
+        isVisible={isLogoutVisible}
+        onClose={() => setIsLogoutVisible(false)}
+        title={t('profile.logoutConfirm')}
+        message={t('profile.logoutMessage')}
+        buttons={[
+          {
+            text: t('profile.cancel'),
+            onPress: () => setIsLogoutVisible(false),
+            type: 'cancel'
+          },
+          {
+            text: t('profile.logout'),
+            onPress: handleLogout,
+            loading: loading,
+            style: { backgroundColor: colors.error }
+          }
+        ]}
+      />
+
+      {/* Language Selection Overlay */}
+      <CustomOverlay
+        isVisible={isLanguageVisible}
+        onClose={() => setIsLanguageVisible(false)}
+        title={t('language.select')}
+        buttons={[
+          {
+            text: t('common.cancel'),
+            onPress: () => setIsLanguageVisible(false),
+            type: 'cancel'
+          }
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.languageOption}
+          onPress={() => changeLanguage('kk')}
+        >
+          <Text style={[
+            styles.languageText,
+            i18n.language === 'kk' && styles.activeLanguage
+          ]}>Қазақша</Text>
+          {i18n.language === 'kk' && (
+            <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.languageOption}
+          onPress={() => changeLanguage('ru')}
+        >
+          <Text style={[
+            styles.languageText,
+            i18n.language === 'ru' && styles.activeLanguage
+          ]}>Русский</Text>
+          {i18n.language === 'ru' && (
+            <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+          )}
+        </TouchableOpacity>
+      </CustomOverlay>
+
       {/* User Info Section */}
       <View style={styles.userInfoSection}>
         <Avatar
@@ -58,8 +106,8 @@ const ProfileScreen = ({ navigation }) => {
           containerStyle={styles.avatar}
           source={user?.avatar ? { uri: user.avatar } : null}
         />
-        <Text style={styles.userName}>{user?.name || 'User'}</Text>
-        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
+        <Text style={styles.userName}>{user?.name || t('profile.user')}</Text>
+        <Text style={styles.userEmail}>{user?.email}</Text>
         <View style={styles.levelContainer}>
           <Text style={[
             styles.levelText, 
@@ -74,19 +122,19 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Stats Section */}
       <View style={styles.statsSection}>
-        <Text style={styles.sectionTitle}>Learning Stats</Text>
+        <Text style={styles.sectionTitle}>{t('profile.learningStats')}</Text>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{user?.progress?.completedLessons?.length || 0}</Text>
-            <Text style={styles.statLabel}>Lessons</Text>
+            <Text style={styles.statLabel}>{t('profile.lessons')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{user?.progress?.completedTests?.length || 0}</Text>
-            <Text style={styles.statLabel}>Tests</Text>
+            <Text style={styles.statLabel}>{t('profile.tests')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
+            <Text style={styles.statLabel}>{t('profile.dayStreak')}</Text>
           </View>
         </View>
       </View>
@@ -95,7 +143,7 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Options Section */}
       <View style={styles.optionsSection}>
-        <Text style={styles.sectionTitle}>Account Settings</Text>
+        <Text style={styles.sectionTitle}>{t('profile.accountSettings')}</Text>
         
         <TouchableOpacity 
           style={styles.optionItem}
@@ -104,18 +152,18 @@ const ProfileScreen = ({ navigation }) => {
           <Icon
             name="person-outline"
             type="ionicon"
-            color="#4F8EF7"
+            color={colors.primary}
             size={24}
             containerStyle={styles.optionIcon}
           />
           <View style={styles.optionTextContainer}>
-            <Text style={styles.optionTitle}>Edit Profile</Text>
-            <Text style={styles.optionDescription}>Update your personal information</Text>
+            <Text style={styles.optionTitle}>{t('profile.editProfile')}</Text>
+            <Text style={styles.optionDescription}>{t('profile.editProfileDesc')}</Text>
           </View>
           <Icon
             name="chevron-forward"
             type="ionicon"
-            color="#ccc"
+            color={colors.border}
             size={20}
           />
         </TouchableOpacity>
@@ -127,18 +175,18 @@ const ProfileScreen = ({ navigation }) => {
           <Icon
             name="lock-closed-outline"
             type="ionicon"
-            color="#4F8EF7"
+            color={colors.primary}
             size={24}
             containerStyle={styles.optionIcon}
           />
           <View style={styles.optionTextContainer}>
-            <Text style={styles.optionTitle}>Change Password</Text>
-            <Text style={styles.optionDescription}>Update your password</Text>
+            <Text style={styles.optionTitle}>{t('profile.changePassword')}</Text>
+            <Text style={styles.optionDescription}>{t('profile.changePasswordDesc')}</Text>
           </View>
           <Icon
             name="chevron-forward"
             type="ionicon"
-            color="#ccc"
+            color={colors.border}
             size={20}
           />
         </TouchableOpacity>
@@ -150,18 +198,41 @@ const ProfileScreen = ({ navigation }) => {
           <Icon
             name="bar-chart-outline"
             type="ionicon"
-            color="#4F8EF7"
+            color={colors.primary}
             size={24}
             containerStyle={styles.optionIcon}
           />
           <View style={styles.optionTextContainer}>
-            <Text style={styles.optionTitle}>View Progress</Text>
-            <Text style={styles.optionDescription}>Track your learning journey</Text>
+            <Text style={styles.optionTitle}>{t('profile.viewProgress')}</Text>
+            <Text style={styles.optionDescription}>{t('profile.viewProgressDesc')}</Text>
           </View>
           <Icon
             name="chevron-forward"
             type="ionicon"
-            color="#ccc"
+            color={colors.border}
+            size={20}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.optionItem}
+          onPress={() => setIsLanguageVisible(true)}
+        >
+          <Icon
+            name="language"
+            type="ionicon"
+            color={colors.primary}
+            size={24}
+            containerStyle={styles.optionIcon}
+          />
+          <View style={styles.optionTextContainer}>
+            <Text style={styles.optionTitle}>{t('language.change')}</Text>
+            <Text style={styles.optionDescription}>{t('language.changeDesc')}</Text>
+          </View>
+          <Icon
+            name="chevron-forward"
+            type="ionicon"
+            color={colors.border}
             size={20}
           />
         </TouchableOpacity>
@@ -171,7 +242,7 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Logout Button */}
       <Button
-        title="Logout"
+        title={t('profile.logout')}
         icon={{
           name: 'log-out-outline',
           type: 'ionicon',
@@ -180,8 +251,7 @@ const ProfileScreen = ({ navigation }) => {
         }}
         buttonStyle={styles.logoutButton}
         containerStyle={styles.logoutButtonContainer}
-        loading={loading}
-        onPress={handleLogout}
+        onPress={() => setIsLogoutVisible(true)}
       />
     </ScrollView>
   );
@@ -190,25 +260,25 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   userInfoSection: {
     alignItems: 'center',
     paddingVertical: 30,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: colors.background,
   },
   avatar: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
   },
   userName: {
     fontSize: 22,
     fontWeight: 'bold',
     marginTop: 15,
-    color: '#333',
+    color: colors.black,
   },
   userEmail: {
     fontSize: 16,
-    color: '#666',
+    color: colors.darkGray,
     marginTop: 5,
   },
   levelContainer: {
@@ -224,6 +294,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 15,
+    backgroundColor: colors.border,
   },
   statsSection: {
     paddingHorizontal: 20,
@@ -231,7 +302,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.black,
     marginBottom: 15,
   },
   statsRow: {
@@ -245,11 +316,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4F8EF7',
+    color: colors.primary,
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
+    color: colors.darkGray,
     marginTop: 5,
   },
   optionsSection: {
@@ -260,11 +331,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: colors.border,
   },
   optionIcon: {
     marginRight: 15,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.lightGray,
     padding: 10,
     borderRadius: 10,
   },
@@ -274,11 +345,11 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: colors.black,
   },
   optionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: colors.darkGray,
     marginTop: 3,
   },
   logoutButtonContainer: {
@@ -286,9 +357,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoutButton: {
-    backgroundColor: '#F44336',
+    backgroundColor: colors.error,
     borderRadius: 10,
     paddingVertical: 12,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  languageText: {
+    fontSize: 16,
+    color: colors.black,
+  },
+  activeLanguage: {
+    color: colors.primary,
+    fontWeight: 'bold',
   },
 });
 

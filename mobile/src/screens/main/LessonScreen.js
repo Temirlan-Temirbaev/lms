@@ -7,16 +7,21 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { Button } from '@rneui/themed';
 import Markdown from 'react-native-markdown-display';
+import { useTranslation } from 'react-i18next';
 import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import { Image } from 'react-native';
 import { SimpleAudioPlayer } from './AudioPlayer'
 import { AudioSlider } from './AudioSlider';
+import { CustomOverlay } from '../../components/CustomOverlay';
+import { colors } from '../../theme/colors';
 
 const LessonScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { lessonId } = route.params;
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,9 +37,12 @@ const LessonScreen = ({ route, navigation }) => {
     try {
       const response = await api.getLesson(lessonId);
       setLesson(response.data);
-      console.log(response.data, "lesson")
     } catch (error) {
-      Alert.alert('Error', 'Failed to load lesson');
+      CustomOverlay({
+        title: t('lesson.error'),
+        message: t('lesson.loadError'),
+        platform: Platform.OS
+      });
       console.error(error);
     } finally {
       setLoading(false);
@@ -46,9 +54,17 @@ const LessonScreen = ({ route, navigation }) => {
     try {
       await api.completeLesson(lessonId);
       await refreshUser();
-      Alert.alert('Success', 'Lesson marked as completed!');
+      CustomOverlay({
+        title: t('lesson.success'),
+        message: t('lesson.completedSuccess'),
+        platform: Platform.OS
+      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to mark lesson as completed');
+      CustomOverlay({
+        title: t('lesson.error'),
+        message: t('lesson.completeError'),
+        platform: Platform.OS
+      });
       console.error(error);
     } finally {
       setCompleting(false);
@@ -72,7 +88,7 @@ const LessonScreen = ({ route, navigation }) => {
       fontWeight: 'bold',
       marginTop: 20,
       marginBottom: 10,
-      color: '#4F8EF7',
+      color: colors.primary,
     },
     heading2: {
       fontSize: 24,
@@ -250,6 +266,7 @@ const LessonScreen = ({ route, navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4F8EF7" />
+        <Text style={styles.loadingText}>{t('lesson.loading')}</Text>
       </View>
     );
   }
@@ -270,14 +287,14 @@ const LessonScreen = ({ route, navigation }) => {
       <View style={styles.buttonContainer}>
         {isLessonCompleted() ? (
           <Button
-            title="Completed"
+            title={t('lesson.completed')}
             disabled
             icon={{ name: 'checkmark-circle', type: 'ionicon', color: 'white' }}
             buttonStyle={styles.completedButton}
           />
         ) : (
           <Button
-            title="Mark as Completed"
+            title={t('lesson.markAsCompleted')}
             loading={completing}
             onPress={handleCompleteLesson}
             icon={{ name: 'checkmark-circle-outline', type: 'ionicon', color: 'white' }}
@@ -292,7 +309,7 @@ const LessonScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -308,18 +325,23 @@ const styles = StyleSheet.create({
   buttonContainer: {
     padding: 15,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    borderTopColor: colors.border,
+    backgroundColor: colors.white,
   },
   completeButton: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     borderRadius: 25,
     height: 50,
   },
   completedButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     borderRadius: 25,
     height: 50,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: colors.darkGray,
   },
 });
 

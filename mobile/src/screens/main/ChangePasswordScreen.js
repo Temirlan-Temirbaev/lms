@@ -7,16 +7,21 @@ import {
   Alert,
   ScrollView,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
-import { Button } from '@rneui/themed';
+import { Button, Icon } from '@rneui/themed';
 import * as api from '../../api/api';
 import { useTranslation } from 'react-i18next';
+import { colors } from '../../theme/colors';
 
 const ChangePasswordScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { t } = useTranslation();
 
   const handleChangePassword = async () => {
@@ -52,40 +57,72 @@ const ChangePasswordScreen = ({ navigation }) => {
     }
   };
 
+  const renderPasswordInput = (
+    value,
+    setValue,
+    label,
+    placeholder,
+    showPassword,
+    setShowPassword
+  ) => (
+    <View style={styles.inputContainer}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          value={value}
+          onChangeText={setValue}
+          placeholder={placeholder}
+          secureTextEntry={!showPassword}
+          autoCapitalize="none"
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Icon
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            type="ionicon"
+            size={24}
+            color="#666"
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.contentContainer}>
           <View style={styles.formContainer}>
-            <Text style={styles.label}>{t('profile.currentPassword')}</Text>
-            <TextInput
-              style={styles.input}
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              placeholder={t('profile.enterCurrentPassword')}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            {renderPasswordInput(
+              currentPassword,
+              setCurrentPassword,
+              t('profile.currentPassword'),
+              t('profile.enterCurrentPassword'),
+              showCurrentPassword,
+              setShowCurrentPassword
+            )}
 
-            <Text style={styles.label}>{t('profile.newPassword')}</Text>
-            <TextInput
-              style={styles.input}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder={t('profile.enterNewPassword')}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            {renderPasswordInput(
+              newPassword,
+              setNewPassword,
+              t('profile.newPassword'),
+              t('profile.enterNewPassword'),
+              showNewPassword,
+              setShowNewPassword
+            )}
 
-            <Text style={styles.label}>{t('profile.confirmNewPassword')}</Text>
-            <TextInput
-              style={styles.input}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder={t('profile.confirmNewPasswordPlaceholder')}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            {renderPasswordInput(
+              confirmPassword,
+              setConfirmPassword,
+              t('profile.confirmNewPassword'),
+              t('profile.confirmNewPasswordPlaceholder'),
+              showConfirmPassword,
+              setShowConfirmPassword
+            )}
           </View>
         </View>
       </ScrollView>
@@ -96,6 +133,7 @@ const ChangePasswordScreen = ({ navigation }) => {
           onPress={handleChangePassword}
           loading={loading}
           buttonStyle={styles.saveButton}
+          titleStyle={styles.buttonTitle}
         />
       </View>
     </SafeAreaView>
@@ -116,19 +154,32 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: 20,
   },
+  inputContainer: {
+    marginBottom: 20,
+  },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
+    marginBottom: 8,
+    color: colors.black,
   },
-  input: {
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 5,
+    borderColor: colors.border,
+    borderRadius: 8,
+    backgroundColor: colors.background,
+  },
+  passwordInput: {
+    flex: 1,
     padding: 12,
     fontSize: 16,
-    marginBottom: 20,
+    color: colors.black,
+  },
+  eyeIcon: {
+    padding: 10,
+    color: colors.darkGray,
   },
   buttonContainer: {
     padding: 15,
@@ -137,9 +188,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   saveButton: {
-    backgroundColor: '#4F8EF7',
-    borderRadius: 25,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
     height: 50,
+    marginHorizontal: 8,
+  },
+  buttonTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

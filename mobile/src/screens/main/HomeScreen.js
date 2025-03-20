@@ -6,13 +6,17 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  Platform,
 } from 'react-native';
 import { Card, Icon, Button } from '@rneui/themed';
+import { useTranslation } from 'react-i18next';
 import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
+import { colors } from '../../theme/colors';
+import CustomOverlay from '../../components/CustomOverlay';
 
 const HomeScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, hasPlacementTest, refreshUser } = useAuth();
@@ -27,7 +31,11 @@ const HomeScreen = ({ navigation }) => {
       const response = await api.getCourses();
       setCourses(response.data);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load courses');
+      CustomOverlay({
+        title: t('home.error'),
+        message: t('home.loadError'),
+        platform: Platform.OS
+      });
       console.error(error);
     } finally {
       setLoading(false);
@@ -39,18 +47,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const getLevelColor = (level) => {
-    switch (level) {
-      case 'A1':
-        return '#4CAF50'; // Green
-      case 'A2':
-        return '#8BC34A'; // Light Green
-      case 'B1':
-        return '#FFC107'; // Amber
-      case 'B2':
-        return '#FF9800'; // Orange
-      default:
-        return '#4F8EF7'; // Default blue
-    }
+    return colors.levels[level] || colors.primary;
   };
 
   const isCurrentLevel = (level) => {
@@ -71,37 +68,45 @@ const HomeScreen = ({ navigation }) => {
       ]}>
         
         {/* Moved the Level Badge inside a flex container to avoid overlap */}
-        <View style={styles.levelBadge}>
-          <Text style={[styles.levelText, { backgroundColor: getLevelColor(item.level) }]}>
-            {item.level}
-          </Text>
-        </View>
+        
   
         {/* Increased margin-bottom for better spacing */}
         <Card.Title style={styles.courseTitle}>{item.title}</Card.Title>
         <Card.Divider />
   
         {/* Increased font size and line height for better readability */}
-        <Text style={styles.courseDescription}>{item.description}</Text>
+        {/* <Text style={styles.courseDescription}>{item.description}</Text> */}
   
         {/* Unhid and improved Course Footer layout */}
-        <View style={styles.courseFooter}>
+        {/* <View style={styles.courseFooter}>
           <View style={styles.courseStats}>
             <Icon name="book-outline" type="ionicon" size={16} color="#666" />
-            <Text style={styles.statsText}>{item.lessons?.length || 0} Lessons</Text>
+            <Text style={styles.statsText}>
+              {t('home.lessons', { count: item.lessons?.length || 0 })}
+            </Text>
           </View>
           <View style={styles.courseStats}>
             <Icon name="clipboard-outline" type="ionicon" size={16} color="#666" />
-            <Text style={styles.statsText}>{item.tests?.length || 0} Tests</Text>
+            <Text style={styles.statsText}>
+              {t('home.tests', { count: item.tests?.length || 0 })}
+            </Text>
           </View>
-        </View>
+        </View> */}
   
         {/* Moved Current Level Badge inside the card for better placement */}
         {isCurrentLevel(item.level) && (
           <View style={styles.currentLevelBadge}>
-            <Text style={styles.currentLevelText}>Current Level</Text>
+            <Text style={styles.currentLevelText}>
+              {t('home.currentLevel')}
+            </Text>
           </View>
         )}
+
+        <View style={styles.levelBadge}>
+          <Text style={[styles.levelText, { backgroundColor: getLevelColor(item.level) }]}>
+            {item.level}
+          </Text>
+        </View>
       </Card>
     </TouchableOpacity>
   );
@@ -112,13 +117,15 @@ const HomeScreen = ({ navigation }) => {
         <Card containerStyle={styles.placementTestCard}>
           <View style={styles.placementTestContent}>
             <View style={styles.placementTestTextContainer}>
-              <Text style={styles.placementTestTitle}>Take the Placement Test</Text>
+              <Text style={styles.placementTestTitle}>
+                {t('home.placementTest.title')}
+              </Text>
               <Text style={styles.placementTestDescription}>
-                Find your current language level and unlock appropriate courses.
+                {t('home.placementTest.description')}
               </Text>
             </View>
             <Button
-              title="Start Test"
+              title={t('home.placementTest.startButton')}
               onPress={handleTakePlacementTest}
               buttonStyle={styles.placementTestButton}
               icon={{
@@ -140,6 +147,7 @@ const HomeScreen = ({ navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4F8EF7" />
+        <Text style={styles.loadingText}>{t('home.loading')}</Text>
       </View>
     );
   }
@@ -162,23 +170,23 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 10, // Added padding for better spacing
+    backgroundColor: colors.background,
+    padding: 10,
   },
   courseCard: {
     borderRadius: 10,
     marginBottom: 15,
-    padding: 20, // Increased padding for better text alignment
-    elevation: 4, // Increased elevation for better shadow effect
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 }, // Adjusted shadow height
-    shadowOpacity: 0.15, // Increased opacity for better visibility
-    shadowRadius: 6, // Increased for a softer effect
+    padding: 20,
+    elevation: 4,
+    backgroundColor: colors.white,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   currentLevelCard: {
     borderWidth: 2,
-    borderColor: '#4F8EF7',
+    borderColor: colors.primary,
   },
   levelBadge: {
     alignSelf: 'flex-end', // Changed from absolute positioning to flex-based alignment
@@ -197,9 +205,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8, // Added margin for spacing
     textAlign: 'left',
+    color: colors.black,
   },
   courseDescription: {
-    color: '#666',
+    color: colors.darkGray,
     fontSize: 14,
     lineHeight: 20, // Added lineHeight for better readability
     marginBottom: 10,
@@ -215,12 +224,12 @@ const styles = StyleSheet.create({
   },
   statsText: {
     marginLeft: 5,
-    color: '#666',
+    color: colors.darkGray,
     fontSize: 14,
   },
   currentLevelBadge: {
     alignSelf: 'flex-start', // Moved from absolute positioning to flex alignment
-    backgroundColor: '#4F8EF7',
+    backgroundColor: colors.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -230,6 +239,50 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: colors.darkGray,
+  },
+  placementTestCard: {
+    borderRadius: 10,
+    marginBottom: 15,
+    padding: 20,
+    backgroundColor: colors.primaryLight,
+  },
+  placementTestContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  placementTestTextContainer: {
+    flex: 1,
+    marginRight: 15,
+  },
+  placementTestTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
+    marginBottom: 5,
+  },
+  placementTestDescription: {
+    fontSize: 14,
+    color: colors.white,
+    lineHeight: 20,
+  },
+  placementTestButton: {
+    backgroundColor: colors.white,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+  },
+  listContainer: {
+    padding: 10,
   },
 });
 
