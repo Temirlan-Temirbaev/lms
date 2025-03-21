@@ -21,8 +21,28 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const { user, hasPlacementTest, refreshUser } = useAuth();
 
+  const course = [{
+    "_id": {
+      "$oid": "67d735f23fb6502bc9b23e48"
+    },
+    "level": "A2",
+    "title": "Бастапқы деңгей - A2",
+    "description": "Elementary language skills for basic communication.",
+    "lessons": [],
+    "tests": [],
+    "createdAt": {
+      "$date": "2025-03-16T20:34:58.665Z"
+    },
+    "updatedAt": {
+      "$date": "2025-03-16T20:34:58.665Z"
+    },
+    "__v": 0
+  }]
+
   useEffect(() => {
     fetchCourses();
+    // setCourses(course)
+    // setLoading(false)
   }, []);
 
   const fetchCourses = async () => {

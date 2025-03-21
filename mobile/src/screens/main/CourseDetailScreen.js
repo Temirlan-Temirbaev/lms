@@ -32,6 +32,7 @@ const CourseDetailScreen = ({ route, navigation }) => {
   const fetchCourseDetails = async () => {
     setLoading(true);
     try {
+      console.log(courseId, "course")
       const courseResponse = await api.getCourse(courseId);
       setCourse(courseResponse.data);
 
@@ -40,6 +41,10 @@ const CourseDetailScreen = ({ route, navigation }) => {
 
       const testsResponse = await api.getCourseTests(courseId);
       setTests(testsResponse.data);
+
+      // const testsResponse = await api.getMockTests(courseId);
+      // console.log("testsResponse", testsResponse)
+      // setTests(testsResponse);
     } catch (error) {
       CustomOverlay({
         title: t('common.error'),

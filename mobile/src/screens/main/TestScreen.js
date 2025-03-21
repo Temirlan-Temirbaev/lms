@@ -118,6 +118,16 @@ const TestScreen = ({ route, navigation }) => {
       // Set timer
       setTimeLeft(response.data.timeLimit * 60);
       setTimerActive(true);
+
+      // const response = await api.getMockTest(testId);
+      // console.log("test", response)
+      // setTest(response);
+
+      // const initialAnswers = response.questions.map(() => null);
+      // setAnswers(initialAnswers);
+
+      // setTimeLeft(response.timeLimit * 60);
+      // setTimerActive(true);
     } catch (error) {
       setErrorMessage('Failed to load test');
       setShowError(true);

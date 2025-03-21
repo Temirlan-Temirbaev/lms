@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import tests from './tests'
 
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
@@ -91,6 +92,42 @@ export const getCourse = async (courseId) => {
     throw error.response?.data || { message: 'Server error' };
   }
 };
+
+
+
+
+
+
+
+export const getMockTests = async (courseId) => {
+  try {
+    console.log("mock", courseId)
+    const response = tests.filter((test)=>{
+      console.log("isTrue", test.course.$oid === courseId.$oid)
+      return test.course.$oid === courseId.$oid
+    })
+    return response;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+}
+
+export const getMockTest = async (testId) => {
+  try {
+    const response = tests.filter((test)=>{
+      console.log("isTrue", test._id.$oid === testId.$oid)
+      return test._id.$oid === testId.$oid
+    })
+    return response[0];
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
+
+
+
+
 
 export const getCourseLessons = async (courseId) => {
   try {
