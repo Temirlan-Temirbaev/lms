@@ -35,6 +35,17 @@ export default {
     hasAccount: 'Аккаунтыңыз бар ма?',
     signIn: 'Кіру',
     
+    // New fields
+    telephone: 'Телефон',
+    gender: 'Жыныс',
+    age: 'Жасы',
+    male: 'Ер',
+    female: 'Әйел',
+    other: 'Басқа',
+    invalidAge: 'Жас 1-ден 120-ға дейін болуы керек',
+    telephoneRequired: 'Телефон нөірін енгізіңіз',
+    genderRequired: 'Жынысыңызды таңдаңыз',
+    
     // Validation
     fillAllFields: 'Барлық өрістерді толтырыңыз',
     passwordsNotMatch: 'Құпия сөздер сәйкес келмейді',
@@ -82,7 +93,7 @@ export default {
       input: 'Жауабыңызды төменге жазыңыз',
       categories: 'Элементтерді дұрыс санатқа орналастырыңыз'
     },
-    
+    typeHere: 'Мұнда жазыңыз',
     // Categories
     availableItems: 'Қолжетімді элементтер:',
     selectCategory: 'Санатты таңдаңыз',
@@ -93,7 +104,20 @@ export default {
     fillInBlanksHint: 'Кеңес: Етістіктердің жіктелуі мен келісіміне назар аударыңыз',
     
     // Loading
-    loading: 'Жүктелуде...'
+    loading: 'Жүктелуде...',
+
+    // Results
+    results: 'Тест нәтижелері',
+    passed: 'Тест сәтті тапсырылды',
+    failed: 'Тест сәтсіз аяқталды',
+    pointsEarned: '{{earned}}/{{total}} ұпай жиналды',
+    questionResults: 'Сұрақтар бойынша нәтижелер',
+    question: 'Сұрақ',
+    correct: 'Дұрыс',
+    incorrect: 'Қате',
+    yourAnswer: 'Сіздің жауабыңыз',
+    correctAnswer: 'Дұрыс жауап',
+    explanation: 'Түсіндірме'
   },
   placementTest: {
     // Loading states
@@ -129,6 +153,18 @@ export default {
     error: 'Қате',
     loadError: 'Тестті жүктеу кезінде қате орын алды. Қайталап көріңіз.',
     submitError: 'Тестті тапсыру кезінде қате орын алды. Қайталап көріңіз.',
+
+    // Results
+    results: 'Деңгейді анықтау тестінің нәтижелері',
+    assignedLevel: 'Сіздің деңгейіңіз: {{level}}',
+    pointsEarned: '{{earned}}/{{total}} ұпай жиналды',
+    questionResults: 'Сұрақтар бойынша нәтижелер',
+    question: 'Сұрақ',
+    correct: 'Дұрыс',
+    incorrect: 'Қате',
+    yourAnswer: 'Сіздің жауабыңыз',
+    correctAnswer: 'Дұрыс жауап',
+    explanation: 'Түсіндірме'
   },
   lesson: {
     // Loading states
@@ -244,8 +280,13 @@ export default {
     name: 'Аты-жөні',
     enterName: 'Аты-жөніңізді енгізіңіз',
     enterEmail: 'Электрондық поштаңызды енгізіңіз',
+    enterTelephone: 'Телефон нөміріңізді енгізіңіз',
+    enterAge: 'Жасыңызды енгізіңіз',
     save: 'Сақтау',
     nameRequired: 'Аты-жөні міндетті',
+    telephoneRequired: 'Телефон нөмірі міндетті',
+    genderRequired: 'Жынысыңызды таңдаңыз',
+    invalidAge: 'Жас 1-ден 120-ға дейін болуы керек',
     profileUpdated: 'Профиль жаңартылды',
     updateFailed: 'Профильді жаңарту сәтсіз аяқталды',
     currentPassword: 'Ағымдағы құпия сөз',

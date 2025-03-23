@@ -20,9 +20,10 @@ import CustomOverlay from '../../components/CustomOverlay';
 import Markdown from 'react-native-markdown-display';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../theme/colors';
+import { AudioSlider } from './AudioSlider';
 // import DraggableFlatList from 'react-native-draggable-flatlist';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const markdownStyles = {
   body: {
@@ -61,8 +62,8 @@ const renderRules = {
   },
   link: (node, children, parent, styles) => {
     const url = node.attributes.href;
-    if (url.endsWith('.mp3') || url.endsWith('.wav')) {
-      return <AudioSlider audio={url} />;
+    if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
+      return null; // Don't render audio links in markdown
     }
     return (
       <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
@@ -86,7 +87,13 @@ const TestScreen = ({ route, navigation }) => {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [finalTotalPoints, setFinalTotalPoints] = useState(null);
   const { t } = useTranslation();
+  const [contentSegments, setContentSegments] = useState([]);
+  const [questionAudioUrls, setQuestionAudioUrls] = useState([]);
 
   useEffect(() => {
     fetchTest();
@@ -149,19 +156,101 @@ const TestScreen = ({ route, navigation }) => {
   const submitTest = async () => {
     setSubmitting(true);
     try {
-      const response = await api.submitTest(testId, answers);
-      await refreshUser();
-      navigation.replace('TestResult', {
-        results: response.data,
-        testId: testId,
+      // Calculate total points
+      let totalPoints = 0;
+      const questionCount = test.questions.length;
+      setQuestionCount(questionCount);
+      // Process each answer
+      answers.forEach((answer, index) => {
+        const question = test.questions[index];
+        
+        if (!question) return;
+        
+        // Skip if answer is empty or undefined
+        if (!answer || 
+            (Array.isArray(answer) && answer.length === 0) ||
+            (typeof answer === 'object' && Object.keys(answer).length === 0)) {
+          return;
+        }
+        
+        // Check if answer is correct
+        let isCorrect = false;
+        
+        switch (question.type) {
+          case 'multiple-choice':
+            isCorrect = question.correctAnswer === answer;
+            break;
+          case 'fill-in-blanks':
+            if (typeof answer === 'string') {
+              isCorrect = question.correctAnswer.toLowerCase() === answer.toLowerCase();
+            } else if (typeof answer === 'object') {
+              // Handle multiple blanks
+              isCorrect = Object.keys(question.correctAnswer).every(blankId => {
+                const correctAnswerForBlank = question.correctAnswer[blankId];
+                const userAnswerForBlank = answer[blankId];
+                
+                if (!userAnswerForBlank) return false;
+                
+                if (typeof correctAnswerForBlank === 'string') {
+                  return userAnswerForBlank.toLowerCase().trim() === correctAnswerForBlank.toLowerCase().trim();
+                } else if (Array.isArray(correctAnswerForBlank)) {
+                  return correctAnswerForBlank.some(correct => 
+                    userAnswerForBlank.toLowerCase().trim() === correct.toLowerCase().trim());
+                }
+                return false;
+              });
+            }
+            break;
+          case 'matching':
+            isCorrect = JSON.stringify(question.correctAnswer.sort()) === JSON.stringify(answer.sort());
+            break;
+          case 'ordering':
+            isCorrect = JSON.stringify(question.correctAnswer) === JSON.stringify(answer);
+            break;
+          case 'categories':
+            isCorrect = Object.keys(question.correctAnswer).every(category => {
+              const correctItems = question.correctAnswer[category];
+              const userItems = answer[category] || [];
+              return correctItems.length === userItems.length && 
+                     correctItems.every(item => userItems.includes(item));
+            });
+            break;
+          case 'input':
+            if (typeof answer === 'string') {
+              isCorrect = question.correctAnswer.toLowerCase() === answer.toLowerCase();
+            } else if (Array.isArray(question.correctAnswer)) {
+              isCorrect = question.correctAnswer.some(correct => 
+                answer.toLowerCase().trim() === correct.toLowerCase().trim());
+            }
+            break;
+        }
+        
+        // Add points to total if correct
+        if (isCorrect) {
+          totalPoints += question.points;
+        }
       });
+      
+      console.log('Submitting total points:', totalPoints); // Debug log
+      
+      setFinalTotalPoints(totalPoints);
+      const response = await api.submitTest(testId, totalPoints, test.isFinal);
+      
+      // Show results in overlay first
+      setTestResults(response.data);
+      setShowResults(true);
+      
+      // Then refresh user data in the background
+      // refreshUser().catch(error => {
+      //   console.error('Error refreshing user data:', error);
+      // });
     } catch (error) {
+      console.error('Error submitting test:', error);
       CustomOverlay({
         title: t('test.error'),
         message: 'Failed to submit test',
         platform: Platform.OS
       });
-      console.error(error);
     } finally {
       setSubmitting(false);
     }
@@ -191,19 +280,56 @@ const TestScreen = ({ route, navigation }) => {
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
+  const processContent = (content) => {
+    if (!content) return { segments: [], audioUrls: [] };
+    
+    const audioRegex = /\[.*?\]\((.*?\.(?:mp3|m4a))\)/g;
+    // Extract all audio URLs first
+    const matches = [...content.matchAll(audioRegex)];
+    const urls = matches.map(match => match[1].trim()).filter(url => url && url.length > 0);
+    
+    // Split content into segments at audio links
+    const segments = content.split(audioRegex);
+    
+    return {
+      segments: segments.filter(segment => !segment.match(/\.(?:mp3|m4a)$/)), // Filter out the URLs
+      audioUrls: urls
+    };
+  };
+
+  const renderQuestionContent = (content) => {
+    if (!content) return null;
+
+    const { segments, audioUrls } = processContent(content);
+    
+    return (
+      <View style={styles.contentContainer}>
+        {segments.map((segment, index) => (
+          <React.Fragment key={`${currentQuestionIndex}-${index}`}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {segment}
+            </Markdown>
+            {index < audioUrls.length && (
+              <View style={styles.audioWrapper}>
+                <AudioSlider 
+                  key={`audio-${currentQuestionIndex}-${index}`}
+                  audio={audioUrls[index]} 
+                />
+              </View>
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+    );
+  };
+
   const renderMultipleChoiceQuestion = (question) => (
     <View style={styles.questionContainer}>
       <Text style={styles.questionText}>{question.question}</Text>
+      {question.content && renderQuestionContent(question.content)}
       <Text style={styles.instructionText}>
         {t('test.instructions.multipleChoice')}
       </Text>
-      {question.content ? (
-        <View style={styles.contentContainer}>
-          <Markdown style={markdownStyles} rules={renderRules}>
-            {question.content}
-          </Markdown>
-        </View>
-      ) : null}
       {question.options.map((option, index) => (
         <TouchableOpacity
           key={index}
@@ -213,9 +339,12 @@ const TestScreen = ({ route, navigation }) => {
           ]}
           onPress={() => handleAnswerSelect(option)}
         >
-          <Text style={styles.optionText}>{option}</Text>
+          <Text style={[
+            styles.optionText,
+            answers[currentQuestionIndex] === option && styles.selectedOptionText
+          ]}>{option}</Text>
           {answers[currentQuestionIndex] === option && (
-            <Icon name="checkmark-circle" type="ionicon" size={20} color={colors.primary} />
+            <Icon name="checkmark-circle" type="ionicon" size={20} color={colors.white} />
           )}
         </TouchableOpacity>
       ))}
@@ -230,13 +359,7 @@ const TestScreen = ({ route, navigation }) => {
         <Text style={styles.questionText}>
           {question.question}
         </Text>
-        {question.content ? (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        ) : null}
+        {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Match each item on the left with its corresponding item on the right</Text> */}
         
         {question.options.map((option, index) => (
@@ -251,7 +374,7 @@ const TestScreen = ({ route, navigation }) => {
                   styles.matchingInput,
                   currentAnswers[index] ? styles.matchingInputFilled : null
                 ]}
-                placeholder="Enter match"
+                placeholder={t('test.typeHere')}
                 value={currentAnswers[index]}
                 onChangeText={(text) => {
                   const newMatches = [...currentAnswers];
@@ -274,13 +397,7 @@ const TestScreen = ({ route, navigation }) => {
         <Text style={styles.questionText}>
           {question.question}
         </Text>
-        {question.content ? (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        ) : null}
+        {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Drag items to reorder them</Text> */}
         <FlatList
           data={currentAnswer}
@@ -346,21 +463,15 @@ const TestScreen = ({ route, navigation }) => {
       return (
         <View style={styles.questionContainer}>
           <Text style={styles.questionText}>
-            {question.question}
+            {question.title || 'Бос орындарды толықтырыңыз'}
           </Text>
-          {question.content ? (
-            <View style={styles.contentContainer}>
-              <Markdown style={markdownStyles} rules={renderRules}>
-                {question.content}
-              </Markdown>
-            </View>
-          ) : null}
-          <Text style={styles.instructionText}>Fill in the blank with the appropriate word or phrase</Text>
+          {question.content && renderQuestionContent(question.content)}
+          {/* <Text style={styles.instructionText}>Fill in the blank with the appropriate word or phrase</Text> */}
           
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.inputAnswer, { height: 40 }]}
-              placeholder="Type your answer here"
+              placeholder={t('test.typeHere')}
               value={currentAnswer}
               onChangeText={(text) => handleAnswerSelect(text)}
               autoCapitalize="none"
@@ -368,9 +479,9 @@ const TestScreen = ({ route, navigation }) => {
             />
           </View>
           
-          <Text style={styles.inputHint}>
+          {/* <Text style={styles.inputHint}>
             Tip: Your answer should be a single word or short phrase
-          </Text>
+          </Text> */}
         </View>
       );
     }
@@ -390,16 +501,10 @@ const TestScreen = ({ route, navigation }) => {
     return (
       <View style={styles.questionContainer}>
         <Text style={styles.questionText}>
-          Fill in the blanks with the appropriate words or phrases
+          {question.title || 'Бос орындарды толықтырыңыз'}
         </Text>
-        {question.content ? (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        ) : null}
-        <Text style={styles.instructionText}>Complete the sentence with the correct words</Text>
+        {question.content && renderQuestionContent(question.content)}
+        {/* <Text style={styles.instructionText}>Complete the sentence with the correct words</Text> */}
         
         <View style={styles.multipleBlanksContainer}>
           {parts.map((part, index) => (
@@ -409,7 +514,7 @@ const TestScreen = ({ route, navigation }) => {
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={[styles.inputAnswer, { height: 40 }]}
-                    placeholder="Type here"
+                    placeholder={t('test.typeHere')}
                     value={currentAnswers[`blank${index + 1}`] || ''}
                     onChangeText={(text) => handleBlankChange(`blank${index + 1}`, text)}
                     autoCapitalize="none"
@@ -421,9 +526,9 @@ const TestScreen = ({ route, navigation }) => {
           ))}
         </View>
         
-        <Text style={styles.inputHint}>
+        {/* <Text style={styles.inputHint}>
           Tip: Pay attention to verb conjugations and agreements
-        </Text>
+        </Text> */}
       </View>
     );
   };
@@ -436,29 +541,19 @@ const TestScreen = ({ route, navigation }) => {
         <Text style={styles.questionText}>
           {question.question}
         </Text>
-        {question.content ? (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        ) : null}
-        <Text style={styles.instructionText}>Type your answer in the field below</Text>
+        {question.content && renderQuestionContent(question.content)}
         
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.inputAnswer}
-            placeholder="Type your answer here"
+            placeholder={t('test.typeHere')}
             value={currentAnswer}
             onChangeText={(text) => handleAnswerSelect(text)}
             autoCapitalize="none"
             autoCorrect={false}
           />
         </View>
-        
-        <Text style={styles.inputHint}>
-          Tip: Pay attention to spelling and accents
-        </Text>
+
       </View>
     );
   };
@@ -556,13 +651,7 @@ const TestScreen = ({ route, navigation }) => {
         <Text style={styles.questionText}>
           {question.question}
         </Text>
-        {question.content ? (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        ) : null}
+        {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text> */}
         
         {/* Uncategorized options */}
@@ -614,7 +703,7 @@ const TestScreen = ({ route, navigation }) => {
           isVisible={showCategorySelection}
           onClose={() => setShowCategorySelection(false)}
           title={t('test.selectCategory')}
-          message="Select a category for this item"
+          message=""
           scrollable={true}
         >
           {categories.map((category, index) => (
@@ -694,9 +783,21 @@ const TestScreen = ({ route, navigation }) => {
           title={t('test.previous')}
           disabled={currentQuestionIndex === 0}
           onPress={handlePreviousQuestion}
-          buttonStyle={[styles.navButton, styles.prevButton]}
-          titleStyle={styles.navButtonText}
-          icon={{ name: 'chevron-back', type: 'ionicon', color: 'white' }}
+          buttonStyle={[
+            styles.navButton,
+            styles.prevButton,
+            currentQuestionIndex === 0 && styles.disabledButton
+          ]}
+          titleStyle={[
+            styles.navButtonText,
+            currentQuestionIndex === 0 && styles.disabledButtonText
+          ]}
+          icon={{
+            name: 'chevron-back',
+            type: 'ionicon',
+            size: 20,
+            color: currentQuestionIndex === 0 ? colors.darkGray : colors.white
+          }}
         />
         
         {currentQuestionIndex === test.questions.length - 1 ? (
@@ -705,7 +806,12 @@ const TestScreen = ({ route, navigation }) => {
             onPress={() => setShowConfirmation(true)}
             buttonStyle={[styles.navButton, styles.finishButton]}
             titleStyle={styles.navButtonText}
-            icon={{ name: 'checkmark-circle', type: 'ionicon', color: 'white' }}
+            icon={{
+              name: 'checkmark-circle',
+              type: 'ionicon',
+              size: 20,
+              color: colors.white
+            }}
             iconRight
           />
         ) : (
@@ -714,7 +820,12 @@ const TestScreen = ({ route, navigation }) => {
             onPress={handleNextQuestion}
             buttonStyle={[styles.navButton, styles.nextButton]}
             titleStyle={styles.navButtonText}
-            icon={{ name: 'chevron-forward', type: 'ionicon', color: 'white' }}
+            icon={{
+              name: 'chevron-forward',
+              type: 'ionicon',
+              size: 20,
+              color: colors.white
+            }}
             iconRight
           />
         )}
@@ -777,6 +888,102 @@ const TestScreen = ({ route, navigation }) => {
           }
         ]}
       />
+
+      <CustomOverlay
+        isVisible={showResults}
+        onClose={() => {
+          setShowResults(false);
+          navigation.replace('HomeScreen');
+        }}
+        title={t('test.results')}
+        scrollable={true}
+      >
+        <View style={styles.resultsContainer}>
+          <View style={styles.scoreContainer}>
+            <View style={[
+              styles.scoreCircle,
+              { backgroundColor: testResults?.passed ? '#E8F5E9' : '#FFEBEE' }
+            ]}>
+              <Icon
+                name={testResults?.passed ? 'checkmark-circle' : 'close-circle'}
+                type="ionicon"
+                size={Math.min(40, width * 0.1)}
+                color={testResults?.passed ? '#4CAF50' : '#F44336'}
+              />
+              <Text style={[
+                styles.scoreText,
+                { color: getScoreColor(testResults?.score) }
+              ]}>
+                {parseInt(testResults?.score).toFixed(2)}%
+              </Text>
+            </View>
+            
+            <Text style={[
+              styles.scoreLabel,
+              { color: testResults?.passed ? '#4CAF50' : '#F44336' }
+            ]}>
+              {testResults?.passed ? t('test.passed') : t('test.failed')}
+            </Text>
+            
+            <Text style={styles.scoreDetails}>
+              {t('test.pointsEarned', {
+                earned: finalTotalPoints,
+                total: questionCount
+              })}
+            </Text>
+          </View>
+
+          {/* <View style={styles.resultsList}>
+            <Text style={styles.resultsTitle}>{t('test.questionResults')}</Text>
+            <Divider style={styles.divider} />
+            
+            {testResults?.results?.map((result, index) => (
+              <React.Fragment key={index}>
+                <View style={[
+                  styles.resultItem,
+                  { backgroundColor: result.isCorrect ? '#E8F5E9' : '#FFEBEE' }
+                ]}>
+                  <View style={styles.questionHeader}>
+                    <Text style={styles.questionNumber}>{t('test.question')} {index + 1}</Text>
+                    <View style={[
+                      styles.resultBadge,
+                      { backgroundColor: result.isCorrect ? '#4CAF50' : '#F44336' }
+                    ]}>
+                      <Icon
+                        name={result.isCorrect ? 'checkmark-circle' : 'close-circle'}
+                        type="ionicon"
+                        size={16}
+                        color="white"
+                      />
+                      <Text style={styles.resultText}>
+                        {result.isCorrect ? t('test.correct') : t('test.incorrect')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.questionText} numberOfLines={3}>{result.question}</Text>
+
+                  {!result.isCorrect && (
+                    <View style={styles.explanationContainer}>
+                      <Text style={styles.yourAnswerLabel}>{t('test.yourAnswer')}:</Text>
+                      {renderAnswer(result.userAnswer, result.questionType)}
+                      
+                      <Text style={styles.correctAnswerLabel}>{t('test.correctAnswer')}:</Text>
+                      {renderAnswer(result.correctAnswer, result.questionType)}
+                      
+                      <Text style={styles.explanationLabel}>{t('test.explanation')}:</Text>
+                      <Markdown style={markdownStyles}>{result.explanation}</Markdown>
+                    </View>
+                  )}
+                </View>
+                {index < testResults.results.length - 1 && (
+                  <Divider style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
+          </View> */}
+        </View>
+      </CustomOverlay>
     </SafeAreaView>
   );
 };
@@ -849,11 +1056,15 @@ const styles = StyleSheet.create({
   },
   selectedOption: {
     borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary,
   },
   optionText: {
     fontSize: 16,
     color: '#333',
+  },
+  selectedOptionText: {
+    color: colors.white,
+    fontWeight: 'bold',
   },
   matchingContainer: {
     marginTop: 10,
@@ -953,25 +1164,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 15,
+    paddingHorizontal: 20,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    backgroundColor: colors.white,
   },
   navButton: {
-    width: width / 2 - 25,
-    height: 50,
-    borderRadius: 25,
+    minWidth: 120,
+    paddingHorizontal: 15,
+    height: 45,
+    borderRadius: 22.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   prevButton: {
-    backgroundColor: colors.gray,
+    backgroundColor: colors.primary,
+    paddingLeft: 10,
   },
   nextButton: {
     backgroundColor: colors.primary,
+    paddingRight: 10,
   },
   finishButton: {
     backgroundColor: colors.success,
+    paddingRight: 10,
+  },
+  disabledButton: {
+    backgroundColor: colors.border,
   },
   navButtonText: {
     fontSize: 16,
+    color: colors.white,
+    marginHorizontal: 5,
+  },
+  disabledButtonText: {
+    color: colors.darkGray,
   },
   errorText: {
     fontSize: 16,
@@ -1042,6 +1270,131 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  audioWrapper: {
+    marginVertical: 10,
+    width: '100%',
+  },
+  resultsContainer: {
+    padding: Math.min(20, width * 0.05),
+    flex: 1,
+  },
+  scoreContainer: {
+    alignItems: 'center',
+    marginBottom: Math.min(20, height * 0.02),
+    backgroundColor: '#fff',
+    padding: Math.min(20, width * 0.05),
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  scoreCircle: {
+    width: Math.min(120, width * 0.3),
+    height: Math.min(120, width * 0.3),
+    borderRadius: Math.min(60, width * 0.15),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Math.min(15, height * 0.02),
+  },
+  scoreText: {
+    fontSize: Math.min(28, width * 0.07),
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  scoreLabel: {
+    fontSize: Math.min(24, width * 0.06),
+    fontWeight: 'bold',
+    marginBottom: Math.min(10, height * 0.01),
+  },
+  scoreDetails: {
+    fontSize: Math.min(16, width * 0.04),
+    color: '#666',
+  },
+  resultsList: {
+    flex: 1,
+  },
+  resultsTitle: {
+    fontSize: Math.min(20, width * 0.05),
+    fontWeight: 'bold',
+    marginBottom: Math.min(15, height * 0.02),
+    color: '#333',
+  },
+  resultItem: {
+    padding: Math.min(15, width * 0.04),
+    borderRadius: 10,
+    marginBottom: Math.min(10, height * 0.01),
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Math.min(10, height * 0.01),
+    flexWrap: 'wrap',
+  },
+  questionNumber: {
+    fontSize: Math.min(16, width * 0.04),
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  resultBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Math.min(10, width * 0.03),
+    paddingVertical: Math.min(5, height * 0.01),
+    borderRadius: 15,
+    marginLeft: 10,
+  },
+  resultText: {
+    color: 'white',
+    marginLeft: 5,
+    fontWeight: 'bold',
+    fontSize: Math.min(14, width * 0.035),
+  },
+  questionText: {
+    fontSize: Math.min(16, width * 0.04),
+    color: '#333',
+    marginBottom: Math.min(10, height * 0.01),
+  },
+  explanationContainer: {
+    backgroundColor: 'white',
+    padding: Math.min(15, width * 0.04),
+    borderRadius: 10,
+    marginTop: Math.min(10, height * 0.01),
+  },
+  yourAnswerLabel: {
+    fontSize: Math.min(16, width * 0.04),
+    fontWeight: 'bold',
+    color: '#F44336',
+    marginBottom: Math.min(5, height * 0.01),
+  },
+  correctAnswerLabel: {
+    fontSize: Math.min(16, width * 0.04),
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginTop: Math.min(10, height * 0.01),
+    marginBottom: Math.min(5, height * 0.01),
+  },
+  explanationLabel: {
+    fontSize: Math.min(16, width * 0.04),
+    fontWeight: 'bold',
+    color: '#4F8EF7',
+    marginTop: Math.min(10, height * 0.01),
+    marginBottom: Math.min(5, height * 0.01),
+  },
+  answerText: {
+    fontSize: Math.min(16, width * 0.04),
+    color: '#333',
+    marginBottom: Math.min(5, height * 0.01),
+  },
 });
 
-export default TestScreen; 
+const getScoreColor = (score) => {
+  if (score >= 80) return '#4CAF50'; // Green
+  if (score >= 60) return '#FFC107'; // Amber
+  return '#F44336'; // Red
+};
+
+export default TestScreen;

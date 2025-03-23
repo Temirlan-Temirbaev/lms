@@ -1,129 +1,141 @@
 import React, { useEffect, useState } from "react";
-import { Platform, Text, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
+import { Platform, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Audio } from "expo-av";
+import Slider from '@react-native-community/slider';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
 
-// Function to convert time to MM:SS format
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
 };
 
-export const SimpleAudioPlayer = ({ url }) => {
+export const SimpleAudioPlayer = ({ audio }) => {
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load sound when component mounts
-  const loadSound = async () => {
-    try {
-      // Unload any existing sound
-      if (sound) {
-        await sound.unloadAsync();
-      }
-
-      // Create new sound
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: url },
-        { shouldPlay: false }
-      );
-      setSound(newSound);
-
-      // Get duration
-      const status = await newSound.getStatusAsync();
-      setDuration(status.durationMillis / 1000);
-    } catch (error) {
-      console.error('Error loading sound:', error);
-      setError('Failed to load audio');
-    }
-  };
-
-  // Play sound
-  const play = async () => {
-    if (!sound) {
-      await loadSound();
-    }
-
-    try {
-      await sound.playAsync();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('Error playing sound:', error);
-      setError('Failed to play audio');
-    }
-  };
-
-  // Pause sound
-  const pause = async () => {
-    if (sound) {
-      try {
-        await sound.pauseAsync();
-        setIsPlaying(false);
-      } catch (error) {
-        console.error('Error pausing sound:', error);
-        setError('Failed to pause audio');
-      }
-    }
-  };
-
-  // Stop sound
-  const stop = async () => {
-    if (sound) {
-      try {
-        await sound.stopAsync();
-        setIsPlaying(false);
-        setCurrentTime(0);
-      } catch (error) {
-        console.error('Error stopping sound:', error);
-        setError('Failed to stop audio');
-      }
-    }
-  };
-
-  // Update current time
   useEffect(() => {
-    let interval;
-    if (sound && isPlaying) {
-      interval = setInterval(async () => {
-        try {
-          const status = await sound.getStatusAsync();
-          setCurrentTime(status.positionMillis / 1000);
-        } catch (error) {
-          console.error('Error updating time:', error);
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [sound, isPlaying]);
-
-  // Load sound when URL changes
-  useEffect(() => {
-    loadSound();
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [url]);
-
-  // Set up audio mode
-  useEffect(() => {
-    const setupAudio = async () => {
+    if (!audio) return;
+    
+    const initAudio = async () => {
       try {
+        // Set audio mode
         await Audio.setAudioModeAsync({
           playsInSilentModeIOS: true,
           staysActiveInBackground: true,
           shouldDuckAndroid: true,
         });
-      } catch (error) {
-        console.error('Error setting audio mode:', error);
+
+        // Create sound object
+        const soundObject = new Audio.Sound();
+        
+        // Load audio
+        const source = typeof audio === 'string' ? { uri: audio } : audio;
+        await soundObject.loadAsync(source);
+        
+        // Get status
+        const status = await soundObject.getStatusAsync();
+        
+        // Set duration based on platform
+        const durationInMs = Platform.OS === 'web' 
+          ? status.durationMillis * 1000 
+          : status.durationMillis;
+
+        setSound(soundObject);
+        setDuration(durationInMs);
+        setError(null);
+
+      } catch (err) {
+        console.error('Init audio error:', err);
+        setError('Failed to initialize audio');
       }
     };
-    setupAudio();
-  }, []);
+
+    initAudio();
+
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [audio]);
+
+  // Update time tracking
+  useEffect(() => {
+    if (!sound || !isPlaying) return;
+
+    const interval = setInterval(async () => {
+      if (!isSeeking) {
+        try {
+          const status = await sound.getStatusAsync();
+          const currentTimeMs = Platform.OS === 'web'
+            ? status.positionMillis * 1000
+            : status.positionMillis;
+          setCurrentTime(currentTimeMs);
+        } catch (error) {
+          console.error('Error updating time:', error);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sound, isPlaying, isSeeking]);
+
+  const play = async () => {
+    if (sound) {
+      await sound.playAsync();
+      setIsPlaying(true);
+    }
+  };
+
+  const pause = async () => {
+    if (sound) {
+      await sound.pauseAsync();
+      setIsPlaying(false);
+    }
+  };
+
+  const seekAudio = async (value) => {
+    if (sound) {
+      setCurrentTime(value);
+      await sound.setPositionAsync(value * 1000);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (sound) {
+          sound.stopAsync();
+          setIsPlaying(false);
+        }
+      };
+    }, [sound])
+  );
+
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.container}>
+        <audio
+          controls
+          src={audio}
+          style={{
+            width: '100%',
+            height: 40,
+            borderRadius: 20,
+            marginBottom: 15
+          }}
+        >
+          Your browser does not support the audio element.
+        </audio>
+      </View>
+    );
+  }
 
   if (error) {
     return (
@@ -135,31 +147,35 @@ export const SimpleAudioPlayer = ({ url }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
-          <Text style={styles.timeText}>{formatTime(duration)}</Text>
-        </View>
+      <View style={styles.playerContainer}>
+        <TouchableOpacity onPress={() => (isPlaying ? pause() : play())}>
+          <Ionicons 
+            name={isPlaying ? "pause" : "play"} 
+            size={32} 
+            color="#6c38cc" 
+          />
+        </TouchableOpacity>
 
-        <View style={styles.controlsContainer}>
-          <TouchableOpacity 
-            style={[styles.button, styles.stopButton]} 
-            onPress={stop}
-          >
-            <Ionicons name="stop" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.button, styles.playButton]} 
-            onPress={() => isPlaying ? pause() : play()}
-          >
-            <Ionicons 
-              name={isPlaying ? "pause" : "play"} 
-              size={24} 
-              color="white" 
-            />
-          </TouchableOpacity>
-        </View>
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={duration}
+          value={currentTime}
+          onSlidingStart={() => setIsSeeking(true)}
+          onSlidingComplete={(value) => {
+            setIsSeeking(false);
+            seekAudio(value);
+          }}
+          minimumTrackTintColor="#6c38cc"
+          maximumTrackTintColor="#d3d3d3"
+          thumbTintColor="#6c38cc"
+        />
+      </View>
+      
+      <View style={styles.timeContainer}>
+        <Text style={styles.timeText}>
+          {formatTime(currentTime)} / {formatTime(duration)}
+        </Text>
       </View>
     </View>
   );
@@ -170,58 +186,34 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 10,
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 15,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: {
-      width: 2,
-      height: 2,
-    },
+  playerContainer: {
+    paddingTop: 20,
+    paddingRight: 32,
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  slider: {
+    width: "100%",
+    marginBottom: 10,
   },
   timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 10,
+    paddingLeft: 5,
   },
   timeText: {
-    fontSize: 16,
-    fontFamily: 'mon-b',
-    color: '#FF385C',
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-  },
-  button: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    backgroundColor: '#FF385C',
-  },
-  stopButton: {
-    backgroundColor: '#666',
+    fontSize: 14,
+    color: '#666',
   },
   errorContainer: {
-    backgroundColor: '#ffebee',
     padding: 10,
+    backgroundColor: '#ffebee',
     borderRadius: 8,
-    marginVertical: 10,
+    marginVertical: 5,
   },
   errorText: {
     color: '#c62828',
     fontSize: 14,
     textAlign: 'center',
-  },
-}); 
+  }
+});

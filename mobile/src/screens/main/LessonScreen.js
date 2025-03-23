@@ -27,6 +27,8 @@ const LessonScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const { user, refreshUser } = useAuth();
+  const [audioUrls, setAudioUrls] = useState([]);
+  const [contentSegments, setContentSegments] = useState([]);
 
   useEffect(() => {
     fetchLesson();
@@ -175,11 +177,10 @@ const LessonScreen = ({ route, navigation }) => {
         />
       );
     },
-    // Custom Audio Renderer
     link: (node, children, parent, styles) => {
       const url = node.attributes.href;
-      if (url.endsWith('.mp3') || url.endsWith('.wav')) {
-        return <AudioSlider audio={url} />;
+      if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
+        return null;
       }
       return (
         <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
@@ -262,6 +263,29 @@ const LessonScreen = ({ route, navigation }) => {
     },
   };
 
+  useEffect(() => {
+    if (!lesson?.content) return;
+
+    const processContent = (content) => {
+      const audioRegex = /\[.*?\]\((.*?\.(?:mp3|m4a))\)/g;
+      // Extract all audio URLs first
+      const matches = [...content.matchAll(audioRegex)];
+      const urls = matches.map(match => match[1].trim()).filter(url => url && url.length > 0);
+      
+      // Split content into segments at audio links
+      const segments = content.split(audioRegex);
+      
+      return {
+        segments: segments.filter(segment => !segment.match(/\.(?:mp3|m4a)$/)), // Filter out the URLs
+        audioUrls: urls
+      };
+    };
+
+    const { segments, audioUrls } = processContent(lesson.content.toString());
+    setAudioUrls(audioUrls);
+    setContentSegments(segments);
+  }, [lesson?.content]);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -275,12 +299,22 @@ const LessonScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.contentContainer}>
-        <Markdown 
-        style={markdownStyles} 
-        rules={renderRules}
-        >
-          {lesson.content.toString()}
-        </Markdown>
+          {contentSegments.map((segment, index) => (
+            <React.Fragment key={index}>
+              <Markdown 
+                style={markdownStyles} 
+                rules={renderRules}
+              >
+                {segment}
+              </Markdown>
+
+              {index < audioUrls.length && (
+                <View style={styles.audioWrapper}>
+                  <AudioSlider audio={audioUrls[index]} />
+                </View>
+              )}
+            </React.Fragment>
+          ))}
         </View>
       </ScrollView>
 
@@ -342,6 +376,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: colors.darkGray,
+  },
+  audioWrapper: {
+    marginBottom: 20,
+    width: '100%',
   },
 });
 

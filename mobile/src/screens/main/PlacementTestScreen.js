@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { colors } from '../../theme/colors';
 import CustomOverlay from '../../components/CustomOverlay';
 import Markdown from 'react-native-markdown-display';
+import { AudioSlider } from './AudioSlider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -65,8 +66,8 @@ const renderRules = {
   },
   link: (node, children, parent, styles) => {
     const url = node.attributes.href;
-    if (url.endsWith('.mp3') || url.endsWith('.wav')) {
-      return <AudioSlider audio={url} />;
+    if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
+      return null; // Don't render audio links in markdown
     }
     return (
       <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
@@ -84,10 +85,14 @@ const PlacementTestScreen = ({ navigation }) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const { refreshUser } = useAuth();
+  const { refreshUser, user } = useAuth();
+  const [showResults, setShowResults] = useState(false);
+  const [testResults, setTestResults] = useState(null);
   
   const timerRef = useRef(null);
   const scrollViewRef = useRef(null);
+  const [contentSegments, setContentSegments] = useState([]);
+  const [questionAudioUrls, setQuestionAudioUrls] = useState([]);
   
   useEffect(() => {
     fetchPlacementTest();
@@ -159,16 +164,64 @@ const PlacementTestScreen = ({ navigation }) => {
       setSubmitting(true);
       setShowConfirmDialog(false);
       
-      // Format answers for submission
-      const formattedAnswers = Object.values(answers);
+      // Calculate total points
+      let totalPoints = 0; // Base points
       
-      const response = await api.submitPlacementTest(formattedAnswers);
+      // Process each answer
+      Object.values(answers).forEach(answer => {
+        const question = test.questions.find(q => q._id === answer.questionId);
+        if (!question) return;
+        
+        // Skip if answer is empty or undefined
+        if (!answer.answer || 
+            (Array.isArray(answer.answer) && answer.answer.length === 0) ||
+            (typeof answer.answer === 'object' && Object.keys(answer.answer).length === 0)) {
+          return;
+        }
+        
+        // Check if answer is correct
+        let isCorrect = false;
+        
+        switch (question.type) {
+          case 'multiple-choice':
+            isCorrect = question.correctAnswer === answer.answer;
+            break;
+          case 'fill-in-the-blank':
+            isCorrect = question.correctAnswer.toLowerCase() === answer.answer.toLowerCase();
+            break;
+          case 'matching':
+            isCorrect = JSON.stringify(question.correctAnswer.sort()) === JSON.stringify(answer.answer.sort());
+            break;
+          case 'ordering':
+            isCorrect = JSON.stringify(question.correctAnswer) === JSON.stringify(answer.answer);
+            break;
+          case 'categories':
+            // Check if each item is in the correct category
+            isCorrect = Object.keys(question.correctAnswer).every(category => {
+              const correctItems = question.correctAnswer[category];
+              const userItems = answer.answer[category] || [];
+              return correctItems.length === userItems.length && 
+                     correctItems.every(item => userItems.includes(item));
+            });
+            break;
+        }
+        
+        // Add points to total if correct
+        if (isCorrect) {
+          totalPoints += question.points;
+        }
+      });
+      
+      console.log('Submitting total points:', totalPoints); // Debug log
+      
+      const response = await api.submitPlacementTest(totalPoints, user.id);
       
       // Refresh user data to update progress
       await refreshUser();
       
-      // Navigate to results screen
-      navigation.replace('PlacementTestResult', { results: response });
+      // Show results in overlay
+      setTestResults(response.data);
+      setShowResults(true);
     } catch (error) {
       console.error('Error submitting test:', error);
       CustomOverlay({
@@ -212,16 +265,53 @@ const PlacementTestScreen = ({ navigation }) => {
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
   
+  const processContent = (content) => {
+    if (!content) return { segments: [], audioUrls: [] };
+    
+    const audioRegex = /\[.*?\]\((.*?\.(?:mp3|m4a))\)/g;
+    // Extract all audio URLs first
+    const matches = [...content.matchAll(audioRegex)];
+    const urls = matches.map(match => match[1].trim()).filter(url => url && url.length > 0);
+    
+    // Split content into segments at audio links
+    const segments = content.split(audioRegex);
+    
+    return {
+      segments: segments.filter(segment => !segment.match(/\.(?:mp3|m4a)$/)), // Filter out the URLs
+      audioUrls: urls
+    };
+  };
+
+  const renderQuestionContent = (content) => {
+    if (!content) return null;
+
+    const { segments, audioUrls } = processContent(content);
+    
+    return (
+      <View style={styles.contentContainer}>
+        {segments.map((segment, index) => (
+          <React.Fragment key={`${currentQuestionIndex}-${index}`}>
+            <Markdown style={markdownStyles} rules={renderRules}>
+              {segment}
+            </Markdown>
+            {index < audioUrls.length && (
+              <View style={styles.audioWrapper}>
+                <AudioSlider 
+                  key={`audio-${currentQuestionIndex}-${index}`}
+                  audio={audioUrls[index]} 
+                />
+              </View>
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+    );
+  };
+  
   const renderMultipleChoiceQuestion = (question) => (
     <View style={styles.questionContent}>
       <Text style={styles.questionText}>{question.question}</Text>
-      {question.content && (
-        <View style={styles.contentContainer}>
-          <Markdown style={markdownStyles} rules={renderRules}>
-            {question.content}
-          </Markdown>
-        </View>
-      )}
+      {question.content && renderQuestionContent(question.content)}
       {question.options.map((option, index) => (
         <TouchableOpacity
           key={index}
@@ -268,13 +358,7 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
-        {question.content && (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        )}
+        {question.content && renderQuestionContent(question.content)}
         <View style={styles.matchingContainer}>
           {items.map((item, index) => (
             <View key={index} style={styles.matchingRow}>
@@ -326,13 +410,7 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
-        {question.content && (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        )}
+        {question.content && renderQuestionContent(question.content)}
         <View style={styles.orderingContainer}>
           {currentAnswer.map((item, index) => (
             <View key={index} style={styles.orderingItemContainer}>
@@ -372,13 +450,7 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
-        {question.content && (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        )}
+        {question.content && renderQuestionContent(question.content)}
         <TextInput
           style={styles.textInput}
           value={answers[question._id]?.answer || ''}
@@ -422,13 +494,7 @@ const PlacementTestScreen = ({ navigation }) => {
     return (
       <View style={styles.questionContent}>
         <Text style={styles.questionText}>{question.question}</Text>
-        {question.content && (
-          <View style={styles.contentContainer}>
-            <Markdown style={markdownStyles} rules={renderRules}>
-              {question.content}
-            </Markdown>
-          </View>
-        )}
+        {question.content && renderQuestionContent(question.content)}
         {/* Uncategorized items */}
         <View style={styles.uncategorizedContainer}>
           <Text style={styles.categoryTitle}>{t('placementTest.availableItems')}:</Text>
@@ -646,6 +712,54 @@ const PlacementTestScreen = ({ navigation }) => {
           </View>
         </View>
       </Overlay>
+      
+      <CustomOverlay
+        isVisible={showResults}
+        onClose={() => {
+          setShowResults(false);
+          navigation.replace('HomeScreen');
+        }}
+        title={t('placementTest.results')}
+        scrollable={true}
+      >
+        <View style={styles.resultsContainer}>
+          <View style={styles.scoreContainer}>
+            <View style={styles.scoreCircle}>
+              <Text style={[
+                styles.scoreText,
+                { color: getScoreColor(testResults?.score) }
+              ]}>
+                {parseInt(testResults?.score).toFixed(2)}%
+              </Text>
+            </View>
+            
+            <Text style={styles.scoreLabel}>
+              {t('placementTest.assignedLevel', { level: testResults?.assignedLevel })}
+            </Text>
+            
+            <Text style={styles.scoreDetails}>
+              {t('placementTest.pointsEarned', {
+                earned: parseInt(testResults?.earnedPoints).toFixed(2),
+                total: parseInt(testResults?.totalPoints).toFixed(2)
+              })}
+            </Text>
+          </View>
+
+          <View style={styles.resultsList}>
+            <Text style={styles.resultsTitle}>{t('placementTest.questionResults')}</Text>
+            <Divider style={styles.divider} />
+            
+            {testResults?.results?.map((result, index) => (
+              <React.Fragment key={index}>
+                {renderResultItem(result, index)}
+                {index < testResults.results.length - 1 && (
+                  <Divider style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+        </View>
+      </CustomOverlay>
     </SafeAreaView>
   );
 };
@@ -750,7 +864,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   selectedOption: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
   optionText: {
@@ -758,7 +872,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   selectedOptionText: {
-    color: colors.primary,
+    color: colors.white,
     fontWeight: 'bold',
   },
   footer: {
@@ -982,6 +1096,140 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: 5,
   },
+  audioWrapper: {
+    marginVertical: 10,
+    width: '100%',
+  },
+  resultsContainer: {
+    padding: 20,
+  },
+  scoreContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  scoreCircle: {
+    backgroundColor: '#fff',
+    borderRadius: 50,
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  scoreText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  scoreLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  scoreDetails: {
+    fontSize: 14,
+    color: '#666',
+  },
+  resultsList: {
+    marginBottom: 20,
+  },
+  resultsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  resultItem: {
+    marginBottom: 10,
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  questionNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  resultBadge: {
+    padding: 5,
+    borderRadius: 10,
+    backgroundColor: '#E8F5E9',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resultText: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginLeft: 5,
+  },
+  explanationContainer: {
+    marginTop: 10,
+  },
+  yourAnswerLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  correctAnswerLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  explanationLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
 });
+
+const getScoreColor = (score) => {
+  if (score >= 80) return '#4CAF50'; // Green
+  if (score >= 60) return '#FFC107'; // Amber
+  return '#F44336'; // Red
+};
+
+const renderResultItem = (result, index) => (
+  <View key={index} style={styles.resultItem}>
+    <View style={styles.questionHeader}>
+      <Text style={styles.questionNumber}>{t('placementTest.question')} {index + 1}</Text>
+      <View style={[
+        styles.resultBadge,
+        { backgroundColor: result.isCorrect ? '#E8F5E9' : '#FFEBEE' }
+      ]}>
+        <Icon
+          name={result.isCorrect ? 'checkmark-circle' : 'close-circle'}
+          type="ionicon"
+          size={16}
+          color={result.isCorrect ? '#4CAF50' : '#F44336'}
+        />
+        <Text style={[
+          styles.resultText,
+          { color: result.isCorrect ? '#4CAF50' : '#F44336' }
+        ]}>
+          {result.isCorrect ? t('placementTest.correct') : t('placementTest.incorrect')}
+        </Text>
+      </View>
+    </View>
+
+    <Text style={styles.questionText}>{result.question}</Text>
+
+    {!result.isCorrect && (
+      <View style={styles.explanationContainer}>
+        <Text style={styles.yourAnswerLabel}>{t('placementTest.yourAnswer')}:</Text>
+        {renderAnswer(result.userAnswer, result.questionType)}
+        
+        <Text style={styles.correctAnswerLabel}>{t('placementTest.correctAnswer')}:</Text>
+        {renderAnswer(result.correctAnswer, result.questionType)}
+        
+        <Text style={styles.explanationLabel}>{t('placementTest.explanation')}:</Text>
+        <Markdown style={markdownStyles}>{result.explanation}</Markdown>
+      </View>
+    )}
+  </View>
+);
 
 export default PlacementTestScreen; 

@@ -7,12 +7,15 @@ import {
     Easing,
     StyleSheet,
     ActivityIndicator,
-    Alert
+    Alert,
+    Text,
+    Platform
 } from "react-native";
 import { Audio } from 'expo-av';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import sleep from './sleep';
 import DigitalTimeString from './DigitalTimeString';
+import { colors } from '../../theme/colors';
 
 const TRACK_SIZE = 4;
 const THUMB_SIZE = 20;
@@ -42,11 +45,14 @@ export class AudioSlider extends PureComponent {
                 await this.state.dotOffset.setOffset({x: this.state.dotOffset.x._value});
                 await this.state.dotOffset.setValue({ x:0, y:0 });
             },
-            onPanResponderMove: (e, gestureState)=> {
-                Animated.event([
-                    null, 
-                    { dx: this.state.dotOffset.x, dy: this.state.dotOffset.y }
-                ])(e, gestureState)
+            onPanResponderMove: (e, gestureState) => {
+                Animated.event(
+                    [
+                        null, 
+                        { dx: this.state.dotOffset.x, dy: this.state.dotOffset.y }
+                    ],
+                    { useNativeDriver: false }
+                )(e, gestureState)
             },
             onPanResponderTerminationRequest: () => false,
             onPanResponderTerminate: async (evt, gestureState) => {
@@ -70,7 +76,27 @@ export class AudioSlider extends PureComponent {
 
     mapAudioToCurrentTime = async () => {
         try {
-            await this.soundObject.setPositionAsync(this.state.currentTime);
+            const currentOffsetX = this.state.xDotOffsetAtAnimationStart + this.state.dotOffset.x._value;
+            const percentage = Math.min(Math.max(currentOffsetX / (this.state.trackLayout.width || 1), 0), 1);
+            
+            if (Platform.OS === 'web') {
+                // For web: work with seconds and ensure the value is finite
+                const durationInSeconds = this.state.duration / 1000;
+                const newTimeInSeconds = Math.floor(percentage * durationInSeconds);
+                const validTime = Math.max(0, Math.min(newTimeInSeconds, durationInSeconds));
+                
+                if (isFinite(validTime)) {
+                    await this.soundObject.setPositionAsync(validTime);
+                    this.setState({ currentTime: validTime * 1000 }); // Convert back to milliseconds for state
+                }
+            } else {
+                // For mobile: work with milliseconds
+                const newTime = Math.floor(percentage * this.state.duration);
+                const validTime = Math.max(0, Math.min(newTime, this.state.duration));
+                
+                await this.soundObject.setPositionAsync(validTime);
+                this.setState({ currentTime: validTime });
+            }
         } catch (error) {
             console.error('Error setting audio position:', error);
             this.setState({ error: 'Failed to update audio position' });
@@ -110,12 +136,23 @@ export class AudioSlider extends PureComponent {
     startMovingDot = async () => {
         try {
             const status = await this.soundObject.getStatusAsync();
-            const durationLeft = status["durationMillis"] - status["positionMillis"];
+            let durationLeft;
+            
+            if (Platform.OS === 'web') {
+                // Convert seconds to milliseconds for web
+                durationLeft = Math.max(0, (status.durationMillis - status.positionMillis) * 1000);
+            } else {
+                durationLeft = Math.max(0, status.durationMillis - status.positionMillis);
+            }
 
             Animated.timing(this.state.dotOffset, {
-                toValue: {x: this.state.trackLayout.width, y: 0},
+                toValue: {
+                    x: this.state.trackLayout.width || 0,
+                    y: 0
+                },
                 duration: durationLeft,
-                easing: Easing.linear
+                easing: Easing.linear,
+                useNativeDriver: false
             }).start(() => this.animationPausedOrStopped());
         } catch (error) {
             console.error('Error starting dot animation:', error);
@@ -147,20 +184,35 @@ export class AudioSlider extends PureComponent {
             });
 
             this.soundObject = new Audio.Sound();
-            await this.soundObject.loadAsync(this.props.audio);
+            
+            const audioSource = typeof this.props.audio === 'string' 
+                ? { uri: this.props.audio }
+                : this.props.audio;
+            
+            await this.soundObject.loadAsync(audioSource);
+            
             const status = await this.soundObject.getStatusAsync();
+            
+            // Always store duration in milliseconds internally
+            const durationInMs = Platform.OS === 'web' 
+                ? status.durationMillis * 1000 
+                : status.durationMillis;
+
             this.setState({ 
-                duration: status["durationMillis"],
+                duration: durationInMs,
                 isLoading: false 
             });
 
             this.state.dotOffset.addListener(() => {
-                let animatedCurrentTime = this.state.dotOffset.x.interpolate({
-                    inputRange: [0, this.state.trackLayout.width],
-                    outputRange: [0, this.state.duration],
-                    extrapolate: 'clamp'
-                }).__getValue();
-                this.setState({ currentTime: animatedCurrentTime });
+                if (!this.state.trackLayout.width) return;
+                
+                const percentage = Math.min(Math.max(this.state.dotOffset.x._value / this.state.trackLayout.width, 0), 1);
+                const newTime = Math.floor(percentage * this.state.duration);
+                
+                if (!isNaN(newTime) && isFinite(newTime)) {
+                    const validTime = Math.max(0, Math.min(newTime, this.state.duration));
+                    this.setState({ currentTime: validTime });
+                }
             });
         } catch (error) {
             console.error('Error initializing audio:', error);
@@ -181,6 +233,26 @@ export class AudioSlider extends PureComponent {
     }
 
     render() {
+        // For web platform, use native audio element
+        if (Platform.OS === 'web') {
+            return (
+                <View style={styles.container}>
+                    <audio
+                        controls
+                        src={this.props.audio}
+                        style={{
+                            width: '100%',
+                            height: 40,
+                            borderRadius: 20,
+                        }}
+                    >
+                        Your browser does not support the audio element.
+                    </audio>
+                </View>
+            );
+        }
+
+        // For mobile platforms, show loading state
         if (this.state.isLoading) {
             return (
                 <View style={styles.loadingContainer}>
@@ -189,6 +261,7 @@ export class AudioSlider extends PureComponent {
             );
         }
 
+        // For mobile platforms, show error state
         if (this.state.error) {
             return (
                 <View style={styles.errorContainer}>
@@ -197,47 +270,58 @@ export class AudioSlider extends PureComponent {
             );
         }
 
+        // For mobile platforms, show custom player
         return (
             <View style={styles.container}>
-                <View style={styles.controlsContainer}>
+                <View style={styles.playerRow}>
                     <TouchableOpacity
-                        style={styles.playButton}
                         onPress={this.onPressPlayPause}
+                        style={styles.playButton}
                     >
                         {this.state.playing ? (
-                            <MaterialIcons name="pause" size={30} color="#FF385C" />
+                            <MaterialIcons name="pause" size={24} color={colors.primary} />
                         ) : (
-                            <Entypo name="controller-play" size={30} color="#FF385C" />
+                            <Entypo name="controller-play" size={24} color={colors.primary} />
                         )}
                     </TouchableOpacity>
 
-                    <Animated.View
-                        onLayout={this.measureTrack}
-                        style={styles.track}
-                    >
+                    <View style={styles.sliderContainer}>
                         <Animated.View
-                            style={[
-                                styles.thumbContainer,
-                                {
-                                    transform: [{
-                                        translateX: this.state.dotOffset.x.interpolate({
-                                            inputRange: [0, ((this.state.trackLayout.width != undefined) ? this.state.trackLayout.width : 1)],
-                                            outputRange: [0, ((this.state.trackLayout.width != undefined) ? this.state.trackLayout.width : 1)],
-                                            extrapolate: 'clamp'
-                                        })
-                                    }],
-                                }
-                            ]}
-                            {...this._panResponder.panHandlers}
+                            onLayout={this.measureTrack}
+                            style={styles.track}
                         >
-                            <View style={styles.thumb} />
+                            <Animated.View
+                                style={[
+                                    styles.thumbContainer,
+                                    {
+                                        transform: [{
+                                            translateX: this.state.dotOffset.x.interpolate({
+                                                inputRange: [0, ((this.state.trackLayout.width != undefined) ? this.state.trackLayout.width : 1)],
+                                                outputRange: [0, ((this.state.trackLayout.width != undefined) ? this.state.trackLayout.width : 1)],
+                                                extrapolate: 'clamp'
+                                            })
+                                        }],
+                                    }
+                                ]}
+                                {...this._panResponder.panHandlers}
+                            >
+                                <View style={styles.thumb} />
+                            </Animated.View>
                         </Animated.View>
-                    </Animated.View>
-                </View>
 
-                <View style={styles.timeContainer}>
-                    <DigitalTimeString time={this.state.currentTime} />
-                    <DigitalTimeString time={this.state.duration} />
+                        <View style={styles.timeContainer}>
+                            <Text style={styles.timeText}>
+                                <DigitalTimeString 
+                                    time={isNaN(this.state.currentTime) ? 0 : this.state.currentTime} 
+                                />
+                            </Text>
+                            <Text style={styles.timeText}>
+                                <DigitalTimeString 
+                                    time={isNaN(this.state.duration) ? 0 : this.state.duration} 
+                                />
+                            </Text>
+                        </View>
+                    </View>
                 </View>
             </View>
         );
@@ -246,17 +330,81 @@ export class AudioSlider extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 15,
         backgroundColor: '#fff',
         borderRadius: 14,
-        elevation: 4,
+        padding: 12,
         shadowColor: "#000",
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
         shadowOffset: {
-            width: 2,
+            width: 0,
             height: 2,
         },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    playerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    playButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
+        zIndex: 2,
+    },
+    sliderContainer: {
+        flex: 1,
+    },
+    track: {
+        height: TRACK_SIZE,
+        borderRadius: TRACK_SIZE / 2,
+        backgroundColor: '#e0e0e0',
+        marginVertical: 10,  // Add vertical margin to center the track
+    },
+    thumbContainer: {
+        position: 'absolute',
+        top: -8,  // Adjust this to center the thumb vertically
+        left: -(THUMB_SIZE / 2) + 5,
+        width: THUMB_SIZE,
+        height: THUMB_SIZE,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    thumb: {
+        width: THUMB_SIZE,
+        height: THUMB_SIZE,
+        borderRadius: THUMB_SIZE / 2,
+        backgroundColor: colors.primary,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    timeContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 4,
+    },
+    timeText: {
+        fontSize: 12,
+        color: '#666',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',  // Use monospace font for consistent number width
     },
     loadingContainer: {
         padding: 15,
@@ -272,40 +420,6 @@ const styles = StyleSheet.create({
         color: '#c62828',
         fontSize: 14,
         textAlign: 'center',
-    },
-    controlsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    playButton: {
-        padding: 10,
-        marginRight: 10,
-    },
-    track: {
-        flex: 1,
-        height: TRACK_SIZE,
-        borderRadius: TRACK_SIZE / 2,
-        backgroundColor: '#e0e0e0',
-    },
-    thumbContainer: {
-        position: 'absolute',
-        left: -(THUMB_SIZE*4 / 2),
-        width: THUMB_SIZE*4,
-        height: THUMB_SIZE*4,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    thumb: {
-        width: THUMB_SIZE,
-        height: THUMB_SIZE,
-        borderRadius: THUMB_SIZE / 2,
-        backgroundColor: '#FF385C',
-    },
-    timeContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingHorizontal: 5,
     },
 });
 

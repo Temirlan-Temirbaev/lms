@@ -6,13 +6,16 @@ const ErrorResponse = require('../utils/errorResponse');
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, telephone, gender, age } = req.body;
 
     // Create user
     const user = await User.create({
       name,
       email,
       password,
+      telephone,
+      gender,
+      age
     });
 
     sendTokenResponse(user, 201, res);
@@ -95,6 +98,9 @@ exports.updateDetails = async (req, res, next) => {
     const fieldsToUpdate = {
       name: req.body.name,
       email: req.body.email,
+      telephone: req.body.telephone,
+      gender: req.body.gender,
+      age: req.body.age
     };
 
     const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
@@ -153,6 +159,9 @@ const sendTokenResponse = (user, statusCode, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      telephone: user.telephone,
+      gender: user.gender,
+      age: user.age,
       progress: user.progress,
     },
   });

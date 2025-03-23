@@ -191,7 +191,7 @@ const ProfileScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
         
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.optionItem}
           onPress={() => navigation.navigate('Progress')}
         >
@@ -212,7 +212,7 @@ const ProfileScreen = ({ navigation }) => {
             color={colors.border}
             size={20}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity 
           style={styles.optionItem}

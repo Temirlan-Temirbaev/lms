@@ -25,6 +25,21 @@ const UserSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    telephone: {
+      type: String,
+      required: [true, 'Please add a telephone number'],
+    },
+    gender: {
+      type: String,
+      required: [true, 'Please select your gender'],
+      enum: ['male', 'female', 'other'],
+    },
+    age: {
+      type: Number,
+      required: [true, 'Please add your age'],
+      min: [1, 'Age must be at least 1'],
+      max: [120, 'Age cannot exceed 120'],
+    },
     progress: {
       currentLevel: {
         type: String,
@@ -65,6 +80,10 @@ const UserSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,

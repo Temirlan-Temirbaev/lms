@@ -9,18 +9,22 @@ const User = require('../models/User');
 exports.getCourses = async (req, res, next) => {
   try {
     // Get user's available levels
+    console.log(req?.user, req?.body, "req");
     const user = await User.findById(req.user.id);
+    console.log(user, "user");
     const availableLevels = user.progress.availableLevels;
-    
+    console.log(availableLevels, "availableLevels");
     // Get courses that match the user's available levels
     const courses = await Course.find({ level: { $in: availableLevels } }).sort({ level: 1 });
 
+    console.log(courses, "courses");
     res.status(200).json({
       success: true,
       count: courses.length,
       data: courses,
     });
   } catch (err) {
+    console.log(err);
     res.status(400).json({
       success: false,
       message: err.message,
@@ -179,126 +183,20 @@ exports.submitTest = async (req, res, next) => {
       });
     }
 
-    const { answers } = req.body;
+    const { totalPoints, isFinal } = req.body;
 
-    if (!answers || !Array.isArray(answers) || answers.length !== test.questions.length) {
+    // Validate totalPoints
+    const points = Number(totalPoints);
+    if (isNaN(points) || points < 0) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide answers for all questions',
+        message: 'Invalid total points provided',
       });
     }
 
-    // Calculate score
-    let score = 0;
-    const results = test.questions.map((question, index) => {
-      const userAnswer = answers[index];
-      let isCorrect = false;
-
-      // Check if answer is correct based on question type
-      switch (question.type) {
-        case 'multiple-choice':
-          isCorrect = userAnswer === question.correctAnswer;
-          break;
-        case 'matching':
-          // For matching questions, check if each match is correct
-          if (Array.isArray(userAnswer) && Array.isArray(question.correctAnswer) && 
-              userAnswer.length === question.correctAnswer.length) {
-            // Compare each answer, ignoring case sensitivity
-            isCorrect = userAnswer.every((answer, i) => 
-              answer.toLowerCase() === question.correctAnswer[i].toLowerCase());
-          }
-          break;
-        case 'ordering':
-          isCorrect = JSON.stringify(userAnswer) === JSON.stringify(question.correctAnswer);
-          break;
-        case 'categories':
-          // For categories questions, check if each item is in the correct category
-          if (typeof userAnswer === 'object' && typeof question.correctAnswer === 'object' && 
-              !Array.isArray(userAnswer) && !Array.isArray(question.correctAnswer)) {
-            
-            // Get all categories from the correct answer
-            const categories = Object.keys(question.correctAnswer);
-            
-            // Check if all categories are present in the user answer
-            const hasAllCategories = categories.every(category => 
-              userAnswer.hasOwnProperty(category) && Array.isArray(userAnswer[category]));
-            
-            if (hasAllCategories) {
-              // Check if each item is in the correct category
-              const allItemsCorrect = categories.every(category => {
-                const correctItems = question.correctAnswer[category];
-                const userItems = userAnswer[category];
-                
-                // Check if all correct items for this category are in the user's answer
-                return correctItems.every(item => userItems.includes(item)) && 
-                       // Check if all user items for this category are correct
-                       userItems.every(item => correctItems.includes(item));
-              });
-              
-              isCorrect = allItemsCorrect;
-            }
-          }
-          break;
-        case 'fill-in-blanks':
-          // For fill-in-blanks, allow for multiple possible answers and trim whitespace
-          if (typeof userAnswer === 'string' && typeof question.correctAnswer === 'string') {
-            // Single blank, single possible answer
-            isCorrect = userAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
-          } else if (typeof userAnswer === 'string' && Array.isArray(question.correctAnswer)) {
-            // Single blank, multiple possible answers
-            isCorrect = question.correctAnswer.some(answer => 
-              userAnswer.toLowerCase().trim() === answer.toLowerCase().trim());
-          } else if (typeof userAnswer === 'object' && typeof question.correctAnswer === 'object' && 
-                    !Array.isArray(question.correctAnswer) && !Array.isArray(userAnswer)) {
-            // Multiple blanks
-            const blankIds = Object.keys(question.correctAnswer);
-            isCorrect = blankIds.every(blankId => {
-              const correctAnswerForBlank = question.correctAnswer[blankId];
-              const userAnswerForBlank = userAnswer[blankId];
-              
-              if (!userAnswerForBlank) return false;
-              
-              if (typeof correctAnswerForBlank === 'string') {
-                return userAnswerForBlank.toLowerCase().trim() === correctAnswerForBlank.toLowerCase().trim();
-              } else if (Array.isArray(correctAnswerForBlank)) {
-                return correctAnswerForBlank.some(answer => 
-                  userAnswerForBlank.toLowerCase().trim() === answer.toLowerCase().trim());
-              }
-              return false;
-            });
-          }
-          break;
-        case 'input':
-          if (typeof userAnswer === 'string' && typeof question.correctAnswer === 'string') {
-            isCorrect = userAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
-          } else if (Array.isArray(question.correctAnswer)) {
-            // If correctAnswer is an array of possible answers
-            isCorrect = question.correctAnswer.some(answer => 
-              userAnswer.toLowerCase().trim() === answer.toLowerCase().trim());
-          }
-          break;
-        default:
-          isCorrect = false;
-      }
-
-      if (isCorrect) {
-        score += question.points;
-      }
-
-      return {
-        questionId: question._id,
-        isCorrect,
-        userAnswer,
-        correctAnswer: question.correctAnswer,
-        explanation: question.explanation,
-        question: question.question,
-        questionType: question.type
-      };
-    });
-
     // Calculate percentage score
-    const totalPoints = test.questions.reduce((sum, q) => sum + q.points, 0);
-    const percentageScore = (score / totalPoints) * 100;
+    const totalPossiblePoints = test.questions.reduce((sum, q) => sum + q.points, 0);
+    const percentageScore = (points / totalPossiblePoints) * 100;
 
     // Update user progress
     const user = await User.findById(req.user.id);
@@ -323,20 +221,26 @@ exports.submitTest = async (req, res, next) => {
       });
     }
 
-    // Check if this is a final test for a level and if the user passed with a high score
-    if (test.isFinal && percentageScore >= 85) {
+    // Handle final test and level progression
+    if (isFinal && percentageScore >= 85) {
       // Get the course for this test
       const course = await Course.findById(test.course);
       
-      // Check if there's a next level to unlock
-      const currentLevelIndex = ['A1', 'A2', 'B1', 'B2'].indexOf(course.level);
-      if (currentLevelIndex < 3) { // If not already at the highest level (B2)
-        const nextLevel = ['A1', 'A2', 'B1', 'B2'][currentLevelIndex + 1];
-        
-        // Check if the next level is not already available
-        if (!user.progress.availableLevels.includes(nextLevel)) {
-          user.progress.availableLevels.push(nextLevel);
-          user.progress.currentLevel = nextLevel; // Update current level to the new level
+      // Check if user is at B2 level
+      if (user.progress.currentLevel === 'B2') {
+        // User has completed all levels, just congratulate them
+        user.progress.allLevelsCompleted = true;
+      } else {
+        // Check if there's a next level to unlock
+        const currentLevelIndex = ['A1', 'A2', 'B1', 'B2'].indexOf(course.level);
+        if (currentLevelIndex < 3) { // If not already at the highest level (B2)
+          const nextLevel = ['A1', 'A2', 'B1', 'B2'][currentLevelIndex + 1];
+          
+          // Check if the next level is not already available
+          if (!user.progress.availableLevels.includes(nextLevel)) {
+            user.progress.availableLevels.push(nextLevel);
+            user.progress.currentLevel = nextLevel; // Update current level to the new level
+          }
         }
       }
     }
@@ -347,10 +251,12 @@ exports.submitTest = async (req, res, next) => {
       success: true,
       data: {
         score: percentageScore,
-        totalPoints,
-        earnedPoints: score,
-        results,
+        totalPoints: points,
+        totalPossiblePoints,
         passed: percentageScore >= test.passingScore,
+        isFinal,
+        allLevelsCompleted: user.progress.allLevelsCompleted,
+        newLevel: isFinal && percentageScore >= 85 ? user.progress.currentLevel : null
       },
     });
   } catch (err) {

@@ -728,70 +728,70 @@ const placementTest = {
 };
 
 // Import data into DB
-const importData = async () => {
-  try {
-    // Clear existing data
-    await User.deleteMany();
-    await Course.deleteMany();
-    await Lesson.deleteMany();
-    await Test.deleteMany();
-    await PlacementTest.deleteMany();
+// const importData = async () => {
+//   try {
+//     // Clear existing data
+//     // await User.deleteMany();
+//     // await Course.deleteMany();
+//     // await Lesson.deleteMany();
+//     // await Test.deleteMany();
+//     // await PlacementTest.deleteMany();
 
-    console.log('Data cleared...');
+//     console.log('Data cleared...');
 
-    // Create placement test
-    await PlacementTest.create(placementTest);
-    console.log('Placement test created');
+//     // Create placement test
+//     await PlacementTest.create(placementTest);
+//     console.log('Placement test created');
 
-    // Create courses
-    const createdCourses = await Course.create(courses);
-    console.log(`${createdCourses.length} courses created`);
+//     // Create courses
+//     const createdCourses = await Course.create(courses);
+//     console.log(`${createdCourses.length} courses created`);
 
-    // Create lessons and associate with courses
-    for (let i = 0; i < lessons.length; i++) {
-      const lesson = lessons[i];
-      let courseIndex = 0;
+//     // Create lessons and associate with courses
+//     for (let i = 0; i < lessons.length; i++) {
+//       const lesson = lessons[i];
+//       let courseIndex = 0;
 
-      if (i < 2) courseIndex = 0; // A1
-      else if (i < 4) courseIndex = 1; // A2
-      else if (i < 6) courseIndex = 2; // B1
-      else courseIndex = 3; // B2
+//       if (i < 2) courseIndex = 0; // A1
+//       else if (i < 4) courseIndex = 1; // A2
+//       else if (i < 6) courseIndex = 2; // B1
+//       else courseIndex = 3; // B2
 
-      lesson.course = createdCourses[courseIndex]._id;
-      await Lesson.create(lesson);
-    }
-    console.log(`${lessons.length} lessons created`);
+//       lesson.course = createdCourses[courseIndex]._id;
+//       await Lesson.create(lesson);
+//     }
+//     console.log(`${lessons.length} lessons created`);
 
-    // Create tests and associate with courses
-    for (let i = 0; i < tests.length; i++) {
-      const test = tests[i];
-      let courseIndex = 0;
+//     // Create tests and associate with courses
+//     for (let i = 0; i < tests.length; i++) {
+//       const test = tests[i];
+//       let courseIndex = 0;
 
-      if (i < 1) courseIndex = 0; // A1
-      else if (i < 2) courseIndex = 1; // A2
-      else if (i < 3) courseIndex = 2; // B1
-      else courseIndex = 3; // B2
+//       if (i < 1) courseIndex = 0; // A1
+//       else if (i < 2) courseIndex = 1; // A2
+//       else if (i < 3) courseIndex = 2; // B1
+//       else courseIndex = 3; // B2
 
-      test.course = createdCourses[courseIndex]._id;
-      await Test.create(test);
-    }
-    console.log(`${tests.length} tests created`);
+//       test.course = createdCourses[courseIndex]._id;
+//       await Test.create(test);
+//     }
+//     console.log(`${tests.length} tests created`);
 
-    // Create admin user
-    await User.create({
-      name: 'Admin User',
-      email: 'admin@example.com',
-      password: 'password123',
-    });
-    console.log('Admin user created...');
+//     // Create admin user
+//     await User.create({
+//       name: 'Admin User',
+//       email: 'admin@example.com',
+//       password: 'password123',
+//     });
+//     console.log('Admin user created...');
 
-    console.log('Data imported successfully!');
-    process.exit();
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
-};
+//     console.log('Data imported successfully!');
+//     process.exit();
+//   } catch (err) {
+//     console.error(err);
+//     process.exit(1);
+//   }
+// };
 
-// Run the import
-importData(); 
+// // Run the import
+// importData(); 

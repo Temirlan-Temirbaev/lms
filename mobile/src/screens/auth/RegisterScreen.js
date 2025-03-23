@@ -20,11 +20,14 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword || !telephone || !gender || !age) {
       CustomOverlay({
         title: t('auth.error'),
         message: t('auth.fillAllFields'),
@@ -51,9 +54,18 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
+    if (isNaN(age) || age < 1 || age > 120) {
+      CustomOverlay({
+        title: t('auth.error'),
+        message: t('auth.invalidAge'),
+        platform: Platform.OS
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(name, email, password);
+      await register(name, email, password, telephone, gender, parseInt(age));
     } catch (error) {
       CustomOverlay({
         title: t('auth.registrationFailed'),
@@ -96,6 +108,66 @@ const RegisterScreen = ({ navigation }) => {
             keyboardType="email-address"
             autoCorrect={false}
           />
+
+          <Input
+            placeholder={t('auth.telephone')}
+            leftIcon={{ type: 'ionicon', name: 'call-outline' }}
+            value={telephone}
+            onChangeText={(text) => {
+              // Only allow numbers
+              const numericValue = text.replace(/[^0-9]/g, '');
+              setTelephone(numericValue);
+            }}
+            keyboardType="phone-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={15}
+          />
+
+          <Input
+            placeholder={t('auth.age')}
+            leftIcon={{ type: 'ionicon', name: 'calendar-outline' }}
+            value={age}
+            onChangeText={(text) => {
+              // Only allow numbers
+              const numericValue = text.replace(/[^0-9]/g, '');
+              setAge(numericValue);
+            }}
+            keyboardType="number-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={3}
+          />
+
+          <View style={styles.genderContainer}>
+            <Text style={styles.genderLabel}>{t('auth.gender')}</Text>
+            <View style={styles.genderButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.genderButton,
+                  gender === 'male' && styles.selectedGender
+                ]}
+                onPress={() => setGender('male')}
+              >
+                <Text style={[
+                  styles.genderButtonText,
+                  gender === 'male' && styles.selectedGenderText
+                ]}>{t('auth.male')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.genderButton,
+                  gender === 'female' && styles.selectedGender
+                ]}
+                onPress={() => setGender('female')}
+              >
+                <Text style={[
+                  styles.genderButtonText,
+                  gender === 'female' && styles.selectedGenderText
+                ]}>{t('auth.female')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           <Input
             placeholder={t('auth.password')}
@@ -183,6 +255,38 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     color: colors.primary,
+    fontWeight: 'bold',
+  },
+  genderContainer: {
+    marginBottom: 20,
+  },
+  genderLabel: {
+    fontSize: 16,
+    color: colors.darkGray,
+    marginBottom: 10,
+  },
+  genderButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  genderButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  selectedGender: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  genderButtonText: {
+    color: colors.darkGray,
+  },
+  selectedGenderText: {
+    color: colors.white,
     fontWeight: 'bold',
   },
 });

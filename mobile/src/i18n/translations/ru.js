@@ -35,6 +35,17 @@ export default {
     hasAccount: 'Уже есть аккаунт?',
     signIn: 'Войти',
     
+    // New fields
+    telephone: 'Телефон',
+    gender: 'Пол',
+    age: 'Возраст',
+    male: 'Мужской',
+    female: 'Женский',
+    other: 'Другой',
+    invalidAge: 'Возраст должен быть от 1 до 120 лет',
+    telephoneRequired: 'Пожалуйста, введите номер телефона',
+    genderRequired: 'Пожалуйста, выберите пол',
+    
     // Validation
     fillAllFields: 'Пожалуйста, заполните все поля',
     passwordsNotMatch: 'Пароли не совпадают',
@@ -81,6 +92,8 @@ export default {
       input: 'Введите ваш ответ ниже',
       categories: 'Распределите элементы по правильным категориям'
     },
+
+    typeHere: 'Введите ответ',
     
     // Categories
     availableItems: 'Доступные элементы:',
@@ -92,7 +105,20 @@ export default {
     fillInBlanksHint: 'Подсказка: Обратите внимание на спряжение глаголов и согласование',
     
     // Loading
-    loading: 'Загрузка...'
+    loading: 'Загрузка...',
+
+    // Results
+    results: 'Результаты теста',
+    passed: 'Тест пройден',
+    failed: 'Тест не пройден',
+    pointsEarned: 'Набрано {{earned}} из {{total}} баллов',
+    questionResults: 'Результаты по вопросам',
+    question: 'Вопрос',
+    correct: 'Правильно',
+    incorrect: 'Неправильно',
+    yourAnswer: 'Ваш ответ',
+    correctAnswer: 'Правильный ответ',
+    explanation: 'Объяснение'
   },
   placementTest: {
     // Loading states
@@ -128,6 +154,18 @@ export default {
     error: 'Ошибка',
     loadError: 'Не удалось загрузить тест. Пожалуйста, попробуйте снова.',
     submitError: 'Не удалось отправить тест. Пожалуйста, попробуйте снова.',
+
+    // Results
+    results: 'Результаты теста на определение уровня',
+    assignedLevel: 'Ваш уровень: {{level}}',
+    pointsEarned: 'Набрано {{earned}} из {{total}} баллов',
+    questionResults: 'Результаты по вопросам',
+    question: 'Вопрос',
+    correct: 'Правильно',
+    incorrect: 'Неправильно',
+    yourAnswer: 'Ваш ответ',
+    correctAnswer: 'Правильный ответ',
+    explanation: 'Объяснение'
   },
   lesson: {
     // Loading states
@@ -243,8 +281,13 @@ export default {
     name: 'Имя',
     enterName: 'Введите ваше имя',
     enterEmail: 'Введите вашу почту',
+    enterTelephone: 'Введите ваш номер телефона',
+    enterAge: 'Введите ваш возраст',
     save: 'Сохранить',
     nameRequired: 'Имя обязательно',
+    telephoneRequired: 'Номер телефона обязателен',
+    genderRequired: 'Пожалуйста, выберите пол',
+    invalidAge: 'Возраст должен быть от 1 до 120 лет',
     profileUpdated: 'Профиль обновлен',
     updateFailed: 'Не удалось обновить профиль',
     currentPassword: 'Текущий пароль',

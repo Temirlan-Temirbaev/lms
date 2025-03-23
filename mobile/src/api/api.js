@@ -4,7 +4,8 @@ import tests from './tests'
 
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
-const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+// const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+const API_URL = 'http://127.0.0.1:5001/api'; // For iOS simulator
 
 // Create axios instance
 const api = axios.create({
@@ -20,10 +21,13 @@ api.interceptors.request.use(
     const token = await AsyncStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.log('No token found in storage'); // Debug log
     }
     return config;
   },
   (error) => {
+    console.log('Request interceptor error:', error); // Debug log
     return Promise.reject(error);
   }
 );
@@ -93,12 +97,6 @@ export const getCourse = async (courseId) => {
   }
 };
 
-
-
-
-
-
-
 export const getMockTests = async (courseId) => {
   try {
     console.log("mock", courseId)
@@ -123,11 +121,6 @@ export const getMockTest = async (testId) => {
     throw error.response?.data || { message: 'Server error' };
   }
 };
-
-
-
-
-
 
 export const getCourseLessons = async (courseId) => {
   try {
@@ -174,9 +167,9 @@ export const getTest = async (testId) => {
   }
 };
 
-export const submitTest = async (testId, answers) => {
+export const submitTest = async (testId, totalPoints, isFinal) => {
   try {
-    const response = await api.post(`/courses/tests/${testId}/submit`, { answers });
+    const response = await api.post(`/courses/tests/${testId}/submit`, { totalPoints, isFinal });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Server error' };
@@ -211,9 +204,9 @@ export const getPlacementTest = async () => {
   }
 };
 
-export const submitPlacementTest = async (answers) => {
+export const submitPlacementTest = async (totalPoints, userId) => {
   try {
-    const response = await api.post('/placement-test/submit', { answers });
+    const response = await api.post('/placement-test/submit', { totalPoints, userId });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Server error' };
