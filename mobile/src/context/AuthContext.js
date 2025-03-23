@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
           setUser(JSON.parse(storedUser));
         }
       } catch (error) {
+        await AsyncStorage.clear()
         console.error('Error loading auth from storage:', error);
       } finally {
         setLoading(false);
