@@ -81,7 +81,7 @@ const HomeStackNavigator = () => {
           color: colors.black,
         },
         headerShadowVisible: false,
-        headerBackTitle: t('common.back'),
+        headerBackTitle: "",
       }}
     >
       <HomeStack.Screen 
@@ -134,7 +134,7 @@ const ProfileStackNavigator = () => {
           color: colors.black,
         },
         headerShadowVisible: false,
-        headerBackTitle: t('common.back'),
+        headerBackTitle: "",
       }}
     >
       <ProfileStack.Screen 
