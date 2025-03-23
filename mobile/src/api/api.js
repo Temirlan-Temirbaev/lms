@@ -4,8 +4,8 @@ import tests from './tests'
 
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
-// const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
-const API_URL = 'http://127.0.0.1:5001/api'; // For iOS simulator
+const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+// const API_URL = 'http://127.0.0.1:5001/api'; // For iOS simulator
 
 // Create axios instance
 const api = axios.create({
