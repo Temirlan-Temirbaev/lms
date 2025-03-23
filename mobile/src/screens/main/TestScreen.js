@@ -360,14 +360,12 @@ const TestScreen = ({ route, navigation }) => {
           {question.question}
         </Text>
         {question.content && renderQuestionContent(question.content)}
-        {/* <Text style={styles.instructionText}>Match each item on the left with its corresponding item on the right</Text> */}
         
         {question.options.map((option, index) => (
           <View key={index} style={styles.matchingItem}>
             <View style={styles.matchingLeftContainer}>
               <Text style={styles.matchingOption}>{option}</Text>
             </View>
-            <Icon name="arrow-forward" type="ionicon" size={20} color="#666" />
             <View style={styles.matchingRightContainer}>
               <TextInput
                 style={[
@@ -559,7 +557,10 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderCategoryItem = (item) => {
-    // Check if the item is an object containing image URL and text
+    // Get the text content
+    const textContent = typeof item === 'object' ? item.text : item;
+    const isLongText = textContent && textContent.length > 100; // Threshold for long text
+  
     if (typeof item === 'object' && item.image) {
       return (
         <View style={styles.categoryItemContent}>
@@ -567,12 +568,21 @@ const TestScreen = ({ route, navigation }) => {
             source={{ uri: item.image }}
             style={styles.categoryItemImage}
           />
-          {item.text && <Text style={styles.categoryItemText}>{item.text}</Text>}
+          {item.text && <Text style={styles.categoryItemText} numberOfLines={2}>{item.text}</Text>}
         </View>
       );
     }
-    // If it's just a string, render as before
-    return <Text style={styles.categoryItemText}>{item}</Text>;
+    
+    // Return different styles based on text length
+    return isLongText ? (
+      <Text style={styles.categoryItemTextLong} numberOfLines={4}>
+        {item}
+      </Text>
+    ) : (
+      <Text style={styles.categoryItemText} numberOfLines={2}>
+        {item}
+      </Text>
+    );
   };
 
   const renderCategoriesQuestion = (question) => {
@@ -657,11 +667,22 @@ const TestScreen = ({ route, navigation }) => {
         {/* Uncategorized options */}
         <View style={styles.categoriesSection}>
           <Text style={styles.categoryTitle}>{t('test.availableItems')}:</Text>
-          <View style={styles.uncategorizedContainer}>
-            {uncategorizedOptions.map((option, index) => (
+          <View style={
+    uncategorizedOptions.some(option => {
+      const textContent = typeof option === 'object' ? option.text : option;
+      return textContent && textContent.length > 100;
+    }) 
+    ? styles.uncategorizedContainerLong 
+    : styles.uncategorizedContainer
+  }>
+          {uncategorizedOptions.map((option, index) => {
+            const textContent = typeof option === 'object' ? option.text : option;
+            const isLongText = textContent && textContent.length > 100;
+            
+            return (
               <TouchableOpacity
                 key={index}
-                style={styles.categoryItem}
+                style={isLongText ? styles.categoryItemLong : styles.categoryItem}
                 onPress={() => {
                   setSelectedOption(option);
                   setShowCategorySelection(true);
@@ -669,7 +690,8 @@ const TestScreen = ({ route, navigation }) => {
               >
                 {renderCategoryItem(option)}
               </TouchableOpacity>
-            ))}
+            );
+          })}
           </View>
         </View>
         
@@ -932,56 +954,6 @@ const TestScreen = ({ route, navigation }) => {
               })}
             </Text>
           </View>
-
-          {/* <View style={styles.resultsList}>
-            <Text style={styles.resultsTitle}>{t('test.questionResults')}</Text>
-            <Divider style={styles.divider} />
-            
-            {testResults?.results?.map((result, index) => (
-              <React.Fragment key={index}>
-                <View style={[
-                  styles.resultItem,
-                  { backgroundColor: result.isCorrect ? '#E8F5E9' : '#FFEBEE' }
-                ]}>
-                  <View style={styles.questionHeader}>
-                    <Text style={styles.questionNumber}>{t('test.question')} {index + 1}</Text>
-                    <View style={[
-                      styles.resultBadge,
-                      { backgroundColor: result.isCorrect ? '#4CAF50' : '#F44336' }
-                    ]}>
-                      <Icon
-                        name={result.isCorrect ? 'checkmark-circle' : 'close-circle'}
-                        type="ionicon"
-                        size={16}
-                        color="white"
-                      />
-                      <Text style={styles.resultText}>
-                        {result.isCorrect ? t('test.correct') : t('test.incorrect')}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text style={styles.questionText} numberOfLines={3}>{result.question}</Text>
-
-                  {!result.isCorrect && (
-                    <View style={styles.explanationContainer}>
-                      <Text style={styles.yourAnswerLabel}>{t('test.yourAnswer')}:</Text>
-                      {renderAnswer(result.userAnswer, result.questionType)}
-                      
-                      <Text style={styles.correctAnswerLabel}>{t('test.correctAnswer')}:</Text>
-                      {renderAnswer(result.correctAnswer, result.questionType)}
-                      
-                      <Text style={styles.explanationLabel}>{t('test.explanation')}:</Text>
-                      <Markdown style={markdownStyles}>{result.explanation}</Markdown>
-                    </View>
-                  )}
-                </View>
-                {index < testResults.results.length - 1 && (
-                  <Divider style={styles.divider} />
-                )}
-              </React.Fragment>
-            ))}
-          </View> */}
         </View>
       </CustomOverlay>
     </SafeAreaView>
@@ -1070,33 +1042,42 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   matchingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   matchingLeftContainer: {
-    flex: 1,
+    marginBottom: 8,
   },
   matchingRightContainer: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   matchingOption: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     color: '#333',
+    lineHeight: 24,
   },
   matchingInput: {
     flex: 1,
-    height: 40,
+    height: 45,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    backgroundColor: colors.white,
   },
   matchingInputFilled: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryLight,
+  },
+  multipleBlanksContainer: {
+    marginTop: 15,
+  },
+  blankPartText: {
+    fontSize: 18,
+    color: '#333',
+    lineHeight: 24,
+    marginBottom: 8,
   },
   instructionText: {
     fontSize: 14,
@@ -1146,13 +1127,15 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
     borderRadius: 10,
     padding: 10,
+    backgroundColor: colors.white,
   },
   inputAnswer: {
-    height: 50,
+    height: 45,
     fontSize: 16,
+    paddingHorizontal: 5,
   },
   inputHint: {
     fontSize: 14,
@@ -1224,6 +1207,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
+  uncategorizedContainerLong: {
+    flexDirection: 'column',
+    paddingHorizontal: 10,
+  },
   categoryItem: {
     padding: 10,
     margin: 5,
@@ -1232,6 +1219,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#f9f9f9',
     position: 'relative',
+  },
+  categoryItemLong: {
+    padding: 15,
+    margin: 5,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    position: 'relative',
+    width: '100%', // Full width for long text
   },
   categoryItemContent: {
     alignItems: 'center',
@@ -1247,6 +1244,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     textAlign: 'center',
+  },
+  categoryItemTextLong: {
+    fontSize: 13,
+    color: '#333',
+    textAlign: 'left',
+    paddingHorizontal: 8,
+    lineHeight: 18,
+    flexShrink: 1,
+    width: '100%',
   },
   categoryContainer: {
     flexDirection: 'row',
