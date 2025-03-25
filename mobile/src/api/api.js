@@ -5,7 +5,7 @@ import tests from './tests'
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
 const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
-// const API_URL = 'http://127.0.0.1:5001/api'; // For iOS simulator
+// const API_URL = 'http://192.168.0.158:5001/api'; 
 
 // Create axios instance
 const api = axios.create({
@@ -186,6 +186,15 @@ export const getUserProgress = async () => {
   }
 };
 
+export const getUser = async () => {
+  try {
+    const response = await api.get('/users/me');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
 export const updateUserLevel = async (level) => {
   try {
     const response = await api.put('/users/level', { level });
@@ -213,4 +222,14 @@ export const submitPlacementTest = async (totalPoints, userId) => {
   }
 };
 
-export default api; 
+// User Settings API
+export const updateUserSettings = async (settings) => {
+  try {
+    const response = await api.put('/users/settings', settings);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
+export default api;

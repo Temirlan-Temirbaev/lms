@@ -14,6 +14,7 @@ import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import CustomOverlay from '../../components/CustomOverlay';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import at the top
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -50,6 +51,11 @@ const HomeScreen = ({ navigation }) => {
     try {
       const response = await api.getCourses();
       setCourses(response.data);
+  
+      // Set language from user settings when component mounts
+      if (user?.settings?.language) {
+        i18n.changeLanguage(user.settings.language);
+      }
     } catch (error) {
       CustomOverlay({
         title: t('home.error'),
@@ -306,4 +312,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen; 
+export default HomeScreen;

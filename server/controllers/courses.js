@@ -223,24 +223,31 @@ exports.submitTest = async (req, res, next) => {
 
     // Handle final test and level progression
     if (isFinal && percentageScore >= 85) {
+      console.log("isFinal", isFinal)
+
       // Get the course for this test
       const course = await Course.findById(test.course);
       
       // Check if user is at B2 level
-      if (user.progress.currentLevel === 'B2') {
-        // User has completed all levels, just congratulate them
+      if (course.level === 'B2') {
+        // User has completed all levels
         user.progress.allLevelsCompleted = true;
       } else {
-        // Check if there's a next level to unlock
-        const currentLevelIndex = ['A1', 'A2', 'B1', 'B2'].indexOf(course.level);
-        if (currentLevelIndex < 3) { // If not already at the highest level (B2)
-          const nextLevel = ['A1', 'A2', 'B1', 'B2'][currentLevelIndex + 1];
+        // Define the level progression order
+        const levels = ['A1', 'A2', 'B1', 'B2'];
+        const currentLevelIndex = levels.indexOf(course.level);
+        
+        if (currentLevelIndex < levels.length - 1) {
+          const nextLevel = levels[currentLevelIndex + 1];
           
-          // Check if the next level is not already available
+          // Update both currentLevel and availableLevels
+          user.progress.currentLevel = nextLevel;
           if (!user.progress.availableLevels.includes(nextLevel)) {
             user.progress.availableLevels.push(nextLevel);
-            user.progress.currentLevel = nextLevel; // Update current level to the new level
           }
+          
+          // Ensure the changes are marked as modified
+          user.markModified('progress');
         }
       }
     }
@@ -301,4 +308,4 @@ exports.completeLesson = async (req, res, next) => {
       message: err.message,
     });
   }
-}; 
+};
