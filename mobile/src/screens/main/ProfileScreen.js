@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { Avatar, Icon, Divider, Button } from '@rneui/themed';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import CustomOverlay from '../../components/CustomOverlay';
 import { colors } from '../../theme/colors';
+import { Modal } from 'react-native';  // Add this to imports
+import * as api from '../../api/api';  // Add this import at the top
 
 const ProfileScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -18,7 +21,10 @@ const ProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isLogoutVisible, setIsLogoutVisible] = useState(false);
   const [isLanguageVisible, setIsLanguageVisible] = useState(false);
-
+  const [isErrorVisible, setIsErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const { refreshUser } = useAuth();
+  
   const handleLogout = async () => {
     setLoading(true);
     await logout();
@@ -26,17 +32,133 @@ const ProfileScreen = ({ navigation }) => {
     setIsLogoutVisible(false);
   };
 
-  const changeLanguage = (lang) => {
-    i18n.changeLanguage(lang);
-    setIsLanguageVisible(false);
-  };
-
   const getLevelColor = (level) => {
     return colors.levels[level] || colors.primary;
   };
 
+  const changeLanguage = async (lang) => {
+    try {
+      // Update language in i18n
+      i18n.changeLanguage(lang);
+      
+      console.log("lang1")
+      // Save to backend
+      const res = await api.updateUserSettings({ language: lang });
+      console.log("lang2")
+      console.log(res)
+      // Close overlay
+      setIsLanguageVisible(false);
+      refreshUser();
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
+  };
+
+  // Add useEffect to set initial language
+  useEffect(() => {
+    if (user?.settings?.language) {
+      i18n.changeLanguage(user.settings.language);
+    }
+  }, [user]);
+
+  // Update the Language Selection Overlay
+  // const renderLanguageOverlay = () => (
+  //   <CustomOverlay
+  //     isVisible={isLanguageVisible}
+  //     onClose={() => setIsLanguageVisible(false)}
+  //     title={t('language.select')}
+  //     buttons={[
+  //       {
+  //         text: t('common.cancel'),
+  //         onPress: () => setIsLanguageVisible(false),
+  //         type: 'cancel'
+  //       }
+  //     ]}
+  //   >
+  //     <View style={styles.languageOptionsContainer}>
+  //       <TouchableOpacity
+  //         style={styles.languageOption}
+  //         onPress={() => changeLanguage('kk')}
+  //       >
+  //         <Text style={[
+  //           styles.languageText,
+  //           i18n.language === 'kk' && styles.activeLanguage
+  //         ]}>Қазақша</Text>
+  //         {i18n.language === 'kk' && (
+  //           <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+  //         )}
+  //       </TouchableOpacity>
+  //       <TouchableOpacity
+  //         style={styles.languageOption}
+  //         onPress={() => changeLanguage('ru')}
+  //       >
+  //         <Text style={[
+  //           styles.languageText,
+  //           i18n.language === 'ru' && styles.activeLanguage
+  //         ]}>Русский</Text>
+  //         {i18n.language === 'ru' && (
+  //           <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+  //         )}
+  //       </TouchableOpacity>
+  //     </View>
+  //   </CustomOverlay>
+  // );
+
+  // Add to styles
+  const additionalStyles = {
+    languageOptionsContainer: {
+      backgroundColor: colors.white,
+      borderRadius: 10,
+      overflow: 'hidden',
+      width: '100%',
+    },
+  };
+
+  // Update the return statement to use the new render function
   return (
     <ScrollView style={styles.container}>
+      {/* Language Selection Modal */}
+      <Modal
+        visible={isLanguageVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsLanguageVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setIsLanguageVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{t('language.select')}</Text>
+            
+            <TouchableOpacity
+              style={styles.languageOption}
+              onPress={() => changeLanguage('kk')}
+            >
+              <Text style={[styles.languageText, i18n.language === 'kk' && styles.activeLanguage]}>
+                Қазақша
+              </Text>
+              {i18n.language === 'kk' && (
+                <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.languageOption}
+              onPress={() => changeLanguage('ru')}
+            >
+              <Text style={[styles.languageText, i18n.language === 'ru' && styles.activeLanguage]}>
+                Русский
+              </Text>
+              {i18n.language === 'ru' && (
+                <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
       {/* Logout Overlay */}
       <CustomOverlay
         isVisible={isLogoutVisible}
@@ -59,7 +181,7 @@ const ProfileScreen = ({ navigation }) => {
       />
 
       {/* Language Selection Overlay */}
-      <CustomOverlay
+      {/* <CustomOverlay
         isVisible={isLanguageVisible}
         onClose={() => setIsLanguageVisible(false)}
         title={t('language.select')}
@@ -95,7 +217,7 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="checkmark" type="ionicon" color={colors.primary} size={20} />
           )}
         </TouchableOpacity>
-      </CustomOverlay>
+      </CustomOverlay> */}
 
       {/* User Info Section */}
       <View style={styles.userInfoSection}>
@@ -378,6 +500,33 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingTop: 10,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: colors.black,
+  },
 });
 
-export default ProfileScreen; 
+export default ProfileScreen;
