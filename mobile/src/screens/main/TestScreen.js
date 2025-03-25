@@ -166,14 +166,41 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const handleSubmitTest = async () => {
-    // Check if all questions are answered
-    const unansweredQuestions = answers.filter(answer => answer === null).length;
+    const unansweredQuestions = answers.filter((answer, index) => {
+      if (!answer) return true;
+      if (Array.isArray(answer) && answer.length === 0) return true;
+      if (typeof answer === 'object' && Object.keys(answer).length === 0) return true;
+      return false;
+    }).length;
+  
     if (unansweredQuestions > 0) {
-      setShowIncompleteWarning(true);
+      setShowConfirmation(false); // Close confirmation first
+      setTimeout(() => {
+        setShowIncompleteWarning(true);
+      }, 100);
     } else {
-      submitTest();
+      setShowConfirmation(false);
+      setTimeout(() => {
+        submitTest();
+      }, 100);
     }
   };
+
+const closeAllOverlays = () => {
+  setShowCategorySelection(false);
+  setShowConfirmation(false);
+  setShowIncompleteWarning(false);
+  setShowError(false);
+  setShowResults(false);
+};
+
+// Modify the overlay opening functions
+const handleShowConfirmation = () => {
+  closeAllOverlays();
+  setTimeout(() => {
+    setShowConfirmation(true);
+  }, 100);
+};
 
   const submitTest = async () => {
     setSubmitting(true);
@@ -292,26 +319,22 @@ const TestScreen = ({ route, navigation }) => {
         }
       });
       
-      console.log('Submitting total points:', totalPoints); // Debug log
-      
+      console.log('Submitting total points:', totalPoints);
       setFinalTotalPoints(totalPoints);
       const response = await api.submitTest(testId, totalPoints, test.isFinal);
       
-      // Show results in overlay first
-      setTestResults(response.data);
-      setShowResults(true);
+      // Show results after a small delay
+      setTimeout(() => {
+        setTestResults(response.data);
+        setShowResults(true);
+      }, 300);
       
-      // Then refresh user data in the background
-      // refreshUser().catch(error => {
-      //   console.error('Error refreshing user data:', error);
-      // });
     } catch (error) {
       console.error('Error submitting test:', error);
-      CustomOverlay({
-        title: t('test.error'),
-        message: 'Failed to submit test',
-        platform: Platform.OS
-      });
+      setTimeout(() => {
+        setShowError(true);
+        setErrorMessage(t('test.submitError'));
+      }, 300);
     } finally {
       setSubmitting(false);
     }
@@ -620,12 +643,23 @@ const TestScreen = ({ route, navigation }) => {
   const renderCategoryItem = (item) => {
     // Handle when item is an object with originalIndex
     if (item && typeof item === 'object' && 'originalIndex' in item) {
-      item = item.option || item[0]; // Get the actual content
+      if (typeof item.option === 'object') {
+        item = item.option;
+      } else {
+        item = item.option || item;
+      }
     }
 
     // Get the text content
-    const textContent = typeof item === 'object' ? item.text : item;
-    const isLongText = textContent && textContent.length > 100;
+    let textContent;
+  if (Array.isArray(item)) {
+    textContent = item.join(' ');
+  } else if (typeof item === 'object') {
+    textContent = item.text || String(item);
+  } else {
+    textContent = String(item);
+  }
+    const isLongText = textContent && textContent.length > 20;
   
     if (typeof item === 'object' && item.image) {
       return (
@@ -640,7 +674,7 @@ const TestScreen = ({ route, navigation }) => {
     }
     
     return isLongText ? (
-      <Text style={styles.categoryItemTextLong} numberOfLines={4}>
+      <Text style={[styles.categoryItemTextLong, { flexWrap: 'wrap' }]} numberOfLines={4}>
         {textContent}
       </Text>
     ) : (
@@ -690,11 +724,14 @@ const TestScreen = ({ route, navigation }) => {
       const newAnswers = { ...currentAnswers };
       
       // Add the option to the selected category with its original index
-      if (!newAnswers[category]) newAnswers[category] = [];
-      newAnswers[category] = [...newAnswers[category], {
-        ...optionWithIndex.option,
-        originalIndex: optionWithIndex.index
-      }];
+      const optionContent = typeof optionWithIndex.option === 'object' 
+      ? optionWithIndex.option.text 
+      : optionWithIndex.option;
+      
+    newAnswers[category] = [...newAnswers[category], {
+      option: optionContent,  // Store the text content directly
+      originalIndex: optionWithIndex.index
+    }];
       
       handleAnswerSelect(newAnswers);
     };
@@ -716,61 +753,88 @@ const TestScreen = ({ route, navigation }) => {
         {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text> */}
         
-        {/* Uncategorized options */}
-        <View style={styles.categoriesSection}>
-          <Text style={styles.categoryTitle}>{t('test.availableItems')}:</Text>
-          <View style={
-            uncategorizedOptions.some(({option}) => {
-              const textContent = typeof option === 'object' ? option.text : option;
-              return textContent && textContent.length > 100;
-            }) 
-            ? styles.uncategorizedContainerLong 
-            : styles.uncategorizedContainer
-          }>
-            {uncategorizedOptions.map(({option, index}) => {
-              const textContent = typeof option === 'object' ? option.text : option;
-              const isLongText = textContent && textContent.length > 100;
-              
-              return (
-                <TouchableOpacity
-                  key={`${index}-${textContent}`}
-                  style={isLongText ? styles.categoryItemLong : styles.categoryItem}
-                  onPress={() => {
-                    setSelectedOption({option, index});
-                    setShowCategorySelection(true);
-                  }}
-                >
-                  {renderCategoryItem(option)}
-                </TouchableOpacity>
-              );
-            })}
+{/* Uncategorized options */}
+<View style={styles.categoriesSection}>
+  <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text>
+  <View style={styles.uncategorizedContainer}>
+    {uncategorizedOptions.map(({option, index}) => {
+      const textContent = typeof option === 'object' ? option.text : option;
+      const isLongText = textContent && textContent.length > 50;
+      
+      return (
+        <TouchableOpacity
+          key={`${index}-${textContent}`}
+          style={[
+            styles.categoryItem,
+            isLongText && { 
+              width: '100%', 
+              flexDirection: 'column', 
+              padding: 15,
+              marginBottom: 10 
+            }
+          ]}
+          onPress={() => {
+            setSelectedOption({option, index});
+            setShowCategorySelection(true);
+          }}
+        >
+          <View style={{ flex: 1, width: '100%' }}>
+            <Text style={[
+              isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+              { flexWrap: 'wrap' }
+            ]}>
+              {textContent}
+            </Text>
           </View>
-        </View>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+</View>
         
         {/* Categories */}
-        {categories.map((category, categoryIndex) => (
-          <View key={categoryIndex} style={styles.categoriesSection}>
-            {renderCategoryTitle(category)}
-            <View style={styles.categoryContainer}>
-              {(currentAnswers[category] || []).map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={`${item.originalIndex}-${itemIndex}`}
-                  style={styles.categoryItem}
-                  onPress={() => handleRemoveFromCategory(item, category)}
-                >
-                  {renderCategoryItem(item)}
-                  <Icon 
-                    name="close-circle" 
-                    type="ionicon" 
-                    size={16} 
-                    color="#F44336"
-                    style={styles.categoryItemRemoveIcon}
-                  />
-                </TouchableOpacity>
-              ))}
+        {/* Categories */}
+{categories.map((category, categoryIndex) => (
+  <View key={categoryIndex} style={styles.categoriesSection}>
+    {renderCategoryTitle(category)}
+    <View style={styles.categoryContainer}>
+      {(currentAnswers[category] || []).map((item, itemIndex) => {
+        const textContent = typeof item.option === 'object' ? item.option.text : item.option;
+        const isLongText = textContent && textContent.length > 50;
+        
+        return (
+          <TouchableOpacity
+            key={`${item.originalIndex}-${itemIndex}`}
+            style={[
+              styles.categoryItem,
+              isLongText && { width: '100%', flexDirection: 'column', padding: 15 }
+            ]}
+            onPress={() => handleRemoveFromCategory(item, category)}
+          >
+            <View style={{ flex: 1, width: '100%' }}>
+              <Text style={[
+                isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+                { flexWrap: 'wrap' }
+              ]}>
+                {textContent}
+              </Text>
             </View>
-          </View>
-        ))}
+            <Icon 
+              name="close-circle" 
+              type="ionicon" 
+              size={16} 
+              color="#F44336"
+              style={[
+                styles.categoryItemRemoveIcon,
+                isLongText && { position: 'absolute', top: 5, right: 5 }
+              ]}
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  </View>
+))}
 
         {/* Category Selection Overlay */}
         <CustomOverlay
@@ -1075,7 +1139,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   questionText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#333',
@@ -1318,6 +1382,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     flexShrink: 1,
     width: '100%',
+    flexWrap: 'wrap',
   },
   categoryContainer: {
     flexDirection: 'row',
@@ -1355,14 +1420,16 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     marginVertical: 5,
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    minHeight: 50,
+    justifyContent: 'center',
   },
   categorySelectionText: {
     fontSize: 16,
     color: colors.text,
     textAlign: 'center',
+    flexWrap: 'wrap',
   },
   categorySelectionImage: {
     width: 80,
@@ -1466,7 +1533,7 @@ const styles = StyleSheet.create({
     fontSize: Math.min(14, width * 0.035),
   },
   questionText: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 24,
     color: '#333',
     marginBottom: Math.min(10, height * 0.01),
   },
