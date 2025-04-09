@@ -755,7 +755,7 @@ const handleShowConfirmation = () => {
         
 {/* Uncategorized options */}
 <View style={styles.categoriesSection}>
-  <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text>
+  {/* <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text> */}
   <View style={styles.uncategorizedContainer}>
     {uncategorizedOptions.map(({option, index}) => {
       const textContent = typeof option === 'object' ? option.text : option;

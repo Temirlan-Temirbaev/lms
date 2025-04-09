@@ -93,9 +93,9 @@ export default {
       input: 'Жауабыңызды төменге жазыңыз',
       categories: 'Элементтерді дұрыс санатқа орналастырыңыз'
     },
-    typeHere: 'Мұнда жазыңыз',
+    typeHere: 'Мұнда енгізіңіз',
     // Categories
-    availableItems: 'Қолжетімді элементтер:',
+    // availableItems: 'Қолжетімді элементтер:',
     selectCategory: 'Санатты таңдаңыз',
     selectCategoryFor: 'Бұл элемент үшін санатты таңдаңыз',
     
@@ -138,7 +138,7 @@ export default {
     unsupportedType: 'Қолдау көрсетілмейтін сұрақ түрі',
     
     // Categories
-    availableItems: 'Қолжетімді элементтер:',
+    // availableItems: 'Қолжетімді элементтер:',
     addTo: '{{category}} қосу',
     
     // Instructions
@@ -171,7 +171,7 @@ export default {
     loading: 'Сабақ жүктелуде...',
     
     // Buttons
-    markAsCompleted: 'Аяқталды деп белгілеу',
+    markAsCompleted: 'Аяқтау',
     completed: 'Аяқталды',
     
     // Success messages
@@ -258,8 +258,8 @@ export default {
     // Stats
     learningStats: 'Оқу статистикасы',
     lessons: 'Сабақтар',
-    tests: 'Тесттер',
-    dayStreak: 'Күн қатары',
+    tests: 'Жаттығулар',
+    dayStreak: 'Кіру белсенділігі',
     
     // Account Settings
     accountSettings: 'Аккаунт баптаулары',
@@ -306,7 +306,7 @@ export default {
     
     // Stats
     completedLessons: 'Аяқталған сабақтар',
-    completedTests: 'Аяқталған тесттер',
+    completedTests: 'Аяқталған жаттығулар',
     currentLevel: 'Ағымдағы деңгей',
     
     // Course Progress
@@ -335,9 +335,9 @@ export default {
     lessonNumber: 'Сабақ {number}',
     score: '{score}%',
     lessons: 'Сабақтар',
-    tests: 'Тесттер',
+    tests: 'Жаттығулар',
     noLessons: 'Сабақтар жоқ',
-    noTests: 'Тесттер жоқ'
+    noTests: 'Жаттығулар жоқ'
   },
   // Add more translation keys as needed
 }; 
