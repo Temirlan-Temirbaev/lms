@@ -4,7 +4,8 @@ import tests from './tests'
 
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
-const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+// const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+const API_URL = 'http://localhost:5001/api'; // For iOS simulator
 // const API_URL = 'http://192.168.0.158:5001/api'; 
 
 // Create axios instance
@@ -19,8 +20,10 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('token');
+    // console.log('Token from storage:', token); // Debug log
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // console.log('Request headers:', config.headers); // Debug log
     } else {
       console.log('No token found in storage'); // Debug log
     }
@@ -207,8 +210,10 @@ export const updateUserLevel = async (level) => {
 export const getPlacementTest = async () => {
   try {
     const response = await api.get('/placement-test');
+    console.log("placement test", response.data) // Debug log
     return response.data;
   } catch (error) {
+    console.log("erorrrrorrr", error) // Debug log
     throw error.response?.data || { message: 'Server error' };
   }
 };

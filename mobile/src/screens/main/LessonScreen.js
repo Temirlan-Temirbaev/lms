@@ -8,6 +8,7 @@ import {
   Alert,
   SafeAreaView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { Button } from '@rneui/themed';
 import Markdown from 'react-native-markdown-display';
@@ -19,6 +20,7 @@ import { SimpleAudioPlayer } from './AudioPlayer'
 import { AudioSlider } from './AudioSlider';
 import { CustomOverlay } from '../../components/CustomOverlay';
 import { colors } from '../../theme/colors';
+import ImageOverlay from '../../components/ImageOverlay';
 
 const LessonScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
@@ -29,6 +31,7 @@ const LessonScreen = ({ route, navigation }) => {
   const { user, refreshUser } = useAuth();
   const [audioUrls, setAudioUrls] = useState([]);
   const [contentSegments, setContentSegments] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     fetchLesson();
@@ -147,6 +150,7 @@ const LessonScreen = ({ route, navigation }) => {
       borderRightColor: '#e0e0e0',
       justifyContent: 'center',
       alignItems: 'center',
+      minHeight: 100,
     },
     tableCell: {
       flex: 1,
@@ -155,15 +159,22 @@ const LessonScreen = ({ route, navigation }) => {
       borderRightColor: '#e0e0e0',
       justifyContent: 'center',
       alignItems: 'center',
+      minHeight: 100,
+      flexWrap: 'wrap',
+      overflow: 'hidden',
     },
     tableHeaderText: {
       fontWeight: 'bold',
-      fontSize: 14,
+      fontSize: 18,
       color: '#333',
+      textAlign: 'center',
     },
     tableCellText: {
-      fontSize: 14,
+      fontSize: 16,
       color: '#666',
+      textAlign: 'center',
+      flexWrap: 'wrap',
+      flexShrink: 1,
     },
   });
 
@@ -171,10 +182,19 @@ const LessonScreen = ({ route, navigation }) => {
     image: (node) => {
       const imageUrl = node.attributes.src;
       return (
-        <Image
-          source={{ uri: imageUrl }}
-          style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Image pressed:', imageUrl);
+            setSelectedImage(imageUrl);
+          }}
+          activeOpacity={0.7}
+          style={{ width: '100%' }}
+        >
+          <Image
+            source={{ uri: imageUrl }}
+            style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
+          />
+        </TouchableOpacity>
       );
     },
     link: (node, children, parent, styles) => {
@@ -212,52 +232,86 @@ const LessonScreen = ({ route, navigation }) => {
     
     th: (node, children, parent, styles) => {
       // Check if the header content is an image
-      const hasImage = node.children?.[0]?.type === 'image';
+      const hasImage = node.children?.some(child => child.type === 'image');
+      const imageNode = node.children?.find(child => child.type === 'image');
       
-      if (hasImage) {
-        const imageNode = node.children[0];
-        return (
-          <View style={tableStyles.tableHeaderCell}>
-            <Image
-              source={{ uri: imageNode.attributes.src }}
-              style={{ width: '100%', height: 100, resizeMode: 'contain' }}
-            />
-          </View>
-        );
-      }
+      // Get all text content from the node
+      const getTextContent = (node) => {
+        if (!node) return '';
+        if (node.type === 'text') return node.content;
+        if (node.children) {
+          return node.children.map(child => getTextContent(child)).join('');
+        }
+        return '';
+      };
 
-      // Regular text header
+      const textContent = getTextContent(node);
+
       return (
         <View style={tableStyles.tableHeaderCell}>
-          <Text style={tableStyles.tableHeaderText}>
-            {children}
-          </Text>
+          {hasImage && imageNode && (
+            <TouchableOpacity
+              onPress={() => {
+                console.log('Table header image pressed:', imageNode.attributes.src);
+                setSelectedImage(imageNode.attributes.src);
+              }}
+              activeOpacity={0.7}
+              style={{ width: '100%', height: 100 }}
+            >
+              <Image
+                source={{ uri: imageNode.attributes.src }}
+                style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+              />
+            </TouchableOpacity>
+          )}
+          {textContent && textContent.trim() !== '' && (
+            <Text style={tableStyles.tableHeaderText}>
+              {textContent}
+            </Text>
+          )}
         </View>
       );
     },
     
     td: (node, children, parent, styles) => {
       // Check if the cell content is an image
-      const hasImage = node.children?.[0]?.type === 'image';
+      const hasImage = node.children?.some(child => child.type === 'image');
+      const imageNode = node.children?.find(child => child.type === 'image');
       
-      if (hasImage) {
-        const imageNode = node.children[0];
-        return (
-          <View style={tableStyles.tableCell}>
-            <Image
-              source={{ uri: imageNode.attributes.src }}
-              style={{ width: '100%', height: 100, resizeMode: 'contain' }}
-            />
-          </View>
-        );
-      }
+      // Get all text content from the node
+      const getTextContent = (node) => {
+        if (!node) return '';
+        if (node.type === 'text') return node.content;
+        if (node.children) {
+          return node.children.map(child => getTextContent(child)).join('');
+        }
+        return '';
+      };
 
-      // Regular text cell
+      const textContent = getTextContent(node);
+
       return (
         <View style={tableStyles.tableCell}>
-          <Text style={tableStyles.tableCellText}>
-            {children}
-          </Text>
+          {hasImage && imageNode && (
+            <TouchableOpacity
+              onPress={() => {
+                console.log('Table cell image pressed:', imageNode.attributes.src);
+                setSelectedImage(imageNode.attributes.src);
+              }}
+              activeOpacity={0.7}
+              style={{ width: '100%', height: 100 }}
+            >
+              <Image
+                source={{ uri: imageNode.attributes.src }}
+                style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+              />
+            </TouchableOpacity>
+          )}
+          {textContent && textContent.trim() !== '' && (
+            <Text style={tableStyles.tableCellText}>
+              {textContent}
+            </Text>
+          )}
         </View>
       );
     },
@@ -268,15 +322,32 @@ const LessonScreen = ({ route, navigation }) => {
 
     const processContent = (content) => {
       const audioRegex = /\[.*?\]\((.*?\.(?:mp3|m4a))\)/g;
-      // Extract all audio URLs first
-      const matches = [...content.matchAll(audioRegex)];
-      const urls = matches.map(match => match[1].trim()).filter(url => url && url.length > 0);
-      
-      // Split content into segments at audio links
-      const segments = content.split(audioRegex);
-      
+      let lastIndex = 0;
+      const segments = [];
+      const urls = [];
+      let match;
+
+      // Process all audio links
+      while ((match = audioRegex.exec(content)) !== null) {
+        // Add the text before the audio link
+        if (match.index > lastIndex) {
+          segments.push(content.substring(lastIndex, match.index));
+        }
+        
+        // Add the audio URL
+        urls.push(match[1].trim());
+        
+        // Update the last index
+        lastIndex = match.index + match[0].length;
+      }
+
+      // Add any remaining content after the last audio link
+      if (lastIndex < content.length) {
+        segments.push(content.substring(lastIndex));
+      }
+
       return {
-        segments: segments.filter(segment => !segment.match(/\.(?:mp3|m4a)$/)), // Filter out the URLs
+        segments: segments.filter(segment => segment.trim() !== ''),
         audioUrls: urls
       };
     };
@@ -336,6 +407,12 @@ const LessonScreen = ({ route, navigation }) => {
           />
         )}
       </View>
+
+      <ImageOverlay
+        isVisible={!!selectedImage}
+        imageUrl={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
     </SafeAreaView>
   );
 };

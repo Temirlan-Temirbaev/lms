@@ -2,9 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Base URL for API
-const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
+// const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
-// const API_URL = 'http://localhost:5001/api';
+const API_URL = 'http://localhost:5001/api';
 // Create axios instance
 const api = axios.create({
   
@@ -118,6 +118,37 @@ export const getProgress = async () => {
 export const updateUserLevel = async (level) => {
   const response = await api.put('/users/level', { level });
   return response.data;
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to send reset email');
+  }
+};
+
+export const verifyOtp = async (email, otp) => {
+  try {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const resetPassword = async (email, newPassword, otp) => {
+  try {
+    const response = await api.post('/auth/reset-password', {
+      email,
+      newPassword,
+      otp
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to reset password' };
+  }
 };
 
 export default api; 

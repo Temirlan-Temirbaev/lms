@@ -13,6 +13,7 @@ import {
   Dimensions,
   Image,
   Platform,
+  Modal,
 } from 'react-native';
 import { Button, Icon, Divider, Overlay } from '@rneui/themed';
 import * as api from '../../api/api';
@@ -22,6 +23,7 @@ import Markdown from 'react-native-markdown-display';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../theme/colors';
 import { AudioSlider } from './AudioSlider';
+import ImageOverlay from '../../components/ImageOverlay';
 // import DraggableFlatList from 'react-native-draggable-flatlist';
 
 const { width, height } = Dimensions.get('window');
@@ -51,29 +53,9 @@ const markdownStyles = {
   },
 };
 
-const renderRules = {
-  image: (node) => {
-    const imageUrl = node.attributes.src;
-    return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
-      />
-    );
-  },
-  link: (node, children, parent, styles) => {
-    const url = node.attributes.href;
-    if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
-      return null; // Don't render audio links in markdown
-    }
-    return (
-      <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
-    );
-  },
-};
-
 const TestScreen = ({ route, navigation }) => {
   const { testId } = route.params;
+  const { t } = useTranslation();
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -92,9 +74,197 @@ const TestScreen = ({ route, navigation }) => {
   const [testResults, setTestResults] = useState(null);
   const [questionCount, setQuestionCount] = useState(0);
   const [finalTotalPoints, setFinalTotalPoints] = useState(null);
-  const { t } = useTranslation();
   const [contentSegments, setContentSegments] = useState([]);
   const [questionAudioUrls, setQuestionAudioUrls] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageOverlay, setShowImageOverlay] = useState(false);
+  const [timer, setTimer] = useState(null);
+
+  const renderRules = {
+    image: (node) => {
+      const imageUrl = node.attributes.src;
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedImage(imageUrl);
+            setShowImageOverlay(true);
+          }}
+          activeOpacity={0.7}
+          style={{ width: '100%' }}
+        >
+          <Image
+            source={{ uri: imageUrl }}
+            style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
+          />
+        </TouchableOpacity>
+      );
+    },
+    link: (node, children, parent, styles) => {
+      const url = node.attributes.href;
+      if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
+        return null; // Don't render audio links in markdown
+      }
+      return (
+        <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
+      );
+    },
+  };
+
+  // Helper functions for checking and formatting answers
+  const checkAnswer = (question, userAnswer) => {
+    if (!question || !userAnswer) return false;
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return question.correctAnswer.toLowerCase() === userAnswer.toLowerCase();
+      case 'fill-in-blanks':
+        if (typeof answer === 'object' && typeof question.correctAnswer === 'object') {
+          return Object.keys(answer).every(blankId => {
+            const correctAnswerArray = question.correctAnswer[blankId] || [];
+            const userAnswer = answer[blankId];
+            
+            if (!userAnswer) return false;
+            
+            return correctAnswerArray.some(correct => 
+              String(userAnswer).toLowerCase().trim() === String(correct).toLowerCase().trim()
+            );
+          });
+        }
+        return false;
+      case 'matching':
+        const correctAnswers = Array.isArray(question.correctAnswer) 
+          ? question.correctAnswer.map(a => String(a).toLowerCase()).sort()
+          : [];
+        const userAnswers = Array.isArray(userAnswer)
+          ? userAnswer.map(a => String(a).toLowerCase()).sort()
+          : [];
+        
+        return JSON.stringify(correctAnswers) === JSON.stringify(userAnswers);
+      case 'ordering':
+        const normalizedCorrect = question.correctAnswer.map(a => 
+          String(a).toLowerCase().trim()
+            .replace('c', 'с')
+            .normalize('NFKD')
+        );
+        const normalizedUser = userAnswer.map(a => 
+          String(a).toLowerCase().trim()
+            .replace('c', 'с')
+            .normalize('NFKD')
+        );
+        
+        return JSON.stringify(normalizedCorrect) === JSON.stringify(normalizedUser);
+      case 'categories':
+        return Object.keys(question.correctAnswer).every(category => {
+          const correctAnswers = question.correctAnswer[category].map(item => 
+            String(item).toLowerCase().trim()
+          );
+
+          const userAnswers = (userAnswer[category] || []).map(item => {
+            if (item && typeof item === 'object') {
+              const value = item[0] || Object.values(item)[0];
+              return String(value).toLowerCase().trim();
+            }
+            return '';
+          }).filter(Boolean);
+
+          return correctAnswers.length === userAnswers.length &&
+                correctAnswers.every(correct => userAnswers.includes(correct));
+        });
+      case 'input':
+        if (typeof userAnswer === 'string') {
+          return question.correctAnswer.toLowerCase().trim() === userAnswer.toLowerCase().trim();
+        } else if (Array.isArray(question.correctAnswer)) {
+          return question.correctAnswer.some(correct => 
+            userAnswer.toLowerCase().trim() === correct.toLowerCase().trim());
+        }
+        return false;
+      default:
+        return false;
+    }
+  };
+
+  const formatUserAnswer = (question, userAnswer) => {
+    if (!userAnswer) return t('test.noAnswer');
+    if (!question) return '';
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return userAnswer;
+      case 'matching':
+        return userAnswer.join(', ');
+      case 'ordering':
+        return userAnswer.join(' → ');
+      case 'fill-in-blanks':
+        if (typeof userAnswer === 'object') {
+          return Object.values(userAnswer).join(', ');
+        }
+        return userAnswer;
+      case 'input':
+        return userAnswer;
+      case 'categories':
+        if (!userAnswer || typeof userAnswer !== 'object') return t('test.noAnswer');
+        let imageCounter = 1;
+        return Object.entries(userAnswer)
+          .map(([category, items]) => {
+            if (!Array.isArray(items)) return `${category}: ${t('test.noAnswer')}`;
+            const formattedItems = items.map(item => {
+              if (typeof item === 'object') {
+                if (item.text) return item.text;
+                if (item.image) return `${t('test.image')} ${imageCounter++}`;
+                return t('test.noAnswer');
+              }
+              return item;
+            });
+            // Replace image URLs with "Image X"
+            const formattedCategory = category.startsWith('http') ? `${t('test.image')} ${imageCounter++}` : category;
+            return `\n• ${formattedCategory}:\n  ${formattedItems.join('\n  ')}`;
+          })
+          .join('\n');
+      default:
+        return userAnswer;
+    }
+  };
+
+  const formatCorrectAnswer = (question) => {
+    if (!question || !question.correctAnswer) return '';
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return question.correctAnswer;
+      case 'matching':
+        return Array.isArray(question.correctAnswer) ? question.correctAnswer.join(', ') : question.correctAnswer;
+      case 'ordering':
+        return Array.isArray(question.correctAnswer) ? question.correctAnswer.join(' → ') : question.correctAnswer;
+      case 'fill-in-blanks':
+        if (typeof question.correctAnswer === 'object') {
+          return Object.values(question.correctAnswer).map(arr => arr[0]).join(', ');
+        }
+        return question.correctAnswer;
+      case 'input':
+        return question.correctAnswer;
+      case 'categories':
+        if (!question.correctAnswer || typeof question.correctAnswer !== 'object') return '';
+        let imageCounter = 1;
+        return Object.entries(question.correctAnswer)
+          .map(([category, items]) => {
+            if (!Array.isArray(items)) return `${category}: ${t('test.noAnswer')}`;
+            const formattedItems = items.map(item => {
+              if (typeof item === 'object') {
+                if (item.text) return item.text;
+                if (item.image) return `${t('test.image')} ${imageCounter++}`;
+                return t('test.noAnswer');
+              }
+              return item;
+            });
+            // Replace image URLs with "Image X"
+            const formattedCategory = category.startsWith('http') ? `${t('test.image')} ${imageCounter++}` : category;
+            return `\n• ${formattedCategory}:\n  ${formattedItems.join('\n  ')}`;
+          })
+          .join('\n');
+      default:
+        return question.correctAnswer;
+    }
+  };
 
   const getScoreColor = (score) => {
     if (score >= 90) return '#4CAF50';
@@ -641,7 +811,6 @@ const handleShowConfirmation = () => {
   };
 
   const renderCategoryItem = (item) => {
-    // Handle when item is an object with originalIndex
     if (item && typeof item === 'object' && 'originalIndex' in item) {
       if (typeof item.option === 'object') {
         item = item.option;
@@ -650,38 +819,73 @@ const handleShowConfirmation = () => {
       }
     }
 
-    // Get the text content
     let textContent;
-  if (Array.isArray(item)) {
-    textContent = item.join(' ');
-  } else if (typeof item === 'object') {
-    textContent = item.text || String(item);
-  } else {
-    textContent = String(item);
-  }
+    if (Array.isArray(item)) {
+      textContent = item.join(' ');
+    } else if (typeof item === 'object') {
+      textContent = item.text || String(item);
+    } else {
+      textContent = String(item);
+    }
     const isLongText = textContent && textContent.length > 20;
-  
+
     if (typeof item === 'object' && item.image) {
       return (
-        <View style={styles.categoryItemContent}>
-          <Image 
-            source={{ uri: item.image }}
-            style={styles.categoryItemImage}
-          />
-          {item.text && <Text style={styles.categoryItemText} numberOfLines={2}>{item.text}</Text>}
-        </View>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Category image pressed:', item.image);
+            setSelectedImage(item.image);
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.categoryItemContent}>
+            <Image 
+              source={{ uri: item.image }}
+              style={styles.categoryItemImage}
+            />
+            {item.text && (
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.categoryItemText}>{item.text}</Text>
+                {item.action && (
+                  <Text style={styles.categoryItemAction}>{item.action}</Text>
+                )}
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       );
     }
     
-    return isLongText ? (
-      <Text style={[styles.categoryItemTextLong, { flexWrap: 'wrap' }]} numberOfLines={4}>
-        {textContent}
-      </Text>
-    ) : (
-      <Text style={styles.categoryItemText} numberOfLines={2}>
-        {textContent}
-      </Text>
+    return (
+      <View style={styles.categoryItemContent}>
+        <Text style={[
+          isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+          { flexWrap: 'wrap' }
+        ]}>
+          {textContent}
+        </Text>
+      </View>
     );
+  };
+
+  const renderCategoryTitle = (category) => {
+    if (category.startsWith('https')) {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Category title image pressed:', category);
+            setSelectedImage(category);
+          }}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={{ uri: category }}
+            style={{ width: 100, height: 100, resizeMode: 'contain' }}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return <Text style={styles.categoryTitle}>{category}</Text>;
   };
 
   const renderCategoriesQuestion = (question) => {
@@ -694,19 +898,6 @@ const handleShowConfirmation = () => {
       }
     });
     
-    // Render category title - if it starts with @ it's an image
-    const renderCategoryTitle = (category) => {
-      if (category.startsWith('https')) {
-        return (
-          <Image
-            source={{ uri: category }}
-            style={{ width: 100, height: 100, resizeMode: 'contain' }}
-          />
-        );
-      }
-      return <Text style={styles.categoryTitle}>{category}</Text>;
-    };
-
     // Get all options that haven't been categorized yet
     const uncategorizedOptions = question.options.map((option, index) => ({
       option,
@@ -753,121 +944,80 @@ const handleShowConfirmation = () => {
         {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text> */}
         
-{/* Uncategorized options */}
-<View style={styles.categoriesSection}>
-  {/* <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text> */}
-  <View style={styles.uncategorizedContainer}>
-    {uncategorizedOptions.map(({option, index}) => {
-      const textContent = typeof option === 'object' ? option.text : option;
-      const isLongText = textContent && textContent.length > 50;
-      
-      return (
-        <TouchableOpacity
-          key={`${index}-${textContent}`}
-          style={[
-            styles.categoryItem,
-            isLongText && { 
-              width: '100%', 
-              flexDirection: 'column', 
-              padding: 15,
-              marginBottom: 10 
-            }
-          ]}
-          onPress={() => {
-            setSelectedOption({option, index});
-            setShowCategorySelection(true);
-          }}
-        >
-          <View style={{ flex: 1, width: '100%' }}>
-            <Text style={[
-              isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
-              { flexWrap: 'wrap' }
-            ]}>
-              {textContent}
-            </Text>
+        <View style={styles.categorySection}>
+          {/* <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text> */}
+          <View style={styles.categoryContainer}>
+            {uncategorizedOptions.map(({option, index}) => (
+              <TouchableOpacity
+                key={`${index}-${option}`}
+                style={styles.categoryItem}
+                onPress={() => {
+                  setSelectedOption({option, index});
+                  setShowCategorySelection(true);
+                }}
+              >
+                {renderCategoryItem(option)}
+              </TouchableOpacity>
+            ))}
           </View>
-        </TouchableOpacity>
-      );
-    })}
-  </View>
-</View>
+        </View>
         
-        {/* Categories */}
-        {/* Categories */}
-{categories.map((category, categoryIndex) => (
-  <View key={categoryIndex} style={styles.categoriesSection}>
-    {renderCategoryTitle(category)}
-    <View style={styles.categoryContainer}>
-      {(currentAnswers[category] || []).map((item, itemIndex) => {
-        const textContent = typeof item.option === 'object' ? item.option.text : item.option;
-        const isLongText = textContent && textContent.length > 50;
-        
-        return (
-          <TouchableOpacity
-            key={`${item.originalIndex}-${itemIndex}`}
-            style={[
-              styles.categoryItem,
-              isLongText && { width: '100%', flexDirection: 'column', padding: 15 }
-            ]}
-            onPress={() => handleRemoveFromCategory(item, category)}
-          >
-            <View style={{ flex: 1, width: '100%' }}>
-              <Text style={[
-                isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
-                { flexWrap: 'wrap' }
-              ]}>
-                {textContent}
-              </Text>
+        {categories.map((category, categoryIndex) => (
+          <View key={categoryIndex} style={styles.categorySection}>
+            {renderCategoryTitle(category)}
+            <View style={styles.categoryContainer}>
+              {(currentAnswers[category] || []).map((item, itemIndex) => (
+                <TouchableOpacity
+                  key={`${item.originalIndex}-${itemIndex}`}
+                  style={styles.categoryItem}
+                  onPress={() => handleRemoveFromCategory(item, category)}
+                >
+                  {renderCategoryItem(item)}
+                  <Icon 
+                    name="close-circle" 
+                    type="ionicon" 
+                    size={16} 
+                    color="#F44336"
+                    style={styles.categoryItemRemoveIcon}
+                  />
+                </TouchableOpacity>
+              ))}
             </View>
-            <Icon 
-              name="close-circle" 
-              type="ionicon" 
-              size={16} 
-              color="#F44336"
-              style={[
-                styles.categoryItemRemoveIcon,
-                isLongText && { position: 'absolute', top: 5, right: 5 }
-              ]}
-            />
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  </View>
-))}
+          </View>
+        ))}
 
         {/* Category Selection Overlay */}
         <CustomOverlay
-  isVisible={showCategorySelection}
-  onClose={() => setShowCategorySelection(false)}
-  title={t('test.selectCategory')}
-  message=""
-  scrollable={true}
->
-  <ScrollView style={styles.categorySelectionScrollView}>
-    {categories.map((category, index) => (
-      <TouchableOpacity
-        key={index}
-        style={styles.categorySelectionButton}
-        onPress={() => {
-          if (selectedOption) {
-            handleAddToCategory(selectedOption, category);
-            setShowCategorySelection(false);
-          }
-        }}
-      >
-        {category.startsWith('https') ? (
-          <Image
-            source={{ uri: category }}
-            style={styles.categorySelectionImage}
-          />
-        ) : (
-          <Text style={styles.categorySelectionText}>{category}</Text>
-        )}
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-</CustomOverlay>
+          isVisible={showCategorySelection}
+          onClose={() => setShowCategorySelection(false)}
+          title={t('test.selectCategory')}
+          message={selectedOption ? renderCategoryItem(selectedOption.option) : ""}
+          scrollable={true}
+        >
+          <ScrollView style={styles.categorySelectionScrollView}>
+            {categories.map((category, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.categorySelectionButton}
+                onPress={() => {
+                  if (selectedOption) {
+                    handleAddToCategory(selectedOption, category);
+                    setShowCategorySelection(false);
+                  }
+                }}
+              >
+                {category.startsWith('https') ? (
+                  <Image
+                    source={{ uri: category }}
+                    style={styles.categorySelectionImage}
+                  />
+                ) : (
+                  <Text style={styles.categorySelectionText}>{category}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </CustomOverlay>
 
       </View>
     );
@@ -896,6 +1046,16 @@ const handleShowConfirmation = () => {
       default:
         return <Text style={styles.errorText}>{t('test.unknownType')}</Text>;
     }
+  };
+
+  const handleImagePress = (image) => {
+    const fullImageUrl = image.startsWith('http') ? image : `${API_URL}${image}`;
+    console.log('Setting image URL:', fullImageUrl);
+    setSelectedImage(fullImageUrl);
+  };
+
+  const closeImageOverlay = () => {
+    setSelectedImage(null);
   };
 
   if (loading) {
@@ -1083,8 +1243,69 @@ const handleShowConfirmation = () => {
               })}
             </Text>
           </View>
+
+          <View style={styles.resultsList}>
+            <Text style={styles.resultsTitle}>{t('test.questionResults')}</Text>
+            {test?.questions.map((question, index) => {
+              const userAnswer = answers[index];
+              const isCorrect = checkAnswer(question, userAnswer);
+              
+              return (
+                <View key={index} style={[
+                  styles.resultItem,
+                  isCorrect ? styles.correctAnswer : styles.wrongAnswer
+                ]}>
+                  <View style={styles.questionHeader}>
+                    <Text style={styles.questionNumber}>
+                      {t('test.question')} {index + 1}
+                    </Text>
+                    <View style={[
+                      styles.resultBadge,
+                      { backgroundColor: isCorrect ? '#4CAF50' : '#F44336' }
+                    ]}>
+                      <Icon
+                        name={isCorrect ? 'checkmark' : 'close'}
+                        type="ionicon"
+                        size={16}
+                        color="white"
+                      />
+                      <Text style={styles.resultText}>
+                        {isCorrect ? t('test.correct') : t('test.incorrect')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.questionText}>{question.question}</Text>
+                  
+                  {!isCorrect && (
+                    <View style={styles.answerContainer}>
+                      <Text style={styles.answerLabel}>{t('test.yourAnswer')}:</Text>
+                      <View style={styles.wrongAnswer}>
+                        <Text style={styles.wrongAnswerText}>
+                          {formatUserAnswer(question, userAnswer)}
+                        </Text>
+                      </View>
+                      
+                      <Text style={styles.answerLabel}>{t('test.correctAnswer')}:</Text>
+                      <View style={styles.correctAnswer}>
+                        <Text style={styles.correctAnswerText}>
+                          {formatCorrectAnswer(question)}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
         </View>
       </CustomOverlay>
+
+      <ImageOverlay
+        isVisible={!!selectedImage}
+        imageUrl={selectedImage}
+        onClose={closeImageOverlay}
+      />
     </SafeAreaView>
   );
 };
@@ -1341,45 +1562,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   categoryItem: {
-    padding: 10,
-    margin: 5,
+    padding: 12,
+    margin: 6,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 5,
+    borderRadius: 8,
     backgroundColor: '#f9f9f9',
     position: 'relative',
-  },
-  categoryItemLong: {
-    padding: 15,
-    margin: 5,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 5,
-    backgroundColor: '#f9f9f9',
-    position: 'relative',
-    width: '100%', // Full width for long text
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    maxWidth: '100%',
+    width: '100%',
+    flexShrink: 1,
   },
   categoryItemContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    flexWrap: 'wrap',
+  },
+  categoryItemText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    width: '100%',
+  },
+  categoryItemAction: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginLeft: 8,
   },
   categoryItemImage: {
     width: 80,
     height: 80,
     resizeMode: 'contain',
-    marginBottom: 5,
-  },
-  categoryItemText: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
+    marginBottom: 8,
+    borderRadius: 4,
   },
   categoryItemTextLong: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#333',
     textAlign: 'left',
     paddingHorizontal: 8,
-    lineHeight: 18,
+    lineHeight: 20,
     flexShrink: 1,
     width: '100%',
     flexWrap: 'wrap',
@@ -1387,6 +1619,11 @@ const styles = StyleSheet.create({
   categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    padding: 8,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    marginVertical: 8,
+    width: '100%',
   },
   categoryItemRemoveIcon: {
     position: 'absolute',
@@ -1394,17 +1631,6 @@ const styles = StyleSheet.create({
     right: -8,
     backgroundColor: 'white',
     borderRadius: 10,
-  },
-  categorySelectionContainer: {
-    padding: 10,
-    width: '100%',
-  },
-  categoryOverlayContainer: {
-    width: '90%',
-    maxHeight: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
   },
   categorySelectionContainer: {
     width: '100%',
@@ -1492,81 +1718,132 @@ const styles = StyleSheet.create({
     width: '100%', // Add this
   },
   resultsList: {
-    flex: 1,
+    marginTop: 20,
   },
   resultsTitle: {
-    fontSize: Math.min(20, width * 0.05),
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: Math.min(15, height * 0.02),
+    marginBottom: 15,
     color: '#333',
   },
   resultItem: {
-    padding: Math.min(15, width * 0.04),
+    padding: 15,
     borderRadius: 10,
-    marginBottom: Math.min(10, height * 0.01),
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   questionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Math.min(10, height * 0.01),
-    flexWrap: 'wrap',
+    marginBottom: 10,
   },
   questionNumber: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    flex: 1,
   },
   resultBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Math.min(10, width * 0.03),
-    paddingVertical: Math.min(5, height * 0.01),
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 15,
-    marginLeft: 10,
   },
   resultText: {
     color: 'white',
     marginLeft: 5,
     fontWeight: 'bold',
-    fontSize: Math.min(14, width * 0.035),
+    fontSize: 14,
   },
   questionText: {
     fontSize: 24,
     color: '#333',
     marginBottom: Math.min(10, height * 0.01),
   },
-  explanationContainer: {
-    backgroundColor: 'white',
-    padding: Math.min(15, width * 0.04),
-    borderRadius: 10,
-    marginTop: Math.min(10, height * 0.01),
+  answerContainer: {
+    marginVertical: 12,
   },
-  yourAnswerLabel: {
-    fontSize: Math.min(16, width * 0.04),
+  answerLabel: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#F44336',
-    marginBottom: Math.min(5, height * 0.01),
+    marginBottom: 6,
+    color: '#666',
   },
-  correctAnswerLabel: {
-    fontSize: Math.min(16, width * 0.04),
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: Math.min(10, height * 0.01),
-    marginBottom: Math.min(5, height * 0.01),
+  answerContent: {
+    fontSize: 16,
+    lineHeight: 24,
   },
-  explanationLabel: {
-    fontSize: Math.min(16, width * 0.04),
-    fontWeight: 'bold',
-    color: '#4F8EF7',
-    marginTop: Math.min(10, height * 0.01),
-    marginBottom: Math.min(5, height * 0.01),
+  correctAnswer: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#E8F5E9',
+    borderWidth: 2,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
   },
-  answerText: {
-    fontSize: Math.min(16, width * 0.04),
-    color: '#333',
-    marginBottom: Math.min(5, height * 0.01),
+  wrongAnswer: {
+    borderColor: '#F44336',
+    backgroundColor: '#FFEBEE',
+    borderWidth: 2,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  correctAnswerText: {
+    color: '#2E7D32',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  wrongAnswerText: {
+    color: '#C62828',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  correctAnswerHint: {
+    color: '#2E7D32',
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginTop: 4,
+    paddingLeft: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4CAF50',
+  },
+  categorySection: {
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  categoryDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 12,
+  },
+  imageOverlayContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageOverlayContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullScreenImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 
