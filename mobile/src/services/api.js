@@ -120,4 +120,35 @@ export const updateUserLevel = async (level) => {
   return response.data;
 };
 
+export const forgotPassword = async (email) => {
+  try {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to send reset email');
+  }
+};
+
+export const verifyOtp = async (email, otp) => {
+  try {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const resetPassword = async (email, newPassword, otp) => {
+  try {
+    const response = await api.post('/auth/reset-password', {
+      email,
+      newPassword,
+      otp
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to reset password' };
+  }
+};
+
 export default api; 

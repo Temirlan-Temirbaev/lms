@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     position: 'relative',
     alignSelf: 'center',
+    zIndex: 9999,
   },
   modalContent: {
     minHeight: 300, // Add this back

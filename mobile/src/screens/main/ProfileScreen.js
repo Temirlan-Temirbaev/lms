@@ -254,10 +254,10 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.statValue}>{user?.progress?.completedTests?.length || 0}</Text>
             <Text style={styles.statLabel}>{t('profile.tests')}</Text>
           </View>
-          <View style={styles.statItem}>
+          {/* <View style={styles.statItem}>
             <Text style={styles.statValue}>0</Text>
             <Text style={styles.statLabel}>{t('profile.dayStreak')}</Text>
-          </View>
+          </View> */}
         </View>
       </View>
 

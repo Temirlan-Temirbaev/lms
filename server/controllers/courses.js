@@ -222,7 +222,7 @@ exports.submitTest = async (req, res, next) => {
     }
 
     // Handle final test and level progression
-    if (isFinal && percentageScore >= 85) {
+    if (isFinal && percentageScore >= 60) {
       console.log("isFinal", isFinal)
 
       // Get the course for this test

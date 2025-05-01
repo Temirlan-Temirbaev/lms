@@ -13,35 +13,60 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import CustomOverlay from '../../components/CustomOverlay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorTitle, setErrorTitle] = useState('');
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      CustomOverlay({
-        title: t('auth.error'),
-        message: t('auth.fillAllFields'),
-        platform: Platform.OS
-      });
-      return;
-    }
-
-    setLoading(true);
     try {
-      await login(email, password);
+      if (!email || !password) {
+        setErrorTitle(t('auth.error'));
+        setErrorMessage(t('auth.fillAllFields'));
+        setShowError(true);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorTitle(t('auth.error'));
+        setErrorMessage(t('auth.invalidEmailFormat'));
+        setShowError(true);
+        return;
+      }
+
+      const response = await login(email, password);
+      if (response.token) {
+        await AsyncStorage.setItem('userToken', response.token);
+        navigation.replace('Main');
+      }
     } catch (error) {
-      CustomOverlay({
-        title: t('auth.loginFailed'),
-        message: t('auth.checkCredentials'),
-        platform: Platform.OS
-      });
-    } finally {
-      setLoading(false);
+      let errorMessage = t('auth.serverError');
+      
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = t('auth.invalidCredentials');
+            break;
+          case 500:
+            errorMessage = t('auth.serverError');
+            break;
+          default:
+            errorMessage = t('auth.serverError');
+        }
+      }
+
+      setErrorTitle(t('auth.error'));
+      setErrorMessage(errorMessage);
+      setShowError(true);
     }
   };
 
@@ -78,6 +103,13 @@ const LoginScreen = ({ navigation }) => {
             autoCorrect={false}
           />
 
+          <TouchableOpacity 
+            style={styles.forgotPasswordContainer}
+            onPress={() => navigation.navigate('ResetPassword')}
+          >
+            <Text style={styles.forgotPasswordText}>{t('auth.forgotPassword')}</Text>
+          </TouchableOpacity>
+
           <Button
             title={t('auth.login')}
             loading={loading}
@@ -94,6 +126,19 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+
+      <CustomOverlay
+        isVisible={showError}
+        onClose={() => setShowError(false)}
+        title={errorTitle}
+        message={errorMessage}
+        buttons={[
+          {
+            text: t('common.ok'),
+            onPress: () => setShowError(false),
+          }
+        ]}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -145,6 +190,14 @@ const styles = StyleSheet.create({
   registerLink: {
     color: colors.primary,
     fontWeight: 'bold',
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: colors.primary,
+    fontSize: 14,
   },
 });
 

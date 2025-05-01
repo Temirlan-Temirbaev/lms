@@ -24,54 +24,61 @@ const RegisterScreen = ({ navigation }) => {
   const [gender, setGender] = useState('');
   const [age, setAge] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorTitle, setErrorTitle] = useState('');
   const { register } = useAuth();
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword || !telephone || !gender || !age) {
-      CustomOverlay({
-        title: t('auth.error'),
-        message: t('auth.fillAllFields'),
-        platform: Platform.OS
-      });
+    if (!email || !password || !confirmPassword || !name || !telephone || !gender || !age) {
+      setErrorTitle(t('auth.error'));
+      setErrorMessage(t('auth.fillAllFields'));
+      setShowError(true);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorTitle(t('auth.error'));
+      setErrorMessage(t('auth.invalidEmailFormat'));
+      setShowError(true);
       return;
     }
 
     if (password !== confirmPassword) {
-      CustomOverlay({
-        title: t('auth.error'),
-        message: t('auth.passwordsNotMatch'),
-        platform: Platform.OS
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      CustomOverlay({
-        title: t('auth.error'),
-        message: t('auth.passwordTooShort'),
-        platform: Platform.OS
-      });
-      return;
-    }
-
-    if (isNaN(age) || age < 1 || age > 120) {
-      CustomOverlay({
-        title: t('auth.error'),
-        message: t('auth.invalidAge'),
-        platform: Platform.OS
-      });
+      setErrorTitle(t('auth.error'));
+      setErrorMessage(t('auth.passwordsDontMatch'));
+      setShowError(true);
       return;
     }
 
     setLoading(true);
     try {
-      await register(name, email, password, telephone, gender, parseInt(age));
+      await register(name, email, password, telephone, gender, age);
     } catch (error) {
-      CustomOverlay({
-        title: t('auth.registrationFailed'),
-        message: t('auth.tryAgain'),
-        platform: Platform.OS
-      });
+      let message = t('auth.registrationFailed');
+      let title = t('auth.error');
+      
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            message = error.response.data?.message || t('auth.invalidEmailFormat');
+            break;
+          case 409:
+            message = t('auth.emailAlreadyExists');
+            break;
+          case 500:
+            message = t('auth.serverError');
+            break;
+          default:
+            message = error.response.data?.message || t('auth.registrationFailed');
+        }
+      }
+      
+      setErrorTitle(title);
+      setErrorMessage(message);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -205,6 +212,20 @@ const RegisterScreen = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+
+      <CustomOverlay
+        isVisible={showError}
+        onClose={() => setShowError(false)}
+        title={errorTitle}
+        message={errorMessage}
+        buttons={[
+          {
+            text: t('common.ok'),
+            onPress: () => setShowError(false),
+            style: { backgroundColor: colors.primary }
+          }
+        ]}
+      />
     </KeyboardAvoidingView>
   );
 };

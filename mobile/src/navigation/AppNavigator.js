@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -6,11 +6,13 @@ import { Icon } from '@rneui/themed';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../theme/colors';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import RefreshButton from '../components/RefreshButton';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
-
+import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+import OtpVerificationScreen from '../screens/auth/OtpVerificationScreen';
 // Main Screens
 import HomeScreen from '../screens/main/HomeScreen';
 import CourseDetailScreen from '../screens/main/CourseDetailScreen';
@@ -34,37 +36,6 @@ const HomeStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 const PlacementTestStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-
-// Auth Navigator
-const AuthNavigator = () => {
-  const { t } = useTranslation();
-  
-  return (
-    <AuthStack.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: colors.white,
-        },
-        headerTintColor: colors.primary,
-        headerTitleStyle: {
-          color: colors.black,
-        },
-      }}
-    >
-      <AuthStack.Screen 
-        name="Login" 
-        component={LoginScreen}
-        options={{ title: t('navigation.login') }}
-      />
-      <AuthStack.Screen 
-        name="Register" 
-        component={RegisterScreen}
-        options={{ title: t('navigation.register') }}
-      />
-    </AuthStack.Navigator>
-  );
-};
 
 // Home Stack Navigator
 const HomeStackNavigator = () => {
@@ -250,18 +221,94 @@ const MainNavigator = () => {
 
 // App Navigator
 const AppNavigator = () => {
-  const { token, loading } = useAuth();
+  const { token, loading, refreshUser } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Error refreshing app:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Auth Navigator
+  const AuthNavigator = () => {
+    const { t } = useTranslation();
+    
+    return (
+      <View style={styles.container}>
+        <AuthStack.Navigator
+          screenOptions={{
+            headerShown: false,
+            headerStyle: {
+              backgroundColor: colors.white,
+            },
+            headerTintColor: colors.primary,
+            headerTitleStyle: {
+              color: colors.black,
+            },
+          }}
+        >
+          <AuthStack.Screen 
+            name="Login" 
+            component={LoginScreen}
+            options={{ title: t('navigation.login') }}
+          />
+          <AuthStack.Screen 
+            name="Register" 
+            component={RegisterScreen}
+            options={{ title: t('navigation.register') }}
+          />
+          <AuthStack.Screen 
+            name="ResetPassword" 
+            component={ResetPasswordScreen}
+            options={{ title: t('navigation.resetPassword') }}
+          />
+          <AuthStack.Screen 
+            name="OTP" 
+            component={OtpVerificationScreen}
+            options={{ title: "OTP" }}
+          />
+        </AuthStack.Navigator>
+        <RefreshButton onPress={handleRefresh} />
+      </View>
+    );
+  };
 
   if (loading) {
-    // You could return a loading screen here
-    return null;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <RefreshButton onPress={handleRefresh} />
+      </View>
+    );
   }
 
   return (
-    <NavigationContainer>
-      {token ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
+    <View style={styles.container}>
+      <NavigationContainer>
+        {token ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    position: 'relative',
+  },
+});
 
 export default AppNavigator; 

@@ -10,7 +10,10 @@ exports.getPlacementTest = asyncHandler(async (req, res, next) => {
   // const placementTest = await PlacementTest.findOne().select('-questions.correctAnswer');
   const placementTest = await PlacementTest.findOne()
   
+  console.log("fetching placement test", placementTest); // Debug log
+
   if (!placementTest) {
+
     return next(new ErrorResponse('Placement test not found', 404));
   }
 
