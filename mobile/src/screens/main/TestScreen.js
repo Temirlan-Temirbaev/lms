@@ -827,7 +827,7 @@ const handleShowConfirmation = () => {
     } else {
       textContent = String(item);
     }
-    const isLongText = textContent && textContent.length > 20;
+    // const isLongText = textContent && textContent.length > 20;
 
     if (typeof item === 'object' && item.image) {
       return (
@@ -859,7 +859,8 @@ const handleShowConfirmation = () => {
     return (
       <View style={styles.categoryItemContent}>
         <Text style={[
-          isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+          // isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+          styles.categoryItemText,
           { flexWrap: 'wrap' }
         ]}>
           {textContent}
