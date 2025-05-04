@@ -1202,9 +1202,9 @@ const handleShowConfirmation = () => {
 
       <CustomOverlay
         isVisible={showResults}
-        onClose={() => {
+        onClose={async () => {
           setShowResults(false);
-          refreshUser();
+          await refreshUser();
           navigation.replace('HomeScreen');
         }}
         title={t('test.results')}
