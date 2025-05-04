@@ -163,11 +163,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.getCurrentUser();
       
-      // Update stored user
       await AsyncStorage.setItem('user', JSON.stringify(response.data));
-      
-      // Update state
-      setUser(response.data);
+      const storedUser = await AsyncStorage.getItem('user');
+      setUser(JSON.parse(storedUser));
       
       return response;
     } catch (error) {
