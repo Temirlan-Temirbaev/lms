@@ -11,18 +11,34 @@ exports.register = async (req, res, next) => {
   try {
     const { name, email, password, telephone, gender, age } = req.body;
 
-    // Create user
-    const user = await User.create({
-      name,
+    // Only include fields that have values (not empty strings or null/undefined)
+    const userData = {
       email,
-      password,
-      telephone,
-      gender,
-      age
-    });
+      password
+    };
+
+    if (name && name.trim()) {
+      userData.name = name.trim();
+    }
+    
+    if (telephone && telephone.trim()) {
+      userData.telephone = telephone.trim();
+    }
+    
+    if (gender && gender.trim()) {
+      userData.gender = gender.trim();
+    }
+    
+    if (age && !isNaN(age) && parseInt(age) > 0) {
+      userData.age = parseInt(age);
+    }
+
+    // Create user
+    const user = await User.create(userData);
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
+    console.log(err);
     res.status(400).json({
       success: false,
       message: err.message,
@@ -339,17 +355,22 @@ const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
 
+  // Build user object with only populated fields
+  const userResponse = {
+    id: user._id,
+    email: user.email,
+    progress: user.progress,
+  };
+
+  // Only include optional fields if they exist
+  if (user.name) userResponse.name = user.name;
+  if (user.telephone) userResponse.telephone = user.telephone;
+  if (user.gender) userResponse.gender = user.gender;
+  if (user.age) userResponse.age = user.age;
+
   res.status(statusCode).json({
     success: true,
     token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      telephone: user.telephone,
-      gender: user.gender,
-      age: user.age,
-      progress: user.progress,
-    },
+    user: userResponse,
   });
 }; 

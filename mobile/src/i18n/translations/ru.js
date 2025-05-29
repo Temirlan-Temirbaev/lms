@@ -33,6 +33,7 @@ export default {
     register: 'Регистрация',
     registerTitle: 'Создать новый аккаунт',
     fullName: 'Полное имя',
+    fullNameOptional: 'Полное имя (необязательно)',
     confirmPassword: 'Подтвердите пароль',
     registrationFailed: 'Ошибка регистрации',
     hasAccount: 'Уже есть аккаунт?',
@@ -53,8 +54,11 @@ export default {
 
     // New fields
     telephone: 'Телефон',
+    telephoneOptional: 'Телефон (необязательно)',
     gender: 'Пол',
+    genderOptional: 'Пол (необязательно)',
     age: 'Возраст',
+    ageOptional: 'Возраст (необязательно)',
     male: 'Мужской',
     female: 'Женский',
     other: 'Другой',
@@ -64,6 +68,7 @@ export default {
     
     // Validation
     fillAllFields: 'Пожалуйста, заполните все поля',
+    fillRequiredFields: 'Пожалуйста, заполните обязательные поля (email и пароль)',
     passwordsDontMatch: 'Пароли не совпадают',
     passwordTooShort: 'Пароль должен содержать минимум 6 символов',
     tryAgain: 'Пожалуйста, попробуйте снова',

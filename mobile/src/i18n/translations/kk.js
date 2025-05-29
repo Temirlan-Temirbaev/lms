@@ -33,6 +33,7 @@ export default {
     register: 'Тіркелу',
     registerTitle: 'Жаңа аккаунт жасау',
     fullName: 'Аты-жөні',
+    fullNameOptional: 'Аты-жөні (міндетті емес)',
     confirmPassword: 'Құпия сөзді растау',
     registrationFailed: 'Тіркелу сәтсіз аяқталды',
     hasAccount: 'Аккаунтыңыз бар ма?',
@@ -53,8 +54,11 @@ export default {
     
     // New fields
     telephone: 'Телефон',
+    telephoneOptional: 'Телефон (міндетті емес)',
     gender: 'Жыныс',
+    genderOptional: 'Жыныс (міндетті емес)',
     age: 'Жасы',
+    ageOptional: 'Жасы (міндетті емес)',
     male: 'Ер',
     female: 'Әйел',
     other: 'Басқа',
@@ -64,6 +68,7 @@ export default {
     
     // Validation
     fillAllFields: 'Барлық өрістерді толтырыңыз',
+    fillRequiredFields: 'Міндетті өрістерді толтырыңыз (email және құпия сөз)',
     passwordsDontMatch: 'Құпия сөздер сәйкес келмейді',
     passwordTooShort: 'Құпия сөз кемінде 6 таңбадан тұруы керек',
     tryAgain: 'Қайталап көріңіз',
