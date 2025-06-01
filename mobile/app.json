@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Qazaqsha",
-    "slug": "mobile",
+    "slug": "qazaqsha-mobile",
     "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -14,22 +14,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.foofie2132.qazaqshamobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.foofie2132.Qazaqsha",
-      "versionCode": 2
+      "package": "com.foofie2132.qazaqshamobile",
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "604b4075-f50b-4bcc-a755-9dcdaca25be9"
+        "projectId": "f3289413-fdcc-4e14-b4a8-25e5b04fa9ce"
       }
     }
   }
