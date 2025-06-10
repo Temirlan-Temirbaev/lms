@@ -324,7 +324,7 @@ export default {
     enterPasswordToDelete: 'Введите пароль для подтверждения удаления',
     accountDeleted: 'Аккаунт успешно удален',
     deleteAccountFailed: 'Не удалось удалить аккаунт',
-    confirmDelete: 'Подтвердить удаление',
+    confirmDelete: 'Подтвердить',
     
     // Edit Profile
     name: 'Имя',
