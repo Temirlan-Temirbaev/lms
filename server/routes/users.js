@@ -3,7 +3,8 @@ const {
   getUserProgress, 
   getUser,
   updateUserLevel,
-  updateUserSettings 
+  updateUserSettings,
+  deleteAccount
 } = require('../controllers/users');
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.route('/progress').get(getUserProgress);
 router.route('/me').get(getUser);
 router.route('/level').put(updateUserLevel);
 router.route('/settings').put(updateUserSettings);
+router.route('/account').delete(deleteAccount);
 
 module.exports = router;
