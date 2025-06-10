@@ -45,7 +45,6 @@ const LoginScreen = ({ navigation }) => {
 
       const response = await login(email, password);
       if (response.token) {
-        await AsyncStorage.setItem('userToken', response.token);
         navigation.replace('Main');
       }
     } catch (error) {

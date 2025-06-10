@@ -19,12 +19,12 @@ const api = axios.create({
 // Add request interceptor to add auth token to requests
 api.interceptors.request.use(
   async (config) => {
-    console.log('[API Request Interceptor] Original Config:', config.method, config.url); // Log method and URL
+    // console.log('[API Request Interceptor] Original Config:', config.method, config.url); // Log method and URL
     const token = await AsyncStorage.getItem('token');
-    console.log('[API Request Interceptor] Token from AsyncStorage:', token); // Log the retrieved token
+    // console.log('[API Request Interceptor] Token from AsyncStorage:', token); // Log the retrieved token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[API Request Interceptor] Config with Token:', config.headers); // Log headers after adding token
+      // console.log('[API Request Interceptor] Config with Token:', config.headers); // Log headers after adding token
     } else {
       console.warn('[API Request Interceptor] No token found in AsyncStorage'); // Warn if no token
     }
@@ -42,7 +42,7 @@ api.interceptors.response.use(
     console.log('[API Response Interceptor] Success:', response.status, response.config.url); // Log successful responses
     return response;
   },
-  (error) => {
+  async (error) => {
     console.error('[API Response Interceptor] Error:', error); // Log the basic error
     if (error.response) {
       // The request was made and the server responded with a status code
@@ -50,6 +50,13 @@ api.interceptors.response.use(
       console.error('[API Response Interceptor] Error Response Data:', error.response.data);
       console.error('[API Response Interceptor] Error Response Status:', error.response.status);
       console.error('[API Response Interceptor] Error Response Headers:', error.response.headers);
+      
+      // Handle 401 Unauthorized - clear token and user data
+      if (error.response.status === 401) {
+        console.log('[API Response Interceptor] 401 Unauthorized - clearing stored auth data');
+        await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('user');
+      }
     } else if (error.request) {
       // The request was made but no response was received
       console.error('[API Response Interceptor] Error Request:', error.request);
