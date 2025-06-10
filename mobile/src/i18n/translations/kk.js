@@ -279,6 +279,7 @@ export default {
     // Profile Stack
     editProfile: 'Профильді өңдеу',
     changePassword: 'Құпия сөзді өзгерту',
+    deleteAccount: 'Аккаунтты жою',
     myProgress: 'Менің үлгерімім',
     
     // Placement Test
@@ -310,6 +311,17 @@ export default {
     logoutConfirm: 'Шығуды растау',
     logoutMessage: 'Шығуды қалайсыз ба?',
     cancel: 'Болдырмау',
+    
+    // Delete Account
+    deleteAccount: 'Аккаунтты жою',
+    deleteAccountDesc: 'Аккаунтты толығымен жою',
+    deleteAccountConfirm: 'Аккаунтты жою',
+    deleteAccountMessage: 'Аккаунтты жойғыңыз келетініне сенімдісіз бе? Бұл әрекет қайтарылмайды.',
+    deleteAccountPassword: 'Құпия сөзіңізді енгізіңіз',
+    enterPasswordToDelete: 'Жоюды растау үшін құпия сөзіңізді енгізіңіз',
+    accountDeleted: 'Аккаунт сәтті жойылды',
+    deleteAccountFailed: 'Аккаунтты жою сәтсіз аяқталды',
+    confirmDelete: 'Жоюды растау',
     
     // Edit Profile
     name: 'Аты-жөні',

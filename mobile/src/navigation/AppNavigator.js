@@ -22,6 +22,7 @@ import TestResultScreen from '../screens/main/TestResultScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import EditProfileScreen from '../screens/main/EditProfileScreen';
 import ChangePasswordScreen from '../screens/main/ChangePasswordScreen';
+import DeleteAccountScreen from '../screens/main/DeleteAccountScreen';
 import ProgressScreen from '../screens/main/ProgressScreen';
 import PlacementTestScreen from '../screens/main/PlacementTestScreen';
 import PlacementTestResultScreen from '../screens/main/PlacementTestResultScreen';
@@ -122,6 +123,11 @@ const ProfileStackNavigator = () => {
         name="ChangePassword" 
         component={ChangePasswordScreen} 
         options={{ title: t('navigation.changePassword') }}
+      />
+      <ProfileStack.Screen 
+        name="DeleteAccount" 
+        component={DeleteAccountScreen} 
+        options={{ title: t('navigation.deleteAccount') }}
       />
       <ProfileStack.Screen 
         name="Progress" 

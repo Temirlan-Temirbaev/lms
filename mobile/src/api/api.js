@@ -6,7 +6,7 @@ import tests from './tests'
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
 const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
 // const API_URL = 'http://localhost:5001/api'; // For iOS simulator
-// const API_URL = 'http://192.168.0.158:5001/api'; 
+// const API_URL = 'http://192.168.0.108:5001/api'; 
 // const API_URL = 'https://fd89-37-150-42-59.ngrok-free.app/api';
 // Create axios instance
 const api = axios.create({
@@ -273,6 +273,16 @@ export const submitPlacementTest = async (totalPoints, userId) => {
 export const updateUserSettings = async (settings) => {
   try {
     const response = await api.put('/users/settings', settings);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
+// Account Deletion API
+export const deleteAccount = async (password) => {
+  try {
+    const response = await api.delete('/users/account', { data: { password } });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Server error' };

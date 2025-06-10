@@ -358,6 +358,29 @@ const ProfileScreen = ({ navigation }) => {
             size={20}
           />
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.optionItem}
+          onPress={() => navigation.navigate('DeleteAccount')}
+        >
+          <Icon
+            name="trash-outline"
+            type="ionicon"
+            color={colors.error}
+            size={24}
+            containerStyle={[styles.optionIcon, { backgroundColor: '#ffebee' }]}
+          />
+          <View style={styles.optionTextContainer}>
+            <Text style={[styles.optionTitle, { color: colors.error }]}>{t('profile.deleteAccount')}</Text>
+            <Text style={styles.optionDescription}>{t('profile.deleteAccountDesc')}</Text>
+          </View>
+          <Icon
+            name="chevron-forward"
+            type="ionicon"
+            color={colors.border}
+            size={20}
+          />
+        </TouchableOpacity>
       </View>
 
       <Divider style={styles.divider} />

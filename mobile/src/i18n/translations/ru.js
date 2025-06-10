@@ -282,6 +282,7 @@ export default {
     // Profile Stack
     editProfile: 'Редактировать профиль',
     changePassword: 'Изменить пароль',
+    deleteAccount: 'Удалить аккаунт',
     myProgress: 'Мой прогресс',
     
     // Placement Test
@@ -313,6 +314,17 @@ export default {
     logoutConfirm: 'Подтверждение выхода',
     logoutMessage: 'Вы уверены, что хотите выйти?',
     cancel: 'Отмена',
+    
+    // Delete Account
+    deleteAccount: 'Удалить аккаунт',
+    deleteAccountDesc: 'Полностью удалить аккаунт',
+    deleteAccountConfirm: 'Удалить аккаунт',
+    deleteAccountMessage: 'Вы уверены, что хотите удалить ваш аккаунт? Это действие необратимо и все ваши данные будут удалены.',
+    deleteAccountPassword: 'Введите ваш пароль',
+    enterPasswordToDelete: 'Введите пароль для подтверждения удаления',
+    accountDeleted: 'Аккаунт успешно удален',
+    deleteAccountFailed: 'Не удалось удалить аккаунт',
+    confirmDelete: 'Подтвердить удаление',
     
     // Edit Profile
     name: 'Имя',

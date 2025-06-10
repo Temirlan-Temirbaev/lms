@@ -179,6 +179,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Delete user account
+  const deleteAccount = async (password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.deleteAccount(password);
+      
+      // Clear stored data after successful deletion
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      
+      // Update state
+      setToken(null);
+      setUser(null);
+      
+      return { success: true };
+    } catch (error) {
+      setError(error.message || 'Account deletion failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -192,6 +216,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         changePassword,
         refreshUser,
+        deleteAccount,
         hasPlacementTest: user ? !user.progress?.placementTestTaken : false,
         currentLevel: user ? user.progress?.currentLevel : 'A1',
         availableLevels: user ? user.progress?.availableLevels : ['A1'],
