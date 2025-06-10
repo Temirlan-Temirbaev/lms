@@ -4,13 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Base URL for API
 const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
-// const API_URL = 'http://localhost:5001/api';
+// const API_URL = 'https://fd89-37-150-42-59.ngrok-free.app/api';
 // Create axios instance
 const api = axios.create({
   
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning' : true
   },
 });
 

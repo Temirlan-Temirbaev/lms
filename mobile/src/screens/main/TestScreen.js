@@ -1202,10 +1202,17 @@ const handleShowConfirmation = () => {
 
       <CustomOverlay
         isVisible={showResults}
-        onClose={() => {
-          setShowResults(false);
-          refreshUser();
-          navigation.replace('HomeScreen');
+        onClose={async () => {
+          try {
+            setShowResults(false);
+            console.log('Refreshing user...');
+            await refreshUser();
+            console.log('Navigating...');
+            // navigation.replace('HomeScreen');
+            setTimeout(() => navigation.replace('HomeScreen'), 300);
+          } catch (e) {
+            console.error('onClose error:', e);
+          }
         }}
         title={t('test.results')}
         scrollable={true}

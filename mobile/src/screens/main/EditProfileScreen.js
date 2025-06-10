@@ -50,35 +50,35 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   const handleUpdateProfile = async () => {
-    if (!name.trim()) {
-      showOverlay(t('common.error'), t('profile.nameRequired'));
-      return;
-    }
-
-    if (!telephone.trim()) {
-      showOverlay(t('common.error'), t('profile.telephoneRequired'));
-      return;
-    }
-
-    if (!gender) {
-      showOverlay(t('common.error'), t('profile.genderRequired'));
-      return;
-    }
-
-    if (!age || isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120) {
+    // Only validate age if provided
+    if (age && (isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120)) {
       showOverlay(t('common.error'), t('profile.invalidAge'));
       return;
     }
 
     setLoading(true);
     try {
+      // Build userData object with only non-empty fields
       const userData = { 
-        name, 
-        email, 
-        telephone, 
-        gender, 
-        age: parseInt(age)
+        email // email is always required
       };
+
+      if (name && name.trim()) {
+        userData.name = name.trim();
+      }
+      
+      if (telephone && telephone.trim()) {
+        userData.telephone = telephone.trim();
+      }
+      
+      if (gender && gender.trim()) {
+        userData.gender = gender.trim();
+      }
+      
+      if (age && !isNaN(age) && parseInt(age) > 0) {
+        userData.age = parseInt(age);
+      }
+
       await api.updateUserDetails(userData);
       await refreshUser();
       showOverlay(

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,12 @@ import * as api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import CustomOverlay from '../../components/CustomOverlay';
+import { useLanguage } from '../../context/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import at the top
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { changeLanguage } = useLanguage();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, hasPlacementTest, refreshUser } = useAuth();
@@ -54,7 +56,7 @@ const HomeScreen = ({ navigation }) => {
   
       // Set language from user settings when component mounts
       if (user?.settings?.language) {
-        i18n.changeLanguage(user.settings.language);
+        changeLanguage(user.settings.language);
       }
     } catch (error) {
       CustomOverlay({

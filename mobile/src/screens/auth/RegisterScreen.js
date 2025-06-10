@@ -30,9 +30,10 @@ const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword || !name || !telephone || !gender || !age) {
+    // Only require email, password, and confirmPassword
+    if (!email || !password || !confirmPassword) {
       setErrorTitle(t('auth.error'));
-      setErrorMessage(t('auth.fillAllFields'));
+      setErrorMessage(t('auth.fillRequiredFields'));
       setShowError(true);
       return;
     }
@@ -49,6 +50,14 @@ const RegisterScreen = ({ navigation }) => {
     if (password !== confirmPassword) {
       setErrorTitle(t('auth.error'));
       setErrorMessage(t('auth.passwordsDontMatch'));
+      setShowError(true);
+      return;
+    }
+
+    // Validate age if provided
+    if (age && (isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120)) {
+      setErrorTitle(t('auth.error'));
+      setErrorMessage(t('auth.invalidAge'));
       setShowError(true);
       return;
     }
@@ -98,7 +107,7 @@ const RegisterScreen = ({ navigation }) => {
 
         <View style={styles.formContainer}>
           <Input
-            placeholder={t('auth.fullName')}
+            placeholder={t('auth.fullNameOptional')}
             leftIcon={{ type: 'ionicon', name: 'person-outline' }}
             value={name}
             onChangeText={setName}
@@ -117,7 +126,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder={t('auth.telephone')}
+            placeholder={t('auth.telephoneOptional')}
             leftIcon={{ type: 'ionicon', name: 'call-outline' }}
             value={telephone}
             onChangeText={(text) => {
@@ -132,7 +141,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder={t('auth.age')}
+            placeholder={t('auth.ageOptional')}
             leftIcon={{ type: 'ionicon', name: 'calendar-outline' }}
             value={age}
             onChangeText={(text) => {
@@ -147,7 +156,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <View style={styles.genderContainer}>
-            <Text style={styles.genderLabel}>{t('auth.gender')}</Text>
+            <Text style={styles.genderLabel}>{t('auth.genderOptional')}</Text>
             <View style={styles.genderButtons}>
               <TouchableOpacity
                 style={[

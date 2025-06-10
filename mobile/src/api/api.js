@@ -7,12 +7,13 @@ import tests from './tests'
 const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
 // const API_URL = 'http://localhost:5001/api'; // For iOS simulator
 // const API_URL = 'http://192.168.0.158:5001/api'; 
-
+// const API_URL = 'https://fd89-37-150-42-59.ngrok-free.app/api';
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning' : true
   },
 });
 
