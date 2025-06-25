@@ -255,7 +255,6 @@ export default function QuestionEditPage() {
               {question.question && question.question.includes("_____") ? (
                 (() => {
                   const parts = question.question.split("_____");
-                  const hasMultipleBlanks = parts.length > 2;
 
                   // Multiple blanks - show individual inputs
                   return (
@@ -557,7 +556,7 @@ export default function QuestionEditPage() {
             }
           }
         }
-      } catch (err) {
+      } catch {
         setError("Failed to fetch test data");
       } finally {
         setLoading(false);
@@ -645,7 +644,7 @@ export default function QuestionEditPage() {
       } else {
         alert(data.message || "Failed to save question");
       }
-    } catch (error) {
+    } catch {
       alert("Error saving question");
     } finally {
       setSaving(false);
@@ -1275,9 +1274,8 @@ export default function QuestionEditPage() {
                   Question Title/Instruction
                 </Label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  The main instruction or context for the fill-in-blanks
-                  question (e.g., "Complete the sentences" or "Fill in the
-                  missing words")
+                  Основная инструкция для студентов (например, &quot;Завершите
+                  предложения&quot;)
                 </p>
                 <Input
                   placeholder="e.g., Complete the sentences below"
@@ -1595,7 +1593,7 @@ export default function QuestionEditPage() {
                     <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
                       <p className="text-gray-500 text-sm">
                         Элементы еще не добавлены. Введите текст выше и нажмите
-                        Enter или нажмите "Добавить элемент".
+                        Enter или нажмите &quot;Добавить элемент&quot;.
                       </p>
                     </div>
                   )}
@@ -1884,8 +1882,8 @@ export default function QuestionEditPage() {
                 ).length === 0 && (
                   <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                     <p className="text-gray-500">
-                      Категории еще не созданы. Нажмите "Добавить категорию",
-                      чтобы начать.
+                      Категории еще не созданы. Нажмите &quot;Добавить
+                      категорию&quot;, чтобы начать.
                     </p>
                   </div>
                 )}
@@ -2036,7 +2034,7 @@ export default function QuestionEditPage() {
                             </Label>
                             <p className="text-sm text-muted-foreground mb-2">
                               Основная инструкция для студентов (например,
-                              "Завершите предложения")
+                              &quot;Завершите предложения&quot;)
                             </p>
                             <Input
                               placeholder="например, Завершите предложения ниже"
@@ -2198,7 +2196,7 @@ export default function QuestionEditPage() {
                               </Label>
                               <p className="text-sm text-muted-foreground mb-2">
                                 Основная инструкция для студентов (например,
-                                "Завершите предложения")
+                                &quot;Завершите предложения&quot;)
                               </p>
                               <Input
                                 placeholder="например, Завершите предложения ниже"

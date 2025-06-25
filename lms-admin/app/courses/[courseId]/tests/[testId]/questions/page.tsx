@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-context";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { ArrowLeft, Save, Edit3, Plus, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   UniversalDataTable,
@@ -72,7 +72,6 @@ export default function QuestionsManagementPage() {
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
 
   // Question columns for table
   const questionColumns: ColumnDef<Question>[] = [
@@ -144,7 +143,7 @@ export default function QuestionsManagementPage() {
         if (testData.success) {
           setTest(testData.data);
         }
-      } catch (err) {
+      } catch {
         setError("Не удалось загрузить данные теста");
       } finally {
         setLoading(false);
@@ -189,7 +188,6 @@ export default function QuestionsManagementPage() {
     );
 
     try {
-      setSaving(true);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tests/${testId}`,
         {
@@ -208,10 +206,8 @@ export default function QuestionsManagementPage() {
       } else {
         alert(data.message || "Не удалось удалить вопрос");
       }
-    } catch (error) {
+    } catch {
       alert("Ошибка при удалении вопроса");
-    } finally {
-      setSaving(false);
     }
   };
 

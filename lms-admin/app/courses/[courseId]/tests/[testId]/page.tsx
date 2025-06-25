@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { ArrowLeft, Save, Edit3, Eye, Plus, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -101,7 +101,7 @@ export default function TestDetailPage() {
             isFinal: testData.data.isFinal || false,
           });
         }
-      } catch (err) {
+      } catch {
         setError("Не удалось получить данные теста");
       } finally {
         setLoading(false);
@@ -132,7 +132,7 @@ export default function TestDetailPage() {
       } else {
         alert(data.message || "Не удалось обновить тест");
       }
-    } catch (error) {
+    } catch {
       alert("Ошибка при обновлении теста");
     } finally {
       setSaving(false);
