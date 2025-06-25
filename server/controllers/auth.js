@@ -360,6 +360,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     id: user._id,
     email: user.email,
     progress: user.progress,
+    role: user.role || 'user', // Default to 'user' if role doesn't exist
   };
 
   // Only include optional fields if they exist

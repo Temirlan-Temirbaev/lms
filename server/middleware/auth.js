@@ -41,4 +41,27 @@ exports.protect = async (req, res, next) => {
       message: 'Not authorized to access this route',
     });
   }
+};
+
+// Admin authorization middleware
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized to access this route',
+      });
+    }
+
+    // Default to 'user' role if role field doesn't exist (for backward compatibility)
+    const userRole = req.user.role || 'user';
+
+    if (!roles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: `User role ${userRole} is not authorized to access this route`,
+      });
+    }
+    next();
+  };
 }; 

@@ -1,4 +1,5 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,6 +8,7 @@ const errorHandler = require('./middleware/error');
 // Import routes
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
+const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/users');
 const placementTestRoutes = require('./routes/placementTest');
 
@@ -14,13 +16,24 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ charset: 'utf8' }));
+app.use(express.urlencoded({ extended: true, charset: 'utf8' }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // Next.js
+      "http://localhost:19006", // Expo/React Native web
+    ],
+    credentials: true,
+  },
+)
+);
 app.use(morgan('dev'));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/admin', adminRoutes)
 app.use('/api/users', userRoutes);
 app.use('/api/placement-test', placementTestRoutes);
 
