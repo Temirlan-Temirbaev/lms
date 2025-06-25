@@ -11,18 +11,67 @@ const minioClient = new Minio.Client({
   secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
 });
 
-// Generate a unique filename
-const generateUniqueFilename = (originalname) => {
-  const timestamp = Date.now();
-  const randomString = crypto.randomBytes(8).toString('hex');
+// Generate a unique filename only when there's a conflict
+const generateUniqueFilename = (originalname, attempt = 1) => {
+  // Since we're now receiving sanitized filenames, no need for encoding fixes
   const extension = path.extname(originalname);
-  return `${timestamp}-${randomString}${extension}`;
+  const nameWithoutExt = path.basename(originalname, extension);
+  
+  if (attempt === 1) {
+    return originalname; // First attempt uses original name
+  }
+  
+  return `${nameWithoutExt}(${attempt})${extension}`;
+};
+
+// Check if a file exists in MinIO
+const fileExists = async (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
+  try {
+    await minioClient.statObject(bucketName, filename);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 // Upload a file to MinIO
-const uploadFile = async (file, bucketName = 'media') => {
+const uploadFile = async (file, bucketName = process.env.MINIO_BUCKET_NAME || 'media', uploadPath = '', customFilename = null) => {
   try {
-    const filename = generateUniqueFilename(file.originalname);
+    let attempt = 1;
+    let filename;
+    let finalFilename;
+    
+    // Use custom filename if provided, otherwise use original filename
+    const baseOriginalName = customFilename || file.originalname;
+    
+    // Keep trying until we find a filename that doesn't exist
+    do {
+      const baseFilename = generateUniqueFilename(baseOriginalName, attempt);
+      
+      // Construct the full filename with path
+      if (uploadPath && uploadPath.trim()) {
+        // Ensure the path doesn't start with a slash and ends with a slash if not empty
+        const cleanPath = uploadPath.trim().replace(/^\/+/, '').replace(/\/+$/, '');
+        finalFilename = cleanPath ? `${cleanPath}/${baseFilename}` : baseFilename;
+      } else {
+        finalFilename = baseFilename;
+      }
+      
+      const exists = await fileExists(finalFilename, bucketName);
+      if (!exists) {
+        filename = finalFilename;
+        break;
+      }
+      
+      attempt++;
+    } while (attempt <= 100); // Prevent infinite loop
+    
+    if (!filename) {
+      throw new Error('Could not generate unique filename after 100 attempts');
+    }
+    
+    // Ensure bucket exists before uploading
+    await ensureBucketExists(bucketName);
     
     await minioClient.putObject(
       bucketName,
@@ -33,7 +82,7 @@ const uploadFile = async (file, bucketName = 'media') => {
     );
     
     // Generate URL for the uploaded file
-    const fileUrl = `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${bucketName}/${filename}`;
+    const fileUrl = getFileUrl(filename, bucketName);
     
     return {
       success: true,
@@ -52,8 +101,10 @@ const uploadFile = async (file, bucketName = 'media') => {
 };
 
 // Delete a file from MinIO
-const deleteFile = async (filename, bucketName = 'media') => {
+const deleteFile = async (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
   try {
+    // Ensure bucket exists before trying to delete
+    await ensureBucketExists(bucketName);
     await minioClient.removeObject(bucketName, filename);
     return {
       success: true,
@@ -83,9 +134,78 @@ const ensureBucketExists = async (bucketName) => {
   }
 };
 
+// Generate URL for a file
+const getFileUrl = (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
+  // Check if there's a custom public URL prefix for serving files
+  if (process.env.MINIO_PUBLIC_URL_PREFIX) {
+    return `${process.env.MINIO_PUBLIC_URL_PREFIX}/${filename}`;
+  }
+  
+  // Default to direct MinIO URL
+  const protocol = process.env.MINIO_USE_SSL === 'true' ? 'https' : 'http';
+  const port = process.env.MINIO_USE_SSL === 'true' ? '' : `:${process.env.MINIO_PORT}`;
+  return `${protocol}://${process.env.MINIO_ENDPOINT}${port}/${bucketName}/${filename}`;
+};
+
+// List all files in a bucket
+const listFiles = async (bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
+  try {
+    // Ensure bucket exists before listing
+    await ensureBucketExists(bucketName);
+    
+    const files = [];
+    const stream = minioClient.listObjects(bucketName, '', true);
+    
+    return new Promise((resolve, reject) => {
+      stream.on('data', (obj) => {
+        files.push({
+          name: obj.name,
+          size: obj.size,
+          lastModified: obj.lastModified,
+          etag: obj.etag,
+          url: getFileUrl(obj.name, bucketName)
+        });
+      });
+      
+      stream.on('error', (err) => {
+        reject(err);
+      });
+      
+      stream.on('end', () => {
+        resolve(files);
+      });
+    });
+  } catch (error) {
+    console.error('Error listing files from MinIO:', error);
+    throw error;
+  }
+};
+
+// Get file statistics/info
+const getFileInfo = async (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
+  try {
+    const stat = await minioClient.statObject(bucketName, filename);
+    return {
+      name: filename,
+      size: stat.size,
+      lastModified: stat.lastModified,
+      etag: stat.etag,
+      contentType: stat.metaData['content-type'],
+      url: getFileUrl(filename, bucketName)
+    };
+  } catch (error) {
+    console.error('Error getting file info from MinIO:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   minioClient,
   uploadFile,
   deleteFile,
   ensureBucketExists,
-}; 
+  listFiles,
+  getFileInfo,
+  getFileUrl,
+  fileExists,
+};

@@ -497,7 +497,7 @@ const PlacementTestScreen = ({ navigation }) => {
         {question.content && renderQuestionContent(question.content)}
         {/* Uncategorized items */}
         <View style={styles.uncategorizedContainer}>
-          <Text style={styles.categoryTitle}>{t('placementTest.availableItems')}:</Text>
+          {/* <Text style={styles.categoryTitle}>{t('placementTest.availableItems')}:</Text> */}
           <View style={styles.itemsContainer}>
             {uncategorizedItems.map((item, index) => (
               <View key={index} style={styles.uncategorizedItem}>

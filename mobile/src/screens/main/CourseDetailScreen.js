@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
-    padding: 15,
+    // padding: 15,
     backgroundColor: colors.background,
   },
   levelBadge: {

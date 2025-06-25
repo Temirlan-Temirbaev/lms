@@ -10,6 +10,7 @@ export default {
     next: 'Келесі',
     previous: 'Алдыңғы',
     finish: 'Аяқтау',
+    ok: 'Жақсы',
   },
   auth: {
     // Common
@@ -17,6 +18,7 @@ export default {
     email: 'Электрондық пошта',
     password: 'Құпия сөз',
     error: 'Қате',
+    success: 'Сәтті',
     
     // Login
     login: 'Кіру',
@@ -25,20 +27,38 @@ export default {
     checkCredentials: 'Деректеріңізді тексеріңіз',
     noAccount: 'Аккаунтыңыз жоқ па?',
     signUp: 'Тіркелу',
+    forgotPassword: 'Құпия сөзді қалпына келтіру',
     
     // Register
     register: 'Тіркелу',
     registerTitle: 'Жаңа аккаунт жасау',
     fullName: 'Аты-жөні',
+    fullNameOptional: 'Аты-жөні (міндетті емес)',
     confirmPassword: 'Құпия сөзді растау',
     registrationFailed: 'Тіркелу сәтсіз аяқталды',
     hasAccount: 'Аккаунтыңыз бар ма?',
     signIn: 'Кіру',
     
+    // Reset Password
+    resetPassword: 'Құпия сөзді қалпына келтіру',
+    resetPasswordDesc: 'Құпия сөзіңізді қалпына келтіру үшін электрондық поштаңызды енгізіңіз',
+    enterNewPassword: 'Жаңа құпия сөзді енгізіңіз',
+    sendResetEmail: 'Қалпына келтіру сілтемесін жіберу',
+    resetEmailSent: 'Құпия сөзді қалпына келтіру сілтемесі электрондық поштаңызға жіберілді',
+    resetEmailFailed: 'Құпия сөзді қалпына келтіру сілтемесін жіберу сәтсіз аяқталды',
+    newPassword: 'Жаңа құпия сөз',
+    confirmNewPassword: 'Жаңа құпия сөзді растау',
+    passwordResetSuccess: 'Құпия сөз сәтті өзгертілді',
+    passwordResetFailed: 'Құпия сөзді өзгерту сәтсіз аяқталды',
+    rememberPassword: 'Құпия сөзіңізді еске түсірдіңіз бе?',
+    
     // New fields
     telephone: 'Телефон',
+    telephoneOptional: 'Телефон (міндетті емес)',
     gender: 'Жыныс',
+    genderOptional: 'Жыныс (міндетті емес)',
     age: 'Жасы',
+    ageOptional: 'Жасы (міндетті емес)',
     male: 'Ер',
     female: 'Әйел',
     other: 'Басқа',
@@ -48,17 +68,32 @@ export default {
     
     // Validation
     fillAllFields: 'Барлық өрістерді толтырыңыз',
-    passwordsNotMatch: 'Құпия сөздер сәйкес келмейді',
+    fillRequiredFields: 'Міндетті өрістерді толтырыңыз (email және құпия сөз)',
+    passwordsDontMatch: 'Құпия сөздер сәйкес келмейді',
     passwordTooShort: 'Құпия сөз кемінде 6 таңбадан тұруы керек',
     tryAgain: 'Қайталап көріңіз',
     passwordsDoNotMatch: 'Құпия сөздер сәйкес келмейді',
-    passwordTooShort: 'Құпия сөз кем дегенде 6 таңбадан тұруы керек'
+    passwordTooShort: 'Құпия сөз кем дегенде 6 таңбадан тұруы керек',
+    invalidEmailFormat: 'Электрондық пошта мекенжайы қате форматта',
+    invalidCredentials: 'Электрондық пошта немесе құпия сөз қате',
+    serverError: 'Сервер қатесі. Кейінірек қайталаңыз',
+    emailAlreadyExists: 'Бұл электрондық пошта тіркелген',
+    enterOtp: 'OTP кодты енгізіңіз',
+    otpSent: 'OTP код электрондық поштаңызға жіберілді',
+    otpInvalid: 'OTP код дұрыс емес',
+    resendOtp: 'OTP кодты қайта жіберу',
+    otpResent: 'OTP код қайта жіберілді',
+    verifyOtp: 'OTP кодты растау',
+    otpVerificationFailed: 'OTP кодты растау сәтсіз аяқталды',
+    otpVerificationSuccess: 'OTP код сәтті расталды',
+    otpExpired: 'OTP кодтың мерзімі аяқталды',
   },
   test: {
     // Header
     timeLeft: 'Қалған уақыт',
     questionProgress: 'Сұрақ {{current}} / {{total}}',
-    
+    noAnswer: 'Жауап жоқ',
+    image: 'Сурет',
     // Questions
     noQuestions: 'Сұрақтар жоқ',
     unknownType: 'Белгісіз сұрақ түрі',
@@ -93,9 +128,9 @@ export default {
       input: 'Жауабыңызды төменге жазыңыз',
       categories: 'Элементтерді дұрыс санатқа орналастырыңыз'
     },
-    typeHere: 'Мұнда жазыңыз',
+    typeHere: '🖊️',
     // Categories
-    availableItems: 'Қолжетімді элементтер:',
+    // availableItems: 'Қолжетімді элементтер:',
     selectCategory: 'Санатты таңдаңыз',
     selectCategoryFor: 'Бұл элемент үшін санатты таңдаңыз',
     
@@ -138,7 +173,7 @@ export default {
     unsupportedType: 'Қолдау көрсетілмейтін сұрақ түрі',
     
     // Categories
-    availableItems: 'Қолжетімді элементтер:',
+    // availableItems: 'Қолжетімді элементтер:',
     addTo: '{{category}} қосу',
     
     // Instructions
@@ -171,7 +206,7 @@ export default {
     loading: 'Сабақ жүктелуде...',
     
     // Buttons
-    markAsCompleted: 'Аяқталды деп белгілеу',
+    markAsCompleted: 'Аяқтау',
     completed: 'Аяқталды',
     
     // Success messages
@@ -244,6 +279,7 @@ export default {
     // Profile Stack
     editProfile: 'Профильді өңдеу',
     changePassword: 'Құпия сөзді өзгерту',
+    deleteAccount: 'Аккаунтты жою',
     myProgress: 'Менің үлгерімім',
     
     // Placement Test
@@ -258,8 +294,8 @@ export default {
     // Stats
     learningStats: 'Оқу статистикасы',
     lessons: 'Сабақтар',
-    tests: 'Тесттер',
-    dayStreak: 'Күн қатары',
+    tests: 'Жаттығулар',
+    dayStreak: 'Кіру белсенділігі',
     
     // Account Settings
     accountSettings: 'Аккаунт баптаулары',
@@ -275,6 +311,17 @@ export default {
     logoutConfirm: 'Шығуды растау',
     logoutMessage: 'Шығуды қалайсыз ба?',
     cancel: 'Болдырмау',
+    
+    // Delete Account
+    deleteAccount: 'Аккаунтты жою',
+    deleteAccountDesc: 'Аккаунтты толығымен жою',
+    deleteAccountConfirm: 'Аккаунтты жою',
+    deleteAccountMessage: 'Аккаунтты жойғыңыз келетініне сенімдісіз бе? Бұл әрекет қайтарылмайды.',
+    deleteAccountPassword: 'Құпия сөзіңізді енгізіңіз',
+    enterPasswordToDelete: 'Жоюды растау үшін құпия сөзіңізді енгізіңіз',
+    accountDeleted: 'Аккаунт сәтті жойылды',
+    deleteAccountFailed: 'Аккаунтты жою сәтсіз аяқталды',
+    confirmDelete: 'Жоюды растау',
     
     // Edit Profile
     name: 'Аты-жөні',
@@ -306,7 +353,7 @@ export default {
     
     // Stats
     completedLessons: 'Аяқталған сабақтар',
-    completedTests: 'Аяқталған тесттер',
+    completedTests: 'Аяқталған жаттығулар',
     currentLevel: 'Ағымдағы деңгей',
     
     // Course Progress
@@ -335,9 +382,9 @@ export default {
     lessonNumber: 'Сабақ {number}',
     score: '{score}%',
     lessons: 'Сабақтар',
-    tests: 'Тесттер',
+    tests: 'Жаттығулар',
     noLessons: 'Сабақтар жоқ',
-    noTests: 'Тесттер жоқ'
+    noTests: 'Жаттығулар жоқ'
   },
   // Add more translation keys as needed
 }; 

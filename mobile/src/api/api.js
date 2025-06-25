@@ -5,30 +5,75 @@ import tests from './tests'
 // Base URL for API requests
 // const API_URL = 'http://10.0.2.2:5001/api'; // For Android emulator
 const API_URL = 'https://qazaqshapp.kz/api/api'; // For iOS simulator
-// const API_URL = 'http://127.0.0.1:5001/api'; // For iOS simulator
-
+// const API_URL = 'http://localhost:5001/api'; // For iOS simulator
+// const API_URL = 'http://192.168.0.108:5001/api'; 
+// const API_URL = 'https://fd89-37-150-42-59.ngrok-free.app/api';
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning' : true
   },
 });
 
 // Add request interceptor to add auth token to requests
 api.interceptors.request.use(
   async (config) => {
+    // console.log('[API Request Interceptor] Original Config:', config.method, config.url); // Log method and URL
     const token = await AsyncStorage.getItem('token');
+    // console.log('[API Request Interceptor] Token from AsyncStorage:', token); // Log the retrieved token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // console.log('[API Request Interceptor] Config with Token:', config.headers); // Log headers after adding token
     } else {
-      console.log('No token found in storage'); // Debug log
+      console.warn('[API Request Interceptor] No token found in AsyncStorage'); // Warn if no token
     }
     return config;
   },
   (error) => {
-    console.log('Request interceptor error:', error); // Debug log
+    console.error('[API Request Interceptor] Error:', error); // Log any request setup error
     return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => {
+    console.log('[API Response Interceptor] Success:', response.status, response.config.url); // Log successful responses
+    return response;
+  },
+  async (error) => {
+    console.error('[API Response Interceptor] Error:', error); // Log the basic error
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('[API Response Interceptor] Error Response Data:', error.response.data);
+      console.error('[API Response Interceptor] Error Response Status:', error.response.status);
+      console.error('[API Response Interceptor] Error Response Headers:', error.response.headers);
+      
+      // Handle 401 Unauthorized - clear token and user data
+      if (error.response.status === 401) {
+        console.log('[API Response Interceptor] 401 Unauthorized - clearing stored auth data');
+        await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('user');
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('[API Response Interceptor] Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('[API Response Interceptor] Error Message:', error.message);
+    }
+    console.error('[API Response Interceptor] Error Config:', error.config); // Log the config of the failed request
+
+    // Keep the original rejection logic, but use the detailed logged info for debugging
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      'Something went wrong';
+
+    return Promise.reject({ message, status: error.response?.status }); // Include status code in rejection
   }
 );
 
@@ -186,6 +231,15 @@ export const getUserProgress = async () => {
   }
 };
 
+export const getUser = async () => {
+  try {
+    const response = await api.get('/users/me');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
 export const updateUserLevel = async (level) => {
   try {
     const response = await api.put('/users/level', { level });
@@ -198,8 +252,10 @@ export const updateUserLevel = async (level) => {
 export const getPlacementTest = async () => {
   try {
     const response = await api.get('/placement-test');
+    console.log("placement test", response.data) // Debug log
     return response.data;
   } catch (error) {
+    console.log("erorrrrorrr", error) // Debug log
     throw error.response?.data || { message: 'Server error' };
   }
 };
@@ -213,4 +269,24 @@ export const submitPlacementTest = async (totalPoints, userId) => {
   }
 };
 
-export default api; 
+// User Settings API
+export const updateUserSettings = async (settings) => {
+  try {
+    const response = await api.put('/users/settings', settings);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
+// Account Deletion API
+export const deleteAccount = async (password) => {
+  try {
+    const response = await api.delete('/users/account', { data: { password } });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Server error' };
+  }
+};
+
+export default api;

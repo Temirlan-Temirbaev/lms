@@ -12,6 +12,8 @@ import {
   FlatList,
   Dimensions,
   Image,
+  Platform,
+  Modal,
 } from 'react-native';
 import { Button, Icon, Divider, Overlay } from '@rneui/themed';
 import * as api from '../../api/api';
@@ -21,6 +23,7 @@ import Markdown from 'react-native-markdown-display';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../theme/colors';
 import { AudioSlider } from './AudioSlider';
+import ImageOverlay from '../../components/ImageOverlay';
 // import DraggableFlatList from 'react-native-draggable-flatlist';
 
 const { width, height } = Dimensions.get('window');
@@ -50,29 +53,9 @@ const markdownStyles = {
   },
 };
 
-const renderRules = {
-  image: (node) => {
-    const imageUrl = node.attributes.src;
-    return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
-      />
-    );
-  },
-  link: (node, children, parent, styles) => {
-    const url = node.attributes.href;
-    if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
-      return null; // Don't render audio links in markdown
-    }
-    return (
-      <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
-    );
-  },
-};
-
 const TestScreen = ({ route, navigation }) => {
   const { testId } = route.params;
+  const { t } = useTranslation();
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -91,9 +74,204 @@ const TestScreen = ({ route, navigation }) => {
   const [testResults, setTestResults] = useState(null);
   const [questionCount, setQuestionCount] = useState(0);
   const [finalTotalPoints, setFinalTotalPoints] = useState(null);
-  const { t } = useTranslation();
   const [contentSegments, setContentSegments] = useState([]);
   const [questionAudioUrls, setQuestionAudioUrls] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageOverlay, setShowImageOverlay] = useState(false);
+  const [timer, setTimer] = useState(null);
+
+  const renderRules = {
+    image: (node) => {
+      const imageUrl = node.attributes.src;
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedImage(imageUrl);
+            setShowImageOverlay(true);
+          }}
+          activeOpacity={0.7}
+          style={{ width: '100%' }}
+        >
+          <Image
+            source={{ uri: imageUrl }}
+            style={{ width: '100%', height: 200, resizeMode: 'contain', marginVertical: 10 }}
+          />
+        </TouchableOpacity>
+      );
+    },
+    link: (node, children, parent, styles) => {
+      const url = node.attributes.href;
+      if (url.endsWith('.mp3') || url.endsWith('.m4a')) {
+        return null; // Don't render audio links in markdown
+      }
+      return (
+        <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{children}</Text>
+      );
+    },
+  };
+
+  // Helper functions for checking and formatting answers
+  const checkAnswer = (question, userAnswer) => {
+    if (!question || !userAnswer) return false;
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return question.correctAnswer.toLowerCase() === userAnswer.toLowerCase();
+      case 'fill-in-blanks':
+        if (typeof answer === 'object' && typeof question.correctAnswer === 'object') {
+          return Object.keys(answer).every(blankId => {
+            const correctAnswerArray = question.correctAnswer[blankId] || [];
+            const userAnswer = answer[blankId];
+            
+            if (!userAnswer) return false;
+            
+            return correctAnswerArray.some(correct => 
+              String(userAnswer).toLowerCase().trim() === String(correct).toLowerCase().trim()
+            );
+          });
+        }
+        return false;
+      case 'matching':
+        const correctAnswers = Array.isArray(question.correctAnswer) 
+          ? question.correctAnswer.map(a => String(a).toLowerCase()).sort()
+          : [];
+        const userAnswers = Array.isArray(userAnswer)
+          ? userAnswer.map(a => String(a).toLowerCase()).sort()
+          : [];
+        
+        return JSON.stringify(correctAnswers) === JSON.stringify(userAnswers);
+      case 'ordering':
+        const normalizedCorrect = question.correctAnswer.map(a => 
+          String(a).toLowerCase().trim()
+            .replace('c', 'с')
+            .normalize('NFKD')
+        );
+        const normalizedUser = userAnswer.map(a => 
+          String(a).toLowerCase().trim()
+            .replace('c', 'с')
+            .normalize('NFKD')
+        );
+        
+        return JSON.stringify(normalizedCorrect) === JSON.stringify(normalizedUser);
+      case 'categories':
+        return Object.keys(question.correctAnswer).every(category => {
+          const correctAnswers = question.correctAnswer[category].map(item => 
+            String(item).toLowerCase().trim()
+          );
+
+          const userAnswers = (userAnswer[category] || []).map(item => {
+            if (item && typeof item === 'object') {
+              const value = item[0] || Object.values(item)[0];
+              return String(value).toLowerCase().trim();
+            }
+            return '';
+          }).filter(Boolean);
+
+          return correctAnswers.length === userAnswers.length &&
+                correctAnswers.every(correct => userAnswers.includes(correct));
+        });
+      case 'input':
+        if (typeof userAnswer === 'string') {
+          return question.correctAnswer.toLowerCase().trim() === userAnswer.toLowerCase().trim();
+        } else if (Array.isArray(question.correctAnswer)) {
+          return question.correctAnswer.some(correct => 
+            userAnswer.toLowerCase().trim() === correct.toLowerCase().trim());
+        }
+        return false;
+      default:
+        return false;
+    }
+  };
+
+  const formatUserAnswer = (question, userAnswer) => {
+    if (!userAnswer) return t('test.noAnswer');
+    if (!question) return '';
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return userAnswer;
+      case 'matching':
+        return userAnswer.join(', ');
+      case 'ordering':
+        return userAnswer.join(' → ');
+      case 'fill-in-blanks':
+        if (typeof userAnswer === 'object') {
+          return Object.values(userAnswer).join(', ');
+        }
+        return userAnswer;
+      case 'input':
+        return userAnswer;
+      case 'categories':
+        if (!userAnswer || typeof userAnswer !== 'object') return t('test.noAnswer');
+        let imageCounter = 1;
+        return Object.entries(userAnswer)
+          .map(([category, items]) => {
+            if (!Array.isArray(items)) return `${category}: ${t('test.noAnswer')}`;
+            const formattedItems = items.map(item => {
+              if (typeof item === 'object') {
+                if (item.text) return item.text;
+                if (item.image) return `${t('test.image')} ${imageCounter++}`;
+                return t('test.noAnswer');
+              }
+              return item;
+            });
+            // Replace image URLs with "Image X"
+            const formattedCategory = category.startsWith('http') ? `${t('test.image')} ${imageCounter++}` : category;
+            return `\n• ${formattedCategory}:\n  ${formattedItems.join('\n  ')}`;
+          })
+          .join('\n');
+      default:
+        return userAnswer;
+    }
+  };
+
+  const formatCorrectAnswer = (question) => {
+    if (!question || !question.correctAnswer) return '';
+    
+    switch (question.type) {
+      case 'multiple-choice':
+        return question.correctAnswer;
+      case 'matching':
+        return Array.isArray(question.correctAnswer) ? question.correctAnswer.join(', ') : question.correctAnswer;
+      case 'ordering':
+        return Array.isArray(question.correctAnswer) ? question.correctAnswer.join(' → ') : question.correctAnswer;
+      case 'fill-in-blanks':
+        if (typeof question.correctAnswer === 'object') {
+          return Object.values(question.correctAnswer).map(arr => arr[0]).join(', ');
+        }
+        return question.correctAnswer;
+      case 'input':
+        return question.correctAnswer;
+      case 'categories':
+        if (!question.correctAnswer || typeof question.correctAnswer !== 'object') return '';
+        let imageCounter = 1;
+        return Object.entries(question.correctAnswer)
+          .map(([category, items]) => {
+            if (!Array.isArray(items)) return `${category}: ${t('test.noAnswer')}`;
+            const formattedItems = items.map(item => {
+              if (typeof item === 'object') {
+                if (item.text) return item.text;
+                if (item.image) return `${t('test.image')} ${imageCounter++}`;
+                return t('test.noAnswer');
+              }
+              return item;
+            });
+            // Replace image URLs with "Image X"
+            const formattedCategory = category.startsWith('http') ? `${t('test.image')} ${imageCounter++}` : category;
+            return `\n• ${formattedCategory}:\n  ${formattedItems.join('\n  ')}`;
+          })
+          .join('\n');
+      default:
+        return question.correctAnswer;
+    }
+  };
+
+  const getScoreColor = (score) => {
+    if (score >= 90) return '#4CAF50';
+    if (score >= 70) return '#2196F3';
+    if (score >= 50) return '#FF9800';
+    return '#F44336';
+  };
 
   useEffect(() => {
     fetchTest();
@@ -116,24 +294,29 @@ const TestScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await api.getTest(testId);
-      setTest(response.data);
+      const testData = response.data;
       
-      // Initialize answers array with nulls
-      const initialAnswers = response.data.questions.map(() => null);
+      // Randomize options for ordering and categories questions
+      testData.questions = testData.questions.map(question => {
+        if (question.type === 'ordering') {
+          return {
+            ...question,
+            options: shuffleArray([...question.options])
+          };
+        }
+        if (question.type === 'categories') {
+          return {
+            ...question,
+            options: shuffleArray([...question.options])
+          };
+        }
+        return question;
+      });
+      
+      setTest(testData);
+      const initialAnswers = testData.questions.map(() => null);
       setAnswers(initialAnswers);
-      
-      // Set timer
-      setTimeLeft(response.data.timeLimit * 60);
-      setTimerActive(true);
-
-      // const response = await api.getMockTest(testId);
-      // console.log("test", response)
-      // setTest(response);
-
-      // const initialAnswers = response.questions.map(() => null);
-      // setAnswers(initialAnswers);
-
-      // setTimeLeft(response.timeLimit * 60);
+      setTimeLeft(testData.timeLimit * 60);
       // setTimerActive(true);
     } catch (error) {
       setErrorMessage('Failed to load test');
@@ -143,81 +326,157 @@ const TestScreen = ({ route, navigation }) => {
     }
   };
 
+  // Add this helper function at the top level of your component
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
   const handleSubmitTest = async () => {
-    // Check if all questions are answered
-    const unansweredQuestions = answers.filter(answer => answer === null).length;
+    const unansweredQuestions = answers.filter((answer, index) => {
+      if (!answer) return true;
+      if (Array.isArray(answer) && answer.length === 0) return true;
+      if (typeof answer === 'object' && Object.keys(answer).length === 0) return true;
+      return false;
+    }).length;
+  
     if (unansweredQuestions > 0) {
-      setShowIncompleteWarning(true);
+      setShowConfirmation(false); // Close confirmation first
+      setTimeout(() => {
+        setShowIncompleteWarning(true);
+      }, 100);
     } else {
-      submitTest();
+      setShowConfirmation(false);
+      setTimeout(() => {
+        submitTest();
+      }, 100);
     }
   };
+
+const closeAllOverlays = () => {
+  setShowCategorySelection(false);
+  setShowConfirmation(false);
+  setShowIncompleteWarning(false);
+  setShowError(false);
+  setShowResults(false);
+};
+
+// Modify the overlay opening functions
+const handleShowConfirmation = () => {
+  closeAllOverlays();
+  setTimeout(() => {
+    setShowConfirmation(true);
+  }, 100);
+};
 
   const submitTest = async () => {
     setSubmitting(true);
     try {
-      // Calculate total points
       let totalPoints = 0;
       const questionCount = test.questions.length;
       setQuestionCount(questionCount);
-      // Process each answer
+
       answers.forEach((answer, index) => {
         const question = test.questions[index];
         
         if (!question) return;
         
-        // Skip if answer is empty or undefined
         if (!answer || 
             (Array.isArray(answer) && answer.length === 0) ||
             (typeof answer === 'object' && Object.keys(answer).length === 0)) {
           return;
         }
         
-        // Check if answer is correct
         let isCorrect = false;
         
         switch (question.type) {
           case 'multiple-choice':
-            isCorrect = question.correctAnswer === answer;
+            isCorrect = question.correctAnswer.toLowerCase() === answer.toLowerCase();
             break;
           case 'fill-in-blanks':
-            if (typeof answer === 'string') {
-              isCorrect = question.correctAnswer.toLowerCase() === answer.toLowerCase();
-            } else if (typeof answer === 'object') {
-              // Handle multiple blanks
-              isCorrect = Object.keys(question.correctAnswer).every(blankId => {
-                const correctAnswerForBlank = question.correctAnswer[blankId];
-                const userAnswerForBlank = answer[blankId];
+            console.log('Question:', question);
+            console.log('User Answer:', answer);
+            console.log('Correct Answer:', question.correctAnswer);
+            
+            if (typeof answer === 'object' && typeof question.correctAnswer === 'object') {
+              // Handle multiple blanks case
+              isCorrect = Object.keys(answer).every(blankId => {
+                const correctAnswerArray = question.correctAnswer[blankId] || [];
+                const userAnswer = answer[blankId];
                 
-                if (!userAnswerForBlank) return false;
+                if (!userAnswer) return false;
                 
-                if (typeof correctAnswerForBlank === 'string') {
-                  return userAnswerForBlank.toLowerCase().trim() === correctAnswerForBlank.toLowerCase().trim();
-                } else if (Array.isArray(correctAnswerForBlank)) {
-                  return correctAnswerForBlank.some(correct => 
-                    userAnswerForBlank.toLowerCase().trim() === correct.toLowerCase().trim());
-                }
-                return false;
+                // Check if user's answer matches any of the correct answers (case insensitive)
+                return correctAnswerArray.some(correct => 
+                  String(userAnswer).toLowerCase().trim() === String(correct).toLowerCase().trim()
+                );
               });
+            } else {
+              isCorrect = false;
             }
             break;
           case 'matching':
-            isCorrect = JSON.stringify(question.correctAnswer.sort()) === JSON.stringify(answer.sort());
+            // Ensure both arrays exist and map their values to lowercase strings
+            const correctAnswers = Array.isArray(question.correctAnswer) 
+              ? question.correctAnswer.map(a => String(a).toLowerCase()).sort()
+              : [];
+            const userAnswers = Array.isArray(answer)
+              ? answer.map(a => String(a).toLowerCase()).sort()
+              : [];
+            
+            isCorrect = JSON.stringify(correctAnswers) === JSON.stringify(userAnswers);
             break;
           case 'ordering':
-            isCorrect = JSON.stringify(question.correctAnswer) === JSON.stringify(answer);
+            console.log('Correct Answer:', question.correctAnswer);
+            console.log('User Answer:', answer);
+            
+            const normalizedCorrect = question.correctAnswer.map(a => 
+              String(a).toLowerCase().trim()
+                .replace('c', 'с') // Replace Latin 'c' with Cyrillic 'с'
+                .normalize('NFKD') // Normalize Unicode characters
+            );
+            const normalizedUser = answer.map(a => 
+              String(a).toLowerCase().trim()
+                .replace('c', 'с') // Replace Latin 'c' with Cyrillic 'с'
+                .normalize('NFKD') // Normalize Unicode characters
+            );
+            
+            console.log('Normalized Correct:', normalizedCorrect);
+            console.log('Normalized User:', normalizedUser);
+            
+            isCorrect = JSON.stringify(normalizedCorrect) === JSON.stringify(normalizedUser);
             break;
           case 'categories':
             isCorrect = Object.keys(question.correctAnswer).every(category => {
-              const correctItems = question.correctAnswer[category];
-              const userItems = answer[category] || [];
-              return correctItems.length === userItems.length && 
-                     correctItems.every(item => userItems.includes(item));
+              // Get correct answers as simple array
+              const correctAnswers = question.correctAnswer[category].map(item => 
+                String(item).toLowerCase().trim()
+              );
+
+              // Get user answers - handle the specific structure where answer is an array of objects
+              const userAnswers = (answer[category] || []).map(item => {
+                // Handle the case where the answer is stored as {0: 'value', originalIndex: 0}
+                if (item && typeof item === 'object') {
+                  // If the answer is in the numeric key format
+                  const value = item[0] || Object.values(item)[0];
+                  return String(value).toLowerCase().trim();
+                }
+                return '';
+              }).filter(Boolean);
+
+              console.log('Processed correct answers:', correctAnswers);
+              console.log('Processed user answers:', userAnswers);
+
+              return correctAnswers.length === userAnswers.length &&
+                    correctAnswers.every(correct => userAnswers.includes(correct));
             });
             break;
           case 'input':
             if (typeof answer === 'string') {
-              isCorrect = question.correctAnswer.toLowerCase() === answer.toLowerCase();
+              isCorrect = question.correctAnswer.toLowerCase().trim() === answer.toLowerCase().trim();
             } else if (Array.isArray(question.correctAnswer)) {
               isCorrect = question.correctAnswer.some(correct => 
                 answer.toLowerCase().trim() === correct.toLowerCase().trim());
@@ -225,32 +484,27 @@ const TestScreen = ({ route, navigation }) => {
             break;
         }
         
-        // Add points to total if correct
         if (isCorrect) {
           totalPoints += question.points;
         }
       });
       
-      console.log('Submitting total points:', totalPoints); // Debug log
-      
+      console.log('Submitting total points:', totalPoints);
       setFinalTotalPoints(totalPoints);
       const response = await api.submitTest(testId, totalPoints, test.isFinal);
       
-      // Show results in overlay first
-      setTestResults(response.data);
-      setShowResults(true);
+      // Show results after a small delay
+      setTimeout(() => {
+        setTestResults(response.data);
+        setShowResults(true);
+      }, 300);
       
-      // Then refresh user data in the background
-      // refreshUser().catch(error => {
-      //   console.error('Error refreshing user data:', error);
-      // });
     } catch (error) {
       console.error('Error submitting test:', error);
-      CustomOverlay({
-        title: t('test.error'),
-        message: 'Failed to submit test',
-        platform: Platform.OS
-      });
+      setTimeout(() => {
+        setShowError(true);
+        setErrorMessage(t('test.submitError'));
+      }, 300);
     } finally {
       setSubmitting(false);
     }
@@ -557,102 +811,129 @@ const TestScreen = ({ route, navigation }) => {
   };
 
   const renderCategoryItem = (item) => {
-    // Get the text content
-    const textContent = typeof item === 'object' ? item.text : item;
-    const isLongText = textContent && textContent.length > 100; // Threshold for long text
-  
+    if (item && typeof item === 'object' && 'originalIndex' in item) {
+      if (typeof item.option === 'object') {
+        item = item.option;
+      } else {
+        item = item.option || item;
+      }
+    }
+
+    let textContent;
+    if (Array.isArray(item)) {
+      textContent = item.join(' ');
+    } else if (typeof item === 'object') {
+      textContent = item.text || String(item);
+    } else {
+      textContent = String(item);
+    }
+    // const isLongText = textContent && textContent.length > 20;
+
     if (typeof item === 'object' && item.image) {
       return (
-        <View style={styles.categoryItemContent}>
-          <Image 
-            source={{ uri: item.image }}
-            style={styles.categoryItemImage}
-          />
-          {item.text && <Text style={styles.categoryItemText} numberOfLines={2}>{item.text}</Text>}
-        </View>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Category image pressed:', item.image);
+            setSelectedImage(item.image);
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.categoryItemContent}>
+            <Image 
+              source={{ uri: item.image }}
+              style={styles.categoryItemImage}
+            />
+            {item.text && (
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.categoryItemText}>{item.text}</Text>
+                {item.action && (
+                  <Text style={styles.categoryItemAction}>{item.action}</Text>
+                )}
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       );
     }
     
-    // Return different styles based on text length
-    return isLongText ? (
-      <Text style={styles.categoryItemTextLong} numberOfLines={4}>
-        {item}
-      </Text>
-    ) : (
-      <Text style={styles.categoryItemText} numberOfLines={2}>
-        {item}
-      </Text>
+    return (
+      <View style={styles.categoryItemContent}>
+        <Text style={[
+          // isLongText ? styles.categoryItemTextLong : styles.categoryItemText,
+          styles.categoryItemText,
+          { flexWrap: 'wrap' }
+        ]}>
+          {textContent}
+        </Text>
+      </View>
     );
   };
 
+  const renderCategoryTitle = (category) => {
+    if (category.startsWith('https')) {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Category title image pressed:', category);
+            setSelectedImage(category);
+          }}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={{ uri: category }}
+            style={{ width: 100, height: 100, resizeMode: 'contain' }}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return <Text style={styles.categoryTitle}>{category}</Text>;
+  };
+
   const renderCategoriesQuestion = (question) => {
-    const currentAnswers = answers[currentQuestionIndex] || {};
+    const currentAnswers = answers[currentQuestionIndex] || {};  // Use answers from state
     const categories = Object.keys(question.correctAnswer || {});
     
-    // Initialize categories in the current answer if they don't exist
     categories.forEach(category => {
       if (!currentAnswers[category]) {
         currentAnswers[category] = [];
       }
     });
     
-    // Render category title - if it starts with @ it's an image
-    const renderCategoryTitle = (category) => {
-      if (category.startsWith('https')) {
-        return (
-          <Image
-            source={{ uri: category }}
-            style={{ width: 100, height: 100, resizeMode: 'contain' }}
-          />
-        );
-      }
-      return <Text style={styles.categoryTitle}>{category}</Text>;
-    };
-
     // Get all options that haven't been categorized yet
-    const uncategorizedOptions = (question.options || []).filter(option => {
-      // Check if the option exists in any category
+    const uncategorizedOptions = question.options.map((option, index) => ({
+      option,
+      index
+    })).filter(({ option, index }) => {
       return !Object.values(currentAnswers).some(categoryItems => {
         if (!categoryItems) return false;
-        return categoryItems.some(item => {
-          if (typeof item === 'object' && typeof option === 'object') {
-            return item.image === option.image;
-          }
-          return item === option;
-        });
+        return categoryItems.some(item => 
+          item.originalIndex === index
+        );
       });
     });
     
-    const handleAddToCategory = (option, category) => {
+    const handleAddToCategory = (optionWithIndex, category) => {
       const newAnswers = { ...currentAnswers };
       
-      // Remove the option from any other category it might be in
-      Object.keys(newAnswers).forEach(cat => {
-        if (!newAnswers[cat]) newAnswers[cat] = [];
-        newAnswers[cat] = newAnswers[cat].filter(item => {
-          if (typeof item === 'object' && typeof option === 'object') {
-            return item.image !== option.image;
-          }
-          return item !== option;
-        });
-      });
+      // Add the option to the selected category with its original index
+      const optionContent = typeof optionWithIndex.option === 'object' 
+      ? optionWithIndex.option.text 
+      : optionWithIndex.option;
       
-      // Add the option to the selected category
-      if (!newAnswers[category]) newAnswers[category] = [];
-      newAnswers[category] = [...newAnswers[category], option];
+    newAnswers[category] = [...newAnswers[category], {
+      option: optionContent,  // Store the text content directly
+      originalIndex: optionWithIndex.index
+    }];
       
       handleAnswerSelect(newAnswers);
     };
     
-    const handleRemoveFromCategory = (option, category) => {
+    const handleRemoveFromCategory = (item, category) => {
       const newAnswers = { ...currentAnswers };
       if (!newAnswers[category]) newAnswers[category] = [];
-      newAnswers[category] = newAnswers[category].filter(item => {
-        if (typeof item === 'object' && typeof option === 'object') {
-          return item.image !== option.image;
-        }
-        return item !== option;
-      });
+      newAnswers[category] = newAnswers[category].filter(categoryItem => 
+        categoryItem.originalIndex !== item.originalIndex
+      );
       handleAnswerSelect(newAnswers);
     };
 
@@ -664,45 +945,31 @@ const TestScreen = ({ route, navigation }) => {
         {question.content && renderQuestionContent(question.content)}
         {/* <Text style={styles.instructionText}>Drag or tap items to place them in the correct category</Text> */}
         
-        {/* Uncategorized options */}
-        <View style={styles.categoriesSection}>
-          <Text style={styles.categoryTitle}>{t('test.availableItems')}:</Text>
-          <View style={
-    uncategorizedOptions.some(option => {
-      const textContent = typeof option === 'object' ? option.text : option;
-      return textContent && textContent.length > 100;
-    }) 
-    ? styles.uncategorizedContainerLong 
-    : styles.uncategorizedContainer
-  }>
-          {uncategorizedOptions.map((option, index) => {
-            const textContent = typeof option === 'object' ? option.text : option;
-            const isLongText = textContent && textContent.length > 100;
-            
-            return (
+        <View style={styles.categorySection}>
+          {/* <Text style={styles.categoryTitle}>{t('test.availableItems')}</Text> */}
+          <View style={styles.categoryContainer}>
+            {uncategorizedOptions.map(({option, index}) => (
               <TouchableOpacity
-                key={index}
-                style={isLongText ? styles.categoryItemLong : styles.categoryItem}
+                key={`${index}-${option}`}
+                style={styles.categoryItem}
                 onPress={() => {
-                  setSelectedOption(option);
+                  setSelectedOption({option, index});
                   setShowCategorySelection(true);
                 }}
               >
                 {renderCategoryItem(option)}
               </TouchableOpacity>
-            );
-          })}
+            ))}
           </View>
         </View>
         
-        {/* Categories */}
         {categories.map((category, categoryIndex) => (
-          <View key={categoryIndex} style={styles.categoriesSection}>
+          <View key={categoryIndex} style={styles.categorySection}>
             {renderCategoryTitle(category)}
             <View style={styles.categoryContainer}>
               {(currentAnswers[category] || []).map((item, itemIndex) => (
                 <TouchableOpacity
-                  key={itemIndex}
+                  key={`${item.originalIndex}-${itemIndex}`}
                   style={styles.categoryItem}
                   onPress={() => handleRemoveFromCategory(item, category)}
                 >
@@ -725,22 +992,34 @@ const TestScreen = ({ route, navigation }) => {
           isVisible={showCategorySelection}
           onClose={() => setShowCategorySelection(false)}
           title={t('test.selectCategory')}
-          message=""
+          message={selectedOption ? renderCategoryItem(selectedOption.option) : ""}
           scrollable={true}
         >
-          {categories.map((category, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.categorySelectionButton}
-              onPress={() => {
-                handleAddToCategory(selectedOption, category);
-                setShowCategorySelection(false);
-              }}
-            >
-              {renderCategoryTitle(category)}
-            </TouchableOpacity>
-          ))}
+          <ScrollView style={styles.categorySelectionScrollView}>
+            {categories.map((category, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.categorySelectionButton}
+                onPress={() => {
+                  if (selectedOption) {
+                    handleAddToCategory(selectedOption, category);
+                    setShowCategorySelection(false);
+                  }
+                }}
+              >
+                {category.startsWith('https') ? (
+                  <Image
+                    source={{ uri: category }}
+                    style={styles.categorySelectionImage}
+                  />
+                ) : (
+                  <Text style={styles.categorySelectionText}>{category}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </CustomOverlay>
+
       </View>
     );
   };
@@ -770,6 +1049,16 @@ const TestScreen = ({ route, navigation }) => {
     }
   };
 
+  const handleImagePress = (image) => {
+    const fullImageUrl = image.startsWith('http') ? image : `${API_URL}${image}`;
+    console.log('Setting image URL:', fullImageUrl);
+    setSelectedImage(fullImageUrl);
+  };
+
+  const closeImageOverlay = () => {
+    setSelectedImage(null);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -782,12 +1071,12 @@ const TestScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <View style={styles.timerContainer}>
+        {/* <View style={styles.timerContainer}>
           <Icon name="time-outline" type="ionicon" size={20} color={colors.timer.text} />
           <Text style={styles.timerText}>
             {t('test.timeLeft')}: {formatTime(timeLeft)}
           </Text>
-        </View>
+        </View> */}
         <Text style={styles.progressText}>
           {t('test.questionProgress', {
             current: currentQuestionIndex + 1,
@@ -913,9 +1202,17 @@ const TestScreen = ({ route, navigation }) => {
 
       <CustomOverlay
         isVisible={showResults}
-        onClose={() => {
-          setShowResults(false);
-          navigation.replace('HomeScreen');
+        onClose={async () => {
+          try {
+            setShowResults(false);
+            console.log('Refreshing user...');
+            await refreshUser();
+            console.log('Navigating...');
+            // navigation.replace('HomeScreen');
+            setTimeout(() => navigation.replace('HomeScreen'), 300);
+          } catch (e) {
+            console.error('onClose error:', e);
+          }
         }}
         title={t('test.results')}
         scrollable={true}
@@ -950,12 +1247,73 @@ const TestScreen = ({ route, navigation }) => {
             <Text style={styles.scoreDetails}>
               {t('test.pointsEarned', {
                 earned: finalTotalPoints,
-                total: questionCount
+                total: testResults?.totalPossiblePoints
               })}
             </Text>
           </View>
+
+          <View style={styles.resultsList}>
+            <Text style={styles.resultsTitle}>{t('test.questionResults')}</Text>
+            {test?.questions.map((question, index) => {
+              const userAnswer = answers[index];
+              const isCorrect = checkAnswer(question, userAnswer);
+              
+              return (
+                <View key={index} style={[
+                  styles.resultItem,
+                  isCorrect ? styles.correctAnswer : styles.wrongAnswer
+                ]}>
+                  <View style={styles.questionHeader}>
+                    <Text style={styles.questionNumber}>
+                      {t('test.question')} {index + 1}
+                    </Text>
+                    <View style={[
+                      styles.resultBadge,
+                      { backgroundColor: isCorrect ? '#4CAF50' : '#F44336' }
+                    ]}>
+                      <Icon
+                        name={isCorrect ? 'checkmark' : 'close'}
+                        type="ionicon"
+                        size={16}
+                        color="white"
+                      />
+                      <Text style={styles.resultText}>
+                        {isCorrect ? t('test.correct') : t('test.incorrect')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.questionText}>{question.question}</Text>
+                  
+                  {!isCorrect && (
+                    <View style={styles.answerContainer}>
+                      <Text style={styles.answerLabel}>{t('test.yourAnswer')}:</Text>
+                      <View style={styles.wrongAnswer}>
+                        <Text style={styles.wrongAnswerText}>
+                          {formatUserAnswer(question, userAnswer)}
+                        </Text>
+                      </View>
+                      
+                      <Text style={styles.answerLabel}>{t('test.correctAnswer')}:</Text>
+                      <View style={styles.correctAnswer}>
+                        <Text style={styles.correctAnswerText}>
+                          {formatCorrectAnswer(question)}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
         </View>
       </CustomOverlay>
+
+      <ImageOverlay
+        isVisible={!!selectedImage}
+        imageUrl={selectedImage}
+        onClose={closeImageOverlay}
+      />
     </SafeAreaView>
   );
 };
@@ -1010,7 +1368,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   questionText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#333',
@@ -1068,7 +1426,7 @@ const styles = StyleSheet.create({
   },
   matchingInputFilled: {
     borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.white,
   },
   multipleBlanksContainer: {
     marginTop: 15,
@@ -1212,51 +1570,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   categoryItem: {
-    padding: 10,
-    margin: 5,
+    padding: 12,
+    margin: 6,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 5,
+    borderRadius: 8,
     backgroundColor: '#f9f9f9',
     position: 'relative',
-  },
-  categoryItemLong: {
-    padding: 15,
-    margin: 5,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 5,
-    backgroundColor: '#f9f9f9',
-    position: 'relative',
-    width: '100%', // Full width for long text
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    maxWidth: '100%',
+    width: '100%',
+    flexShrink: 1,
   },
   categoryItemContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    flexWrap: 'wrap',
+  },
+  categoryItemText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    width: '100%',
+  },
+  categoryItemAction: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginLeft: 8,
   },
   categoryItemImage: {
     width: 80,
     height: 80,
     resizeMode: 'contain',
-    marginBottom: 5,
-  },
-  categoryItemText: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
+    marginBottom: 8,
+    borderRadius: 4,
   },
   categoryItemTextLong: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#333',
     textAlign: 'left',
     paddingHorizontal: 8,
-    lineHeight: 18,
+    lineHeight: 20,
     flexShrink: 1,
     width: '100%',
+    flexWrap: 'wrap',
   },
   categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    padding: 8,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    marginVertical: 8,
+    width: '100%',
   },
   categoryItemRemoveIcon: {
     position: 'absolute',
@@ -1265,11 +1640,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
   },
+  categorySelectionContainer: {
+    width: '100%',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  categorySelectionScrollView: {
+    width: '100%',
+    maxHeight: height * 0.6, // 60% of screen height
+  },
   categorySelectionButton: {
+    backgroundColor: colors.background,
     padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    alignItems: 'center',
+    borderRadius: 8,
+    marginVertical: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  categorySelectionText: {
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'center',
+    flexWrap: 'wrap',
+  },
+  categorySelectionImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
   },
   loadingText: {
     marginTop: 10,
@@ -1281,20 +1680,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   resultsContainer: {
-    padding: Math.min(20, width * 0.05),
+    padding: 20,
     flex: 1,
   },
   scoreContainer: {
     alignItems: 'center',
+    justifyContent: 'center', // Add this
     marginBottom: Math.min(20, height * 0.02),
     backgroundColor: '#fff',
-    padding: Math.min(20, width * 0.05),
+    padding: 20,
     borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    width: '100%', // Add this
   },
   scoreCircle: {
     width: Math.min(120, width * 0.3),
@@ -1305,102 +1706,153 @@ const styles = StyleSheet.create({
     marginBottom: Math.min(15, height * 0.02),
   },
   scoreText: {
-    fontSize: Math.min(28, width * 0.07),
+    fontSize: 28,
     fontWeight: 'bold',
     marginTop: 5,
+    textAlign: 'center', // Add this
   },
   scoreLabel: {
-    fontSize: Math.min(24, width * 0.06),
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: Math.min(10, height * 0.01),
+    textAlign: 'center', // Add this
+    width: '100%', // Add this
+    marginRight: 0, // Add this to remove any potential margin
   },
   scoreDetails: {
     fontSize: Math.min(16, width * 0.04),
     color: '#666',
+    textAlign: 'center', // Add this
+    width: '100%', // Add this
   },
   resultsList: {
-    flex: 1,
+    marginTop: 20,
   },
   resultsTitle: {
-    fontSize: Math.min(20, width * 0.05),
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: Math.min(15, height * 0.02),
+    marginBottom: 15,
     color: '#333',
   },
   resultItem: {
-    padding: Math.min(15, width * 0.04),
+    padding: 15,
     borderRadius: 10,
-    marginBottom: Math.min(10, height * 0.01),
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   questionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Math.min(10, height * 0.01),
-    flexWrap: 'wrap',
+    marginBottom: 10,
   },
   questionNumber: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    flex: 1,
   },
   resultBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Math.min(10, width * 0.03),
-    paddingVertical: Math.min(5, height * 0.01),
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 15,
-    marginLeft: 10,
   },
   resultText: {
     color: 'white',
     marginLeft: 5,
     fontWeight: 'bold',
-    fontSize: Math.min(14, width * 0.035),
+    fontSize: 14,
   },
   questionText: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 24,
     color: '#333',
     marginBottom: Math.min(10, height * 0.01),
   },
-  explanationContainer: {
-    backgroundColor: 'white',
-    padding: Math.min(15, width * 0.04),
-    borderRadius: 10,
-    marginTop: Math.min(10, height * 0.01),
+  answerContainer: {
+    marginVertical: 12,
   },
-  yourAnswerLabel: {
-    fontSize: Math.min(16, width * 0.04),
+  answerLabel: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#F44336',
-    marginBottom: Math.min(5, height * 0.01),
+    marginBottom: 6,
+    color: '#666',
   },
-  correctAnswerLabel: {
-    fontSize: Math.min(16, width * 0.04),
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: Math.min(10, height * 0.01),
-    marginBottom: Math.min(5, height * 0.01),
+  answerContent: {
+    fontSize: 16,
+    lineHeight: 24,
   },
-  explanationLabel: {
-    fontSize: Math.min(16, width * 0.04),
-    fontWeight: 'bold',
-    color: '#4F8EF7',
-    marginTop: Math.min(10, height * 0.01),
-    marginBottom: Math.min(5, height * 0.01),
+  correctAnswer: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#E8F5E9',
+    borderWidth: 2,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
   },
-  answerText: {
-    fontSize: Math.min(16, width * 0.04),
-    color: '#333',
-    marginBottom: Math.min(5, height * 0.01),
+  wrongAnswer: {
+    borderColor: '#F44336',
+    backgroundColor: '#FFEBEE',
+    borderWidth: 2,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  correctAnswerText: {
+    color: '#2E7D32',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  wrongAnswerText: {
+    color: '#C62828',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  correctAnswerHint: {
+    color: '#2E7D32',
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginTop: 4,
+    paddingLeft: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4CAF50',
+  },
+  categorySection: {
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  categoryDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 12,
+  },
+  imageOverlayContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageOverlayContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullScreenImage: {
+    width: '100%',
+    height: '100%',
   },
 });
-
-const getScoreColor = (score) => {
-  if (score >= 80) return '#4CAF50'; // Green
-  if (score >= 60) return '#FFC107'; // Amber
-  return '#F44336'; // Red
-};
 
 export default TestScreen;

@@ -10,6 +10,7 @@ export default {
     next: 'Далее',
     previous: 'Назад',
     finish: 'Завершить',
+    ok: 'ОК',
   },
   auth: {
     // Common
@@ -17,6 +18,7 @@ export default {
     email: 'Электронная почта',
     password: 'Пароль',
     error: 'Ошибка',
+    success: 'Успешно',
     
     // Login
     login: 'Войти',
@@ -25,20 +27,38 @@ export default {
     checkCredentials: 'Проверьте ваши данные',
     noAccount: 'Нет аккаунта?',
     signUp: 'Зарегистрироваться',
+    forgotPassword: 'Восстановить пароль',
     
     // Register
     register: 'Регистрация',
     registerTitle: 'Создать новый аккаунт',
     fullName: 'Полное имя',
+    fullNameOptional: 'Полное имя (необязательно)',
     confirmPassword: 'Подтвердите пароль',
     registrationFailed: 'Ошибка регистрации',
     hasAccount: 'Уже есть аккаунт?',
     signIn: 'Войти',
     
+    // Reset Password
+    resetPassword: 'Сброс пароля',
+    resetPasswordDesc: 'Введите ваш email для сброса пароля',
+    enterNewPassword: 'Введите новый пароль',
+    sendResetEmail: 'Отправить ссылку для сброса',
+    resetEmailSent: 'Ссылка для сброса пароля отправлена на ваш email',
+    resetEmailFailed: 'Не удалось отправить ссылку для сброса пароля',
+    newPassword: 'Новый пароль',
+    confirmNewPassword: 'Подтвердите новый пароль',
+    passwordResetSuccess: 'Пароль успешно изменен',
+    passwordResetFailed: 'Не удалось изменить пароль',
+    rememberPassword: 'Вспомнили пароль?',
+
     // New fields
     telephone: 'Телефон',
+    telephoneOptional: 'Телефон (необязательно)',
     gender: 'Пол',
+    genderOptional: 'Пол (необязательно)',
     age: 'Возраст',
+    ageOptional: 'Возраст (необязательно)',
     male: 'Мужской',
     female: 'Женский',
     other: 'Другой',
@@ -48,16 +68,33 @@ export default {
     
     // Validation
     fillAllFields: 'Пожалуйста, заполните все поля',
-    passwordsNotMatch: 'Пароли не совпадают',
+    fillRequiredFields: 'Пожалуйста, заполните обязательные поля (email и пароль)',
+    passwordsDontMatch: 'Пароли не совпадают',
     passwordTooShort: 'Пароль должен содержать минимум 6 символов',
     tryAgain: 'Пожалуйста, попробуйте снова',
     passwordsDoNotMatch: 'Пароли не совпадают',
+    invalidEmailFormat: 'Неверный формат электронной почты',
+    invalidCredentials: 'Неверный email или пароль',
+    serverError: 'Ошибка сервера. Попробуйте позже',
+    emailAlreadyExists: 'Этот email уже зарегистрирован',
+    
+    // OTP
+    enterOtp: 'Введите OTP код',
+    otpSent: 'OTP код отправлен на вашу электронную почту',
+    otpInvalid: 'Неверный OTP код',
+    resendOtp: 'Отправить OTP код повторно',
+    otpResent: 'OTP код отправлен повторно',
+    verifyOtp: 'Подтвердить OTP',
+    otpVerificationFailed: 'Не удалось подтвердить OTP код',
+    otpVerificationSuccess: 'OTP код успешно подтвержден',
+    otpExpired: 'Срок действия OTP кода истек',
   },
   test: {
     // Header
     timeLeft: 'Осталось времени',
     questionProgress: 'Вопрос {{current}} из {{total}}',
-    
+    noAnswer: 'Ответ отсутствует',
+    image: 'Изображение',
     // Questions
     noQuestions: 'Нет доступных вопросов',
     unknownType: 'Неизвестный тип вопроса',
@@ -93,7 +130,7 @@ export default {
       categories: 'Распределите элементы по правильным категориям'
     },
 
-    typeHere: 'Введите ответ',
+    typeHere: '🖊️',
     
     // Categories
     availableItems: 'Доступные элементы:',
@@ -245,6 +282,7 @@ export default {
     // Profile Stack
     editProfile: 'Редактировать профиль',
     changePassword: 'Изменить пароль',
+    deleteAccount: 'Удалить аккаунт',
     myProgress: 'Мой прогресс',
     
     // Placement Test
@@ -276,6 +314,17 @@ export default {
     logoutConfirm: 'Подтверждение выхода',
     logoutMessage: 'Вы уверены, что хотите выйти?',
     cancel: 'Отмена',
+    
+    // Delete Account
+    deleteAccount: 'Удалить аккаунт',
+    deleteAccountDesc: 'Полностью удалить аккаунт',
+    deleteAccountConfirm: 'Удалить аккаунт',
+    deleteAccountMessage: 'Вы уверены, что хотите удалить ваш аккаунт? Это действие необратимо и все ваши данные будут удалены.',
+    deleteAccountPassword: 'Введите ваш пароль',
+    enterPasswordToDelete: 'Введите пароль для подтверждения удаления',
+    accountDeleted: 'Аккаунт успешно удален',
+    deleteAccountFailed: 'Не удалось удалить аккаунт',
+    confirmDelete: 'Подтвердить',
     
     // Edit Profile
     name: 'Имя',

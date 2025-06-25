@@ -6,9 +6,9 @@ const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Please add a name'],
       trim: true,
       maxlength: [50, 'Name cannot be more than 50 characters'],
+      default: '',
     },
     email: {
       type: String,
@@ -27,28 +27,28 @@ const UserSchema = new mongoose.Schema(
     },
     telephone: {
       type: String,
-      required: [true, 'Please add a telephone number'],
+      default: '',
     },
     gender: {
       type: String,
-      required: [true, 'Please select your gender'],
       enum: ['male', 'female', 'other'],
+      default: 'male',
     },
     age: {
       type: Number,
-      required: [true, 'Please add your age'],
       min: [1, 'Age must be at least 1'],
       max: [120, 'Age cannot exceed 120'],
+      default: 18,
     },
     progress: {
       currentLevel: {
         type: String,
-        enum: ['A1', 'A2', 'B1', 'B2'],
+        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
         default: 'A1',
       },
       availableLevels: {
         type: [String],
-        enum: ['A1', 'A2', 'B1', 'B2'],
+        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
         default: ['A1'],
       },
       completedLessons: [
@@ -84,6 +84,18 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
+    },
+    settings: {
+      language: {
+        type: String,
+        enum: ['kk', 'ru'],
+        default: 'kk'
+      }
+    },
   },
   {
     timestamps: true,
@@ -103,7 +115,7 @@ UserSchema.pre('save', async function (next) {
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+    expiresIn: '100y',
   });
 };
 
@@ -112,4 +124,4 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema); 
+module.exports = mongoose.model('User', UserSchema);

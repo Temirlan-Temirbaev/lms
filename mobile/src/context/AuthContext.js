@@ -163,11 +163,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.getCurrentUser();
       
-      // Update stored user
       await AsyncStorage.setItem('user', JSON.stringify(response.data));
-      
-      // Update state
-      setUser(response.data);
+      const storedUser = await AsyncStorage.getItem('user');
+      setUser(JSON.parse(storedUser));
       
       return response;
     } catch (error) {
@@ -176,6 +174,30 @@ export const AuthProvider = ({ children }) => {
       if (error.message === 'Not authorized to access this route') {
         logout();
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete user account
+  const deleteAccount = async (password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.deleteAccount(password);
+      
+      // Clear stored data after successful deletion
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      
+      // Update state
+      setToken(null);
+      setUser(null);
+      
+      return { success: true };
+    } catch (error) {
+      setError(error.message || 'Account deletion failed');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -194,6 +216,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         changePassword,
         refreshUser,
+        deleteAccount,
         hasPlacementTest: user ? !user.progress?.placementTestTaken : false,
         currentLevel: user ? user.progress?.currentLevel : 'A1',
         availableLevels: user ? user.progress?.availableLevels : ['A1'],

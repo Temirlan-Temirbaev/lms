@@ -14,41 +14,6 @@ const CustomOverlay = ({
   scrollable = false,
   children
 }) => {
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
-    );
-
-    const keyboardWillHide = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      }
-    );
-
-    return () => {
-      keyboardWillShow.remove();
-      keyboardWillHide.remove();
-    };
-  }, []);
-
-  const getOverlayHeight = () => {
-    const baseHeight = height * 0.8;
-    const maxHeight = height - 40;
-    const minHeight = Math.min(300, height * 0.4);
-    
-    if (keyboardHeight > 0) {
-      return Math.min(baseHeight, maxHeight - keyboardHeight);
-    }
-    
-    return Math.max(minHeight, Math.min(baseHeight, maxHeight));
-  };
-
   return (
     <Overlay
       isVisible={isVisible}
@@ -56,13 +21,13 @@ const CustomOverlay = ({
       overlayStyle={[
         styles.overlay,
         {
-          width: width * 0.9,
-          maxHeight: getOverlayHeight(),
-          marginTop: Platform.OS === 'ios' ? 20 : 0,
+          margin: 0, // Add this to ensure full visibility
+          width: width * 0.85,
+          maxHeight: height * 0.8, // Limit height to 80% of screen
         }
       ]}
     >
-      <View style={[styles.modalContent, { maxHeight: getOverlayHeight() }]}>
+      <View style={styles.modalContent}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={2}>{title}</Text>
@@ -137,8 +102,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     position: 'relative',
     alignSelf: 'center',
+    zIndex: 9999,
   },
   modalContent: {
+    minHeight: 300, // Add this back
     backgroundColor: colors.white,
     borderRadius: 10,
     flexDirection: 'column',
@@ -185,6 +152,8 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    minHeight: 100,
+    maxHeight: height * 0.4, // Add fixed maxHeight
     backgroundColor: 'white',
   },
   scrollContent: {
@@ -193,6 +162,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 15,
+    backgroundColor: 'white',
+    minHeight: 50, // Add minHeight back
     backgroundColor: 'white',
     flex: 1,
   },
@@ -211,14 +182,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   button: {
-    minWidth: (width * 0.9 - 70) / 2,
+    minWidth: (width * 0.85 - 70) / 2, // Changed from 0.9 to 0.85 to match overlay width
     borderRadius: 5,
     paddingVertical: 8,
     height: 40,
     backgroundColor: colors.primary,
   },
   singleButton: {
-    minWidth: width * 0.9 - 30,
+    minWidth: width * 0.85 - 30, // Changed from 0.9 to 0.85 to match overlay width
   },
   cancelButton: {
     backgroundColor: colors.lightGray,
@@ -234,4 +205,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomOverlay; 
+export default CustomOverlay;

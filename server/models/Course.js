@@ -5,7 +5,7 @@ const CourseSchema = new mongoose.Schema(
     level: {
       type: String,
       required: [true, 'Please add a level'],
-      enum: ['A1', 'A2', 'B1', 'B2'],
+      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
     },
     title: {
       type: String,
