@@ -1,10 +1,18 @@
+import React, { useState } from "react";
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
   ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  ColumnFiltersState,
+  VisibilityState,
+  useReactTable,
 } from "@tanstack/react-table";
-import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,68 +23,63 @@ import {
 } from "@/components/ui/table";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 
-// Add this type for action items
-export type ActionItem = {
+interface ActionItem<T> {
   label: string;
-  onClick: () => void;
+  onClick: (item: T) => void;
   isDanger?: boolean;
   separator?: boolean;
-  hidden?: boolean;
-};
+}
 
-// Add this utility function to create action columns
+interface UniversalDataTableProps<T> {
+  data: T[];
+  columns: ColumnDef<T>[];
+  searchKey?: string;
+  placeholder?: string;
+  onRowClick?: (item: T) => void;
+}
+
 export function createActionsColumn<T>(
-  actions: (item: T) => ActionItem[]
+  getActions: (item: T) => ActionItem<T>[]
 ): ColumnDef<T> {
   return {
     id: "actions",
     header: "Действия",
     cell: ({ row }) => {
-      const itemActions = actions(row.original).filter(
-        (action) => !action.hidden
-      );
-
-      if (itemActions.length === 0) return null;
+      const item = row.original;
+      const actions = getActions(item);
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Открыть меню</span>
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z"
-                />
-              </svg>
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {itemActions.map((action, index) => (
-              <React.Fragment key={index}>
-                {action.separator && index > 0 && <DropdownMenuSeparator />}
-                <DropdownMenuItem
-                  onClick={action.onClick}
-                  className={action.isDanger ? "text-red-600" : ""}
+            {actions.map((action, index) => (
+              <div key={index}>
+                {action.separator && index > 0 && (
+                  <div className="border-t my-1" />
+                )}
+                <button
+                  className={`w-full text-left px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground ${
+                    action.isDanger ? "text-red-600 hover:text-red-700" : ""
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    action.onClick(item);
+                  }}
                 >
                   {action.label}
-                </DropdownMenuItem>
-              </React.Fragment>
+                </button>
+              </div>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -85,79 +88,105 @@ export function createActionsColumn<T>(
   };
 }
 
-type DataTableProps<T> = {
-  columns: ColumnDef<T>[];
-  data: T[];
-  onRowClick?: (item: T) => void;
-  // Tab props
-  showTabs?: boolean;
-  tabs?: {
-    value: string;
-    label: string;
-    count?: number;
-    columns: ColumnDef<any>[];
-    data: any[];
-    createButton?: React.ReactNode;
-  }[];
-  defaultTab?: string;
-  onTabChange?: (value: string) => void;
-};
-
 export function UniversalDataTable<T>({
-  columns,
   data,
+  columns,
+  searchKey = "name",
+  placeholder = "Поиск...",
   onRowClick,
-  showTabs = false,
-  tabs = [],
-  defaultTab,
-  onTabChange,
-}: DataTableProps<T>) {
-  const [activeTab, setActiveTab] = React.useState(
-    defaultTab || tabs[0]?.value || ""
-  );
+}: UniversalDataTableProps<T>) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    if (onTabChange) {
-      onTabChange(value);
-    }
-  };
+  const table = useReactTable({
+    data,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  });
 
-  const renderTable = (tableColumns: ColumnDef<any>[], tableData: any[]) => {
-    const table = useReactTable({
-      columns: tableColumns,
-      data: tableData,
-      getCoreRowModel: getCoreRowModel(),
-    });
-
-    return (
-      <div className="overflow-hidden rounded-lg border">
+  return (
+    <div className="w-full">
+      <div className="flex items-center py-4">
+        <Input
+          placeholder={placeholder}
+          value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn(searchKey)?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Столбцы <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div className="rounded-md border">
         <Table>
-          <TableHeader className="bg-muted sticky top-0 z-10">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={() => onRowClick?.(row.original)}
                   className={
                     onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
                   }
-                  onClick={() => onRowClick && onRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -172,46 +201,40 @@ export function UniversalDataTable<T>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={tableColumns.length}
+                  colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Нет результатов.
+                  Результаты не найдены.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-    );
-  };
-
-  // If no tabs, render regular table
-  if (!showTabs || tabs.length === 0) {
-    return renderTable(columns, data);
-  }
-
-  // Render with tabs
-  return (
-    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <TabsList>
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label} {tab.count !== undefined && `(${tab.count})`}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <div className="flex gap-2">
-          {tabs.find((tab) => tab.value === activeTab)?.createButton}
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} из{" "}
+          {table.getFilteredRowModel().rows.length} строк выбрано.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Предыдущая
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Следующая
+          </Button>
         </div>
       </div>
-
-      {tabs.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value}>
-          {renderTable(tab.columns, tab.data)}
-        </TabsContent>
-      ))}
-    </Tabs>
+    </div>
   );
 }
