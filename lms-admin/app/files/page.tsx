@@ -123,7 +123,7 @@ export default function FilesPage() {
 
             // Also ensure parent folders exist
             let currentPath = "";
-            parts.slice(0, -1).forEach((part, index) => {
+            parts.slice(0, -1).forEach((part) => {
               const parentPath = currentPath;
               currentPath = currentPath ? `${currentPath}/${part}` : part;
 
