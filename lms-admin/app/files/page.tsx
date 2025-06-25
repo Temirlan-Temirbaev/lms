@@ -22,7 +22,6 @@ import {
   Image,
   Music,
   Loader2,
-  AlertTriangle,
   Grid,
   List,
   FolderOpen,
@@ -31,7 +30,6 @@ import {
   Home,
   FolderPlus,
   Plus,
-  X,
   Download,
   Eye,
   Calendar,
@@ -125,7 +123,7 @@ export default function FilesPage() {
 
             // Also ensure parent folders exist
             let currentPath = "";
-            parts.slice(0, -1).forEach((part, index) => {
+            parts.slice(0, -1).forEach((part) => {
               const parentPath = currentPath;
               currentPath = currentPath ? `${currentPath}/${part}` : part;
 

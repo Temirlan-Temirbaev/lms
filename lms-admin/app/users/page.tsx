@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth-context";
-import { UsersTable } from "../../components/tables/UsersTable";
 import { Button } from "../../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Plus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
