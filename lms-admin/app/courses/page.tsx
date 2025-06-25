@@ -6,7 +6,10 @@ import { Button } from "../../components/ui/button";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { UniversalDataTable, createActionsColumn } from "@/components/universal-data-table";
+import {
+  UniversalDataTable,
+  createActionsColumn,
+} from "@/components/universal-data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Dialog,
@@ -44,7 +47,7 @@ export default function CoursesPage() {
   const [form, setForm] = useState({
     title: "",
     level: "A1",
-    description: "Course",
+    description: "Курс",
   });
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState("");
@@ -52,30 +55,22 @@ export default function CoursesPage() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editOpen, setEditOpen] = useState(false);
 
-const courseColumns: ColumnDef<Course>[] = [
-  { accessorKey: "title", header: "Title" },
-  { accessorKey: "level", header: "Level" },
-  createActionsColumn<Course>((course) => [
-    {
-      label: "Edit",
-      onClick: () => handleEditCourse(course),
-    },
-    {
-      label: "View Lessons",
-      onClick: () => router.push(`/courses/${course._id}/lessons`),
-    },
-    {
-      label: "View Tests",
-      onClick: () => router.push(`/courses/${course._id}/tests`),
-    },
-    {
-      label: "Delete",
-      onClick: () => handleDeleteCourse(course._id),
-      isDanger: true,
-      separator: true,
-    },
-  ]),
-];
+  const courseColumns: ColumnDef<Course>[] = [
+    { accessorKey: "title", header: "Название" },
+    { accessorKey: "level", header: "Уровень" },
+    createActionsColumn<Course>((course) => [
+      {
+        label: "Редактировать",
+        onClick: () => handleEditCourse(course),
+      },
+      {
+        label: "Удалить",
+        onClick: () => handleDeleteCourse(course._id),
+        isDanger: true,
+        separator: true,
+      },
+    ]),
+  ];
 
   useEffect(() => {
     if (!isAuthenticated || !token) return;
@@ -89,9 +84,9 @@ const courseColumns: ColumnDef<Course>[] = [
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setCourses(data.data);
-        else setError(data.message || "Failed to fetch courses");
+        else setError(data.message || "Не удалось загрузить курсы");
       })
-      .catch(() => setError("Failed to fetch courses"))
+      .catch(() => setError("Не удалось загрузить курсы"))
       .finally(() => setLoading(false));
   }, [isAuthenticated, token]);
 
@@ -106,23 +101,26 @@ const courseColumns: ColumnDef<Course>[] = [
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this course?")) return;
+    if (!confirm("Вы уверены, что хотите удалить этот курс?")) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/courses/${courseId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/courses/${courseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (res.ok) {
         setCourses((prev) => prev.filter((c) => c._id !== courseId));
       } else {
-        alert("Failed to delete course");
+        alert("Не удалось удалить курс");
       }
     } catch (error) {
-      alert("Error deleting course");
+      alert("Ошибка при удалении курса");
     }
   };
 
@@ -153,10 +151,10 @@ const courseColumns: ColumnDef<Course>[] = [
         setEditingCourse(null);
         setForm({ title: "", level: "A1", description: "" });
       } else {
-        setFormError(data.message || "Failed to update course");
+        setFormError(data.message || "Не удалось обновить курс");
       }
     } catch (error) {
-      setFormError("Error updating course");
+      setFormError("Ошибка при обновлении курса");
     } finally {
       setCreating(false);
     }
@@ -191,14 +189,14 @@ const courseColumns: ColumnDef<Course>[] = [
         <SiteHeader />
         <div className="flex flex-1 flex-col p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Courses</h1>
+            <h1 className="text-2xl font-bold">Курсы</h1>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setOpen(true)}>+ New Course</Button>
+                <Button onClick={() => setOpen(true)}>+ Новый курс</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Create Course</DialogTitle>
+                  <DialogTitle>Создать курс</DialogTitle>
                 </DialogHeader>
                 <form
                   onSubmit={async (e) => {
@@ -220,7 +218,7 @@ const courseColumns: ColumnDef<Course>[] = [
                       const data = await res.json();
                       if (!res.ok)
                         throw new Error(
-                          data.message || "Failed to create course"
+                          data.message || "Не удалось создать курс"
                         );
                       setOpen(false);
                       setForm({ title: "", level: "A1", description: "" });
@@ -235,10 +233,10 @@ const courseColumns: ColumnDef<Course>[] = [
                   className="flex flex-col gap-4"
                 >
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="course-title">Title</Label>
+                    <Label htmlFor="course-title">Название</Label>
                     <Input
                       id="course-title"
-                      placeholder="Title"
+                      placeholder="Название"
                       value={form.title}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, title: e.target.value }))
@@ -247,7 +245,7 @@ const courseColumns: ColumnDef<Course>[] = [
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="course-level">Level</Label>
+                    <Label htmlFor="course-level">Уровень</Label>
                     <Select
                       value={form.level}
                       onValueChange={(level) =>
@@ -255,7 +253,7 @@ const courseColumns: ColumnDef<Course>[] = [
                       }
                     >
                       <SelectTrigger id="course-level">
-                        <SelectValue placeholder="Level" />
+                        <SelectValue placeholder="Уровень" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A1">A1</SelectItem>
@@ -268,10 +266,10 @@ const courseColumns: ColumnDef<Course>[] = [
                     </Select>
                   </div>
                   <div className="flex-col gap-1 hidden">
-                    <Label htmlFor="course-description">Description</Label>
+                    <Label htmlFor="course-description">Описание</Label>
                     <Textarea
                       id="course-description"
-                      placeholder="Description"
+                      placeholder="Описание"
                       value={form.description}
                       onChange={(e: any) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
@@ -283,34 +281,26 @@ const courseColumns: ColumnDef<Course>[] = [
                   )}
                   <DialogFooter>
                     <Button type="submit" disabled={creating}>
-                      {creating ? "Creating..." : "Create"}
+                      {creating ? "Создание..." : "Создать"}
                     </Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  onClick={() => setEditOpen(true)}
-                  disabled={!editingCourse}
-                >
-                  Edit Course
-                </Button>
-              </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Course</DialogTitle>
+                  <DialogTitle>Редактировать курс</DialogTitle>
                 </DialogHeader>
                 <form
                   onSubmit={handleUpdateCourse}
                   className="flex flex-col gap-4"
                 >
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="edit-course-title">Title</Label>
+                    <Label htmlFor="edit-course-title">Название</Label>
                     <Input
                       id="edit-course-title"
-                      placeholder="Title"
+                      placeholder="Название"
                       value={form.title}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, title: e.target.value }))
@@ -319,7 +309,7 @@ const courseColumns: ColumnDef<Course>[] = [
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="edit-course-level">Level</Label>
+                    <Label htmlFor="edit-course-level">Уровень</Label>
                     <Select
                       value={form.level}
                       onValueChange={(level) =>
@@ -327,7 +317,7 @@ const courseColumns: ColumnDef<Course>[] = [
                       }
                     >
                       <SelectTrigger id="edit-course-level">
-                        <SelectValue placeholder="Level" />
+                        <SelectValue placeholder="Уровень" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A1">A1</SelectItem>
@@ -340,10 +330,10 @@ const courseColumns: ColumnDef<Course>[] = [
                     </Select>
                   </div>
                   <div className="flex-col gap-1 hidden">
-                    <Label htmlFor="edit-course-description">Description</Label>
+                    <Label htmlFor="edit-course-description">Описание</Label>
                     <Textarea
                       id="edit-course-description"
-                      placeholder="Description"
+                      placeholder="Описание"
                       value={form.description}
                       onChange={(e: any) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
@@ -355,7 +345,7 @@ const courseColumns: ColumnDef<Course>[] = [
                   )}
                   <DialogFooter>
                     <Button type="submit" disabled={creating}>
-                      {creating ? "Updating..." : "Update"}
+                      {creating ? "Обновление..." : "Обновить"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -363,13 +353,16 @@ const courseColumns: ColumnDef<Course>[] = [
             </Dialog>
           </div>
           {loading ? (
-            <div>Loading...</div>
+            <div>Загрузка...</div>
           ) : error ? (
-            <div className="text-red-500">{error}</div>          ) : (
-            <UniversalDataTable 
-              columns={courseColumns} 
-              data={courses} 
-              onRowClick={(course: Course) => router.push(`/courses/${course._id}`)}
+            <div className="text-red-500">{error}</div>
+          ) : (
+            <UniversalDataTable
+              columns={courseColumns}
+              data={courses}
+              onRowClick={(course: Course) =>
+                router.push(`/courses/${course._id}`)
+              }
             />
           )}
         </div>

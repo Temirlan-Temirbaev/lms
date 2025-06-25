@@ -1,0 +1,67 @@
+[{
+  "_id": {
+    "$oid": "67d735f23fb6502bc9b23e47"
+  },
+  "level": "A1",
+  "title": "A1 - Қарапайым деңгей",
+  "lessons": [],
+  "tests": [],
+  "createdAt": {
+    "$date": "2025-03-16T20:34:58.664Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-16T20:34:58.664Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67d735f23fb6502bc9b23e4a"
+  },
+  "level": "B2",
+  "title": "B2 - Ортадан жоғары деңгей",
+  "description": "Advanced language skills for complex situations.",
+  "lessons": [],
+  "tests": [],
+  "createdAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67d735f23fb6502bc9b23e48"
+  },
+  "level": "A2",
+  "title": "A2 - Базалық деңгей",
+  "description": "Elementary language skills for basic communication.",
+  "lessons": [],
+  "tests": [],
+  "createdAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67d735f23fb6502bc9b23e49"
+  },
+  "level": "B1",
+  "title": "B1 - Орта деңгей",
+  "description": "Intermediate language skills for everyday situations.",
+  "lessons": [],
+  "tests": [],
+  "createdAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-16T20:34:58.665Z"
+  },
+  "__v": 0
+}]

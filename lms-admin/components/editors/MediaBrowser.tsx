@@ -319,16 +319,25 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
   const internalUpload = async (file: File, uploadPath?: string) => {
     if (!token) throw new Error("No authentication token");
 
+    // Remove spaces and special characters from filename
+    const sanitizedFileName = file.name
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9._-]/g, "") // Remove special characters except dots, underscores and hyphens
+      .replace(/-+/g, "-") // Replace multiple consecutive hyphens with single hyphen
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
     console.log("Frontend upload debug:", {
-      fileName: file.name,
-      fileNameEncoded: encodeURIComponent(file.name),
-      fileNameBytes: [...new TextEncoder().encode(file.name)],
-      fileNameLength: file.name.length,
-      fileNameCharCodes: [...file.name].map((c) => c.charCodeAt(0)),
+      originalFileName: file.name,
+      sanitizedFileName: sanitizedFileName,
+      fileNameEncoded: encodeURIComponent(sanitizedFileName),
+      fileNameBytes: [...new TextEncoder().encode(sanitizedFileName)],
+      fileNameLength: sanitizedFileName.length,
     });
 
     const formData = new FormData();
     formData.append("file", file);
+    // Send the sanitized filename separately
+    formData.append("filename", sanitizedFileName);
     if (uploadPath) {
       formData.append("path", uploadPath);
     }
@@ -602,7 +611,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <button
                 onClick={navigateUp}
                 className="ml-2 p-1 hover:bg-gray-100 rounded"
-                title="Go up one level"
+                title="Подняться на уровень выше"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -611,8 +620,8 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
         </DialogHeader>
         <Tabs defaultValue="browse" className="flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-            <TabsTrigger value="browse">Browse Files</TabsTrigger>
-            <TabsTrigger value="upload">Upload New</TabsTrigger>
+            <TabsTrigger value="browse">Обзор файлов</TabsTrigger>
+            <TabsTrigger value="upload">Загрузить новые</TabsTrigger>
           </TabsList>
           <TabsContent
             value="browse"
@@ -623,7 +632,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search files..."
+                  placeholder="Поиск файлов..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -636,21 +645,21 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                   size="sm"
                   onClick={() => setFilter("all")}
                 >
-                  All
+                  Все
                 </Button>
                 <Button
                   variant={filter === "images" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilter("images")}
                 >
-                  Images
+                  Изображения
                 </Button>
                 <Button
                   variant={filter === "audio" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilter("audio")}
                 >
-                  Audio
+                  Аудио
                 </Button>
               </div>
 
@@ -659,7 +668,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateFolder(!showCreateFolder)}
-                  title="Create new folder"
+                  title="Создать новую папку"
                 >
                   <FolderPlus className="h-4 w-4" />
                 </Button>
@@ -685,7 +694,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <div className="flex gap-2 items-center p-3 bg-blue-50 border border-blue-200 rounded-md">
                 <FolderPlus className="h-4 w-4 text-blue-600" />
                 <Input
-                  placeholder="Enter folder name... (supports русский, қазақ, العربية, 中文, etc.)"
+                  placeholder="Введите название папки... (поддерживается русский, қазақ, العربية, 中文, и т.д.)"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   onKeyDown={(e) => {
@@ -720,7 +729,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                   }}
                   disabled={creatingFolder}
                 >
-                  Cancel
+                  Отмена
                 </Button>
               </div>
             )}
@@ -732,18 +741,18 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-3" />
-                    <div className="text-gray-500">Loading files...</div>
+                    <div className="text-gray-500">Загрузка файлов...</div>
                   </div>
                 ) : filteredFiles.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <FolderOpen className="h-12 w-12 text-gray-300 mb-3" />
                     <div className="text-gray-500 text-lg mb-2">
-                      No files found
+                      Файлы не найдены
                     </div>
                     <div className="text-gray-400 text-sm">
                       {searchTerm
-                        ? `No files match "${searchTerm}"`
-                        : "Upload some files to get started"}
+                        ? `Нет файлов, соответствующих "${searchTerm}"`
+                        : "Загрузите файлы для начала работы"}
                     </div>
                   </div>
                 ) : viewMode === "grid" ? (
@@ -767,7 +776,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                             <div className="flex flex-col items-center gap-3">
                               <Folder className="h-16 w-16 text-blue-500" />
                               <span className="text-sm text-gray-600 font-medium">
-                                Folder
+                                Папка
                               </span>
                             </div>
                           ) : file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (

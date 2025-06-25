@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const errorHandler = require('./middleware/error');
+const { ensureBucketExists } = require('./utils/minio');
 // Import routes
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
@@ -45,11 +46,26 @@ app.get('/', (req, res) => {
 // Error handler middleware
 app.use(errorHandler);
 
+// Initialize MinIO bucket
+const initializeMinIO = async () => {
+  try {
+    const bucketName = process.env.MINIO_BUCKET_NAME || 'media';
+    await ensureBucketExists(bucketName);
+    console.log('MinIO bucket initialized successfully');
+  } catch (error) {
+    console.error('MinIO initialization error:', error);
+  }
+};
+
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    
+    // Initialize MinIO
+    await initializeMinIO();
+    
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

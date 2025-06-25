@@ -13,32 +13,15 @@ const minioClient = new Minio.Client({
 
 // Generate a unique filename only when there's a conflict
 const generateUniqueFilename = (originalname, attempt = 1) => {
-  // Ensure the filename is properly decoded if it was incorrectly encoded
-  let decodedName = originalname;
-  
-  // Try to detect and fix common encoding issues
-  try {
-    // If the filename looks like it has encoding issues (contains Ñ patterns)
-    if (originalname.includes('Ñ')) {
-      // Try to decode as if it was incorrectly interpreted as Latin-1
-      const buffer = Buffer.from(originalname, 'latin1');
-      decodedName = buffer.toString('utf8');
-      console.log('Fixed filename encoding:', { original: originalname, fixed: decodedName });
-    }
-  } catch (error) {
-    console.log('Could not fix filename encoding:', error.message);
-    // Use original name if decoding fails
-    decodedName = originalname;
-  }
-  
-  const extension = path.extname(decodedName);
-  const nameWithoutExt = path.basename(decodedName, extension);
+  // Since we're now receiving sanitized filenames, no need for encoding fixes
+  const extension = path.extname(originalname);
+  const nameWithoutExt = path.basename(originalname, extension);
   
   if (attempt === 1) {
-    return decodedName; // First attempt uses original name
+    return originalname; // First attempt uses original name
   }
   
-  return `${nameWithoutExt} (${attempt})${extension}`;
+  return `${nameWithoutExt}(${attempt})${extension}`;
 };
 
 // Check if a file exists in MinIO
@@ -52,15 +35,18 @@ const fileExists = async (filename, bucketName = process.env.MINIO_BUCKET_NAME |
 };
 
 // Upload a file to MinIO
-const uploadFile = async (file, bucketName = process.env.MINIO_BUCKET_NAME || 'media', uploadPath = '') => {
+const uploadFile = async (file, bucketName = process.env.MINIO_BUCKET_NAME || 'media', uploadPath = '', customFilename = null) => {
   try {
     let attempt = 1;
     let filename;
     let finalFilename;
     
+    // Use custom filename if provided, otherwise use original filename
+    const baseOriginalName = customFilename || file.originalname;
+    
     // Keep trying until we find a filename that doesn't exist
     do {
-      const baseFilename = generateUniqueFilename(file.originalname, attempt);
+      const baseFilename = generateUniqueFilename(baseOriginalName, attempt);
       
       // Construct the full filename with path
       if (uploadPath && uploadPath.trim()) {
@@ -83,6 +69,9 @@ const uploadFile = async (file, bucketName = process.env.MINIO_BUCKET_NAME || 'm
     if (!filename) {
       throw new Error('Could not generate unique filename after 100 attempts');
     }
+    
+    // Ensure bucket exists before uploading
+    await ensureBucketExists(bucketName);
     
     await minioClient.putObject(
       bucketName,
@@ -112,8 +101,10 @@ const uploadFile = async (file, bucketName = process.env.MINIO_BUCKET_NAME || 'm
 };
 
 // Delete a file from MinIO
-const deleteFile = async (filename, bucketName = 'media') => {
+const deleteFile = async (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
   try {
+    // Ensure bucket exists before trying to delete
+    await ensureBucketExists(bucketName);
     await minioClient.removeObject(bucketName, filename);
     return {
       success: true,
@@ -159,6 +150,9 @@ const getFileUrl = (filename, bucketName = process.env.MINIO_BUCKET_NAME || 'med
 // List all files in a bucket
 const listFiles = async (bucketName = process.env.MINIO_BUCKET_NAME || 'media') => {
   try {
+    // Ensure bucket exists before listing
+    await ensureBucketExists(bucketName);
+    
     const files = [];
     const stream = minioClient.listObjects(bucketName, '', true);
     

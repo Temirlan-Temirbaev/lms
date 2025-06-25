@@ -1,10 +1,21 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  user: User | null;
+  login: (
+    username: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
@@ -15,11 +26,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("jwtToken");
-    setIsAuthenticated(!!storedToken);
-    setToken(storedToken);
+    const storedUser = localStorage.getItem("user");
+
+    if (storedToken && storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Only authenticate if user is admin
+        if (userData.role === "admin") {
+          setIsAuthenticated(true);
+          setToken(storedToken);
+          setUser(userData);
+        } else {
+          // Clear non-admin user data
+          localStorage.removeItem("jwtToken");
+          localStorage.removeItem("user");
+        }
+      } catch (error) {
+        // Clear invalid stored data
+        localStorage.removeItem("jwtToken");
+        localStorage.removeItem("user");
+      }
+    }
   }, []);
 
   const login = async (username: string, password: string) => {
@@ -33,26 +64,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       );
       const data = await res.json();
-      if (res.ok && data.token) {
+
+      if (res.ok && data.token && data.user) {
+        // Check if user is admin
+        if (data.user.role !== "admin") {
+          return {
+            success: false,
+            error: "Доступ запрещен. Требуются права администратора.",
+          };
+        }
+
         setIsAuthenticated(true);
         setToken(data.token);
+        setUser(data.user);
         localStorage.setItem("jwtToken", data.token);
-        return true;
+        localStorage.setItem("user", JSON.stringify(data.user));
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: data.message || "Неверные учетные данные",
+        };
       }
-      return false;
-    } catch (e) {
-      return false;
+    } catch (error) {
+      return {
+        success: false,
+        error: "Ошибка сети. Попробуйте еще раз.",
+      };
     }
   };
 
   const logout = () => {
     setIsAuthenticated(false);
     setToken(null);
+    setUser(null);
     localStorage.removeItem("jwtToken");
+    localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, token, user, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

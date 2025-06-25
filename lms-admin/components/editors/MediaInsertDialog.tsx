@@ -84,7 +84,7 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Insert Media</DialogTitle>
+          <DialogTitle>Вставить медиа</DialogTitle>
         </DialogHeader>
         <Tabs
           value={mediaType}
@@ -94,11 +94,11 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="image">
               <ImageIcon className="h-4 w-4 mr-1" />
-              Image
+              Изображение
             </TabsTrigger>
             <TabsTrigger value="audio">
               <Music className="h-4 w-4 mr-1" />
-              Audio
+              Аудио
             </TabsTrigger>
           </TabsList>
 
@@ -106,8 +106,8 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
           <TabsContent value="image" className="space-y-4">
             <Tabs defaultValue="browse" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="browse">Browse Files</TabsTrigger>
-                <TabsTrigger value="url">From URL</TabsTrigger>
+                <TabsTrigger value="browse">Обзор файлов</TabsTrigger>
+                <TabsTrigger value="url">По URL</TabsTrigger>
               </TabsList>
               <TabsContent value="browse" className="space-y-4">
                 <MediaBrowser
@@ -119,13 +119,13 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                   <Button variant="outline" className="w-full">
                     <FolderOpen className="h-4 w-4 mr-2" />
                     {mediaType === "image"
-                      ? "Browse Media Library"
-                      : "Browse Audio Library"}
+                      ? "Обзор медиабиблиотеки"
+                      : "Обзор аудиобиблиотеки"}
                   </Button>
                 </MediaBrowser>
               </TabsContent>
               <TabsContent value="url" className="space-y-4">
-                <Label htmlFor="imageUrl">Image URL</Label>
+                <Label htmlFor="imageUrl">URL изображения</Label>
                 <Input
                   id="imageUrl"
                   placeholder="https://example.com/image.jpg"
@@ -134,21 +134,23 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                 />
               </TabsContent>
             </Tabs>
-            <Label htmlFor="altText">Alt Text (optional)</Label>
+            <Label htmlFor="altText">
+              Альтернативный текст (необязательно)
+            </Label>
             <Input
               id="altText"
-              placeholder="Description of the image"
+              placeholder="Описание изображения"
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
             />
             {imageUrl && (
               <div className="space-y-2">
-                <Label>Preview</Label>
+                <Label>Предварительный просмотр</Label>
                 <div className="border rounded p-2">
                   <img
                     src={imageUrl}
                     alt={altText || "Preview"}
-                    className="max-w-full h-auto max-h-32 object-contain mx-auto"
+                    className="max-w-full h-auto max-h-40 object-contain mx-auto"
                     onError={() => setImageUrl("")}
                   />
                 </div>
@@ -160,8 +162,8 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
           <TabsContent value="audio" className="space-y-4">
             <Tabs defaultValue="browse" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="browse">Browse Files</TabsTrigger>
-                <TabsTrigger value="url">From URL</TabsTrigger>
+                <TabsTrigger value="browse">Обзор файлов</TabsTrigger>
+                <TabsTrigger value="url">По URL</TabsTrigger>
               </TabsList>
               <TabsContent value="browse" className="space-y-4">
                 <MediaBrowser
@@ -170,12 +172,12 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                 >
                   <Button variant="outline" className="w-full">
                     <FolderOpen className="h-4 w-4 mr-2" />
-                    Browse Audio Library
+                    Обзор аудиобиблиотеки
                   </Button>
                 </MediaBrowser>
               </TabsContent>
               <TabsContent value="url" className="space-y-4">
-                <Label htmlFor="audioUrl">Audio URL</Label>
+                <Label htmlFor="audioUrl">URL аудио</Label>
                 <Input
                   id="audioUrl"
                   placeholder="https://example.com/audio.mp3"
@@ -184,22 +186,22 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                 />
               </TabsContent>
             </Tabs>
-            <Label htmlFor="audioCaption">Caption (optional)</Label>
+            <Label htmlFor="audioCaption">Подпись (необязательно)</Label>
             <Input
               id="audioCaption"
-              placeholder="Description of the audio"
+              placeholder="Описание аудио"
               value={audioCaption}
               onChange={(e) => setAudioCaption(e.target.value)}
             />
             {audioUrl && (
               <div className="space-y-2">
-                <Label>Preview</Label>
+                <Label>Предварительный просмотр</Label>
                 <div className="border rounded p-4">
                   <div className="flex items-center gap-3">
                     <Music className="h-6 w-6 text-gray-400" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {audioCaption || "Audio file"}
+                        {audioCaption || "Аудиофайл"}
                       </p>
                       <audio controls className="w-full mt-2">
                         <source src={audioUrl} type="audio/mpeg" />
@@ -214,13 +216,13 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
         </Tabs>
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Cancel
+            Отмена
           </Button>
           <Button
             onClick={handleInsert}
             disabled={mediaType === "image" ? !imageUrl : !audioUrl}
           >
-            Insert
+            Вставить
           </Button>
         </div>
       </DialogContent>

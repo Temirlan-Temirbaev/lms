@@ -356,8 +356,7 @@ exports.uploadFile = async (req, res, next) => {
     console.log('Upload request received:', {
       hasFile: !!req.file,
       fileName: req.file?.originalname,
-      fileNameBuffer: req.file?.originalname ? Buffer.from(req.file.originalname, 'utf8') : null,
-      fileNameEncoded: req.file?.originalname ? encodeURIComponent(req.file.originalname) : null,
+      sanitizedFileName: req.body.filename,
       fileSize: req.file?.size,
       path: req.body.path
     });
@@ -369,19 +368,28 @@ exports.uploadFile = async (req, res, next) => {
       });
     }
 
-    // Debug the original filename encoding
-    console.log('Original filename details:', {
-      originalname: req.file.originalname,
-      bytes: req.file.originalname ? [...Buffer.from(req.file.originalname, 'utf8')] : null,
-      length: req.file.originalname?.length,
-      charCodes: req.file.originalname ? [...req.file.originalname].map(c => c.charCodeAt(0)) : null
+    // Use sanitized filename from frontend, or sanitize on backend as fallback
+    let sanitizedFileName = req.body.filename;
+    if (!sanitizedFileName) {
+      // Fallback sanitization on backend
+      sanitizedFileName = req.file.originalname
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/[^a-zA-Z0-9._-]/g, "") // Remove special characters except dots, underscores and hyphens
+        .replace(/-+/g, "-") // Replace multiple consecutive hyphens with single hyphen
+        .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+    }
+
+    console.log('Filename sanitization:', {
+      original: req.file.originalname,
+      fromFrontend: req.body.filename,
+      final: sanitizedFileName
     });
 
     // Get the upload path from request body
     const uploadPath = req.body.path || '';
     console.log('Uploading to path:', uploadPath);
 
-    const result = await uploadFileToMinio(req.file, undefined, uploadPath);
+    const result = await uploadFileToMinio(req.file, undefined, uploadPath, sanitizedFileName);
     console.log('Upload result:', result);
     
     if (result.success) {

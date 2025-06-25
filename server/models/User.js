@@ -43,12 +43,12 @@ const UserSchema = new mongoose.Schema(
     progress: {
       currentLevel: {
         type: String,
-        enum: ['A1', 'A2', 'B1', 'B2'],
+        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
         default: 'A1',
       },
       availableLevels: {
         type: [String],
-        enum: ['A1', 'A2', 'B1', 'B2'],
+        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
         default: ['A1'],
       },
       completedLessons: [

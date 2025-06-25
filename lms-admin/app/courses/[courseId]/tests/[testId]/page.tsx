@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "../../../../../components/auth-context";
-import { Button } from "../../../../../components/ui/button";
+import { useAuth } from "@/components/auth-context";
+import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -26,8 +26,11 @@ interface Test {
   title: string;
   description: string;
   order: number;
-  courseId: string;
+  course: string | { _id: string; title: string; level: string };
   questions: any[];
+  passingScore: number;
+  timeLimit: number;
+  isFinal: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -51,6 +54,9 @@ export default function TestDetailPage() {
     title: "",
     description: "",
     order: 1,
+    passingScore: 70,
+    timeLimit: 30,
+    isFinal: false,
   });
 
   // Fetch test and course data
@@ -90,10 +96,13 @@ export default function TestDetailPage() {
             title: testData.data.title,
             description: testData.data.description,
             order: testData.data.order,
+            passingScore: testData.data.passingScore || 70,
+            timeLimit: testData.data.timeLimit || 30,
+            isFinal: testData.data.isFinal || false,
           });
         }
       } catch (err) {
-        setError("Failed to fetch test data");
+        setError("Не удалось получить данные теста");
       } finally {
         setLoading(false);
       }
@@ -121,10 +130,10 @@ export default function TestDetailPage() {
         setTest(data.data);
         setIsEditing(false);
       } else {
-        alert(data.message || "Failed to update test");
+        alert(data.message || "Не удалось обновить тест");
       }
     } catch (error) {
-      alert("Error updating test");
+      alert("Ошибка при обновлении теста");
     } finally {
       setSaving(false);
     }
@@ -136,6 +145,9 @@ export default function TestDetailPage() {
         title: test.title,
         description: test.description,
         order: test.order,
+        passingScore: test.passingScore || 70,
+        timeLimit: test.timeLimit || 30,
+        isFinal: test.isFinal || false,
       });
     }
     setIsEditing(false);
@@ -168,12 +180,12 @@ export default function TestDetailPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Course
+              Назад к курсу
             </Button>
           </div>
 
           {loading ? (
-            <div>Loading...</div>
+            <div>Загрузка...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : test && course ? (
@@ -183,13 +195,16 @@ export default function TestDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold">{test.title}</h1>
                   <p className="text-muted-foreground mt-1">
-                    Course: {course.title} • Order: {test.order}
+                    Курс: {course?.title || "Неизвестно"} • Порядок:{" "}
+                    {test?.order || "Н/Д"}
                   </p>
                   <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">Test {test.order}</Badge>
-                    <Badge variant="outline">{course.level}</Badge>
+                    <Badge variant="secondary">Тест {test.order}</Badge>
                     <Badge variant="outline">
-                      {test.questions?.length || 0} Questions
+                      {course?.level || "Неизвестно"}
+                    </Badge>
+                    <Badge variant="outline">
+                      {test.questions?.length || 0} Вопросов
                     </Badge>
                   </div>
                 </div>
@@ -200,7 +215,7 @@ export default function TestDetailPage() {
                     className="flex items-center gap-2"
                   >
                     <Settings className="h-4 w-4" />
-                    Manage Questions
+                    Управление вопросами
                   </Button>
                   {!isEditing ? (
                     <Button
@@ -208,7 +223,7 @@ export default function TestDetailPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Edit Test
+                      Редактировать тест
                     </Button>
                   ) : (
                     <>
@@ -217,7 +232,7 @@ export default function TestDetailPage() {
                         onClick={handleCancel}
                         disabled={saving}
                       >
-                        Cancel
+                        Отмена
                       </Button>
                       <Button
                         onClick={handleSave}
@@ -225,7 +240,7 @@ export default function TestDetailPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saving ? "Saving..." : "Save Changes"}
+                        {saving ? "Сохранение..." : "Сохранить изменения"}
                       </Button>
                     </>
                   )}
@@ -236,23 +251,23 @@ export default function TestDetailPage() {
               {isEditing ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Edit Test</CardTitle>
+                    <CardTitle>Редактировать тест</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Title</Label>
+                        <Label htmlFor="title">Название</Label>
                         <Input
                           id="title"
                           value={editForm.title}
                           onChange={(e) =>
                             setEditForm({ ...editForm, title: e.target.value })
                           }
-                          placeholder="Test title"
+                          placeholder="Название теста"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="order">Order</Label>
+                        <Label htmlFor="order">Порядок</Label>
                         <Input
                           id="order"
                           type="number"
@@ -263,12 +278,12 @@ export default function TestDetailPage() {
                               order: parseInt(e.target.value),
                             })
                           }
-                          placeholder="Order"
+                          placeholder="Порядок"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">Описание</Label>
                       <Textarea
                         id="description"
                         value={editForm.description}
@@ -278,9 +293,64 @@ export default function TestDetailPage() {
                             description: e.target.value,
                           })
                         }
-                        placeholder="Test description"
+                        placeholder="Описание теста"
                         rows={6}
                       />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="passing-score">
+                          Проходной балл (%)
+                        </Label>
+                        <Input
+                          id="passing-score"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={editForm.passingScore}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              passingScore: parseInt(e.target.value) || 70,
+                            })
+                          }
+                          placeholder="70"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="time-limit">
+                          Ограничение времени (минуты)
+                        </Label>
+                        <Input
+                          id="time-limit"
+                          type="number"
+                          min="1"
+                          value={editForm.timeLimit}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              timeLimit: parseInt(e.target.value) || 30,
+                            })
+                          }
+                          placeholder="30"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="is-final"
+                        checked={editForm.isFinal}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            isFinal: e.target.checked,
+                          })
+                        }
+                      />
+                      <Label htmlFor="is-final">
+                        Это финальный тест (открывает следующий уровень)
+                      </Label>
                     </div>
                   </CardContent>
                 </Card>
@@ -292,7 +362,7 @@ export default function TestDetailPage() {
                       <CardHeader>
                         <CardTitle className="flex items-center">
                           <Eye className="h-5 w-5 mr-2" />
-                          Test Description
+                          Описание теста
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -302,7 +372,7 @@ export default function TestDetailPage() {
                           </div>
                         ) : (
                           <p className="text-muted-foreground italic">
-                            No description available
+                            Описание недоступно
                           </p>
                         )}
                       </CardContent>
@@ -311,14 +381,14 @@ export default function TestDetailPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
-                          <span>Questions ({test.questions?.length || 0})</span>
+                          <span>Вопросы ({test.questions?.length || 0})</span>
                           <Button
                             size="sm"
                             onClick={handleManageQuestions}
                             className="flex items-center gap-2"
                           >
                             <Plus className="h-4 w-4" />
-                            Add Questions
+                            Добавить вопросы
                           </Button>
                         </CardTitle>
                       </CardHeader>
@@ -327,25 +397,37 @@ export default function TestDetailPage() {
                           <div className="space-y-2">
                             {test.questions.map((question, index) => (
                               <div
-                                key={index}
+                                key={question._id || index}
                                 className="p-3 border rounded-lg bg-gray-50"
                               >
-                                <p className="font-medium">
-                                  Question {index + 1}
+                                <div className="flex justify-between items-start mb-2">
+                                  <p className="font-medium">
+                                    Вопрос {index + 1}
+                                  </p>
+                                  <Badge variant="outline" className="text-xs">
+                                    {question.type}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {typeof question.question === "string"
+                                    ? question.question
+                                    : "Текст вопроса отсутствует"}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {question.text || "Question text"}
-                                </p>
+                                {question.points && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {question.points} баллов
+                                  </p>
+                                )}
                               </div>
                             ))}
                           </div>
                         ) : (
                           <div className="text-center py-8">
                             <p className="text-muted-foreground mb-4">
-                              No questions added yet
+                              Вопросы еще не добавлены
                             </p>
                             <Button onClick={handleManageQuestions}>
-                              Add First Question
+                              Добавить первый вопрос
                             </Button>
                           </div>
                         )}
@@ -357,12 +439,12 @@ export default function TestDetailPage() {
                   <div className="lg:col-span-1">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Test Details</CardTitle>
+                        <CardTitle>Детали теста</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Test ID
+                            ID теста
                           </Label>
                           <p className="text-sm font-mono break-all">
                             {test._id}
@@ -371,33 +453,60 @@ export default function TestDetailPage() {
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Course ID
+                            ID курса
                           </Label>
                           <p className="text-sm font-mono break-all">
-                            {test.courseId}
+                            {typeof test.course === "string"
+                              ? test.course
+                              : test.course?._id || "Неизвестно"}
                           </p>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Order
+                            Порядок
                           </Label>
                           <Badge variant="secondary">{test.order}</Badge>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Total Questions
+                            Всего вопросов
                           </Label>
                           <Badge variant="outline">
                             {test.questions?.length || 0}
                           </Badge>
                         </div>
 
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">
+                            Проходной балл
+                          </Label>
+                          <Badge variant="secondary">
+                            {test.passingScore}%
+                          </Badge>
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">
+                            Ограничение времени
+                          </Label>
+                          <Badge variant="outline">{test.timeLimit} мин</Badge>
+                        </div>
+
+                        {test.isFinal && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">
+                              Тип теста
+                            </Label>
+                            <Badge variant="destructive">Финальный тест</Badge>
+                          </div>
+                        )}
+
                         {test.createdAt && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">
-                              Created
+                              Создано
                             </Label>
                             <p className="text-sm">
                               {new Date(test.createdAt).toLocaleDateString()}
@@ -408,7 +517,7 @@ export default function TestDetailPage() {
                         {test.updatedAt && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">
-                              Last Updated
+                              Последнее обновление
                             </Label>
                             <p className="text-sm">
                               {new Date(test.updatedAt).toLocaleDateString()}
@@ -422,7 +531,7 @@ export default function TestDetailPage() {
               )}
             </div>
           ) : (
-            <div>Test not found</div>
+            <div>Тест не найден</div>
           )}
         </div>
       </SidebarInset>

@@ -28,6 +28,16 @@ const TestSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        title: {
+          type: String,
+          required: false,
+          // Used for fill-in-blanks questions to store the main instruction
+        },
+        content: {
+          type: String,
+          required: false,
+          // Used for additional content like images, audio, markdown
+        },
         options: {
           type: [String],
           required: function() {

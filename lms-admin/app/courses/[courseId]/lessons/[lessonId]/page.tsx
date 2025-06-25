@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "../../../../../components/auth-context";
-import { Button } from "../../../../../components/ui/button";
+import { useAuth } from "@/components/auth-context";
+import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -16,9 +16,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import dynamic from "next/dynamic";
-import ImageInsertDialog from "@/components/editors/ImageInsertDialog";
-import AudioInsertDialog from "@/components/editors/AudioInsertDialog";
-import TableBuilderDialog from "@/components/editors/TableBuilderDialog";
 import React, { useRef } from "react";
 import type { NotionEditorHandle } from "@/components/editors/NotionEditor";
 
@@ -179,12 +176,12 @@ export default function LessonViewPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Course
+              Назад к курсу
             </Button>
           </div>
 
           {loading ? (
-            <div>Loading...</div>
+            <div>Загрузка...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : lesson && course ? (
@@ -197,7 +194,7 @@ export default function LessonViewPage() {
                     Course: {course.title} • Order: {lesson.order}
                   </p>
                   <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">Lesson {lesson.order}</Badge>
+                    <Badge variant="secondary">Урок {lesson.order}</Badge>
                     <Badge variant="outline">{course.level}</Badge>
                   </div>
                 </div>
@@ -208,7 +205,7 @@ export default function LessonViewPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Edit Lesson
+                      Редактировать урок
                     </Button>
                   ) : (
                     <>
@@ -217,7 +214,7 @@ export default function LessonViewPage() {
                         onClick={handleCancel}
                         disabled={saving}
                       >
-                        Cancel
+                        Отмена
                       </Button>
                       <Button
                         onClick={handleSave}
@@ -225,7 +222,7 @@ export default function LessonViewPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saving ? "Saving..." : "Save Changes"}
+                        {saving ? "Сохранение..." : "Сохранить изменения"}
                       </Button>
                     </>
                   )}
@@ -236,23 +233,23 @@ export default function LessonViewPage() {
               {isEditing ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Edit Lesson</CardTitle>
+                    <CardTitle>Редактировать урок</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Title</Label>
+                        <Label htmlFor="title">Название</Label>
                         <Input
                           id="title"
                           value={editForm.title}
                           onChange={(e) =>
                             setEditForm({ ...editForm, title: e.target.value })
                           }
-                          placeholder="Lesson title"
+                          placeholder="Название урока"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="order">Order</Label>
+                        <Label htmlFor="order">Порядок</Label>
                         <Input
                           id="order"
                           type="number"
@@ -263,12 +260,12 @@ export default function LessonViewPage() {
                               order: parseInt(e.target.value),
                             })
                           }
-                          placeholder="Order"
+                          placeholder="Порядок"
                         />
                       </div>
                     </div>{" "}
                     <div className="space-y-2">
-                      <Label htmlFor="content">Content</Label>
+                      <Label htmlFor="content">Содержание</Label>
                       <div className="border rounded-md overflow-hidden">
                         {" "}
                         <NotionEditor
@@ -277,7 +274,7 @@ export default function LessonViewPage() {
                           onChange={(markdown) =>
                             setEditForm({ ...editForm, content: markdown })
                           }
-                          placeholder="Start writing your lesson content..."
+                          placeholder="Начните писать содержание урока..."
                           onTableInsert={() => setShowTableDialog(true)}
                         />
                       </div>
@@ -292,19 +289,19 @@ export default function LessonViewPage() {
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
-                      Preview
+                      Предварительный просмотр
                     </TabsTrigger>
                     <TabsTrigger
                       value="raw"
                       className="flex items-center gap-2"
                     >
-                      Raw Content
+                      Исходное содержание
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="preview">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Lesson Content</CardTitle>
+                        <CardTitle>Содержание урока</CardTitle>
                       </CardHeader>{" "}
                       <CardContent>
                         {lesson.content ? (
@@ -398,13 +395,18 @@ export default function LessonViewPage() {
                                   // If the link is an audio file or the text is 'audio', render an audio player
                                   const isAudio =
                                     (typeof children === "string" &&
-                                      children.toLowerCase().includes("audio")) ||
-                                    /\.(mp3|m4a|ogg|wav|aac)$/i.test(href || "");
+                                      children
+                                        .toLowerCase()
+                                        .includes("audio")) ||
+                                    /\.(mp3|m4a|ogg|wav|aac)$/i.test(
+                                      href || ""
+                                    );
                                   if (isAudio) {
                                     return (
                                       <audio controls style={{ width: "100%" }}>
                                         <source src={href} />
-                                        Your browser does not support the audio element.
+                                        Your browser does not support the audio
+                                        element.
                                       </audio>
                                     );
                                   }
@@ -424,7 +426,7 @@ export default function LessonViewPage() {
                                   <img
                                     src={src}
                                     alt={alt}
-                                    className="rounded-lg my-4 max-w-full"
+                                    className="rounded-lg my-4 max-w-full max-h-64 object-contain mx-auto"
                                   />
                                 ),
                                 audio: ({ node, ...props }) => (

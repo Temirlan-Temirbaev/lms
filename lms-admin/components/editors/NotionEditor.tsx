@@ -183,7 +183,7 @@ const Audio = Node.create({
     return [{ tag: "audio[src]" }];
   },
   renderHTML({ HTMLAttributes }) {
-    return ["audio", mergeAttributes(HTMLAttributes, { controls: true }), 0];
+    return ["audio", mergeAttributes(HTMLAttributes, { controls: true })];
   },
 });
 
@@ -220,7 +220,8 @@ const NotionEditor = forwardRef<NotionEditorHandle, NotionEditorProps>(
         }),
         Image.configure({
           HTMLAttributes: {
-            class: "max-w-full h-auto rounded-lg",
+            class:
+              "max-w-full max-h-64 h-auto rounded-lg object-contain mx-auto",
           },
         }),
         Link.configure({
@@ -632,9 +633,14 @@ const NotionEditor = forwardRef<NotionEditorHandle, NotionEditorProps>(
 
           .ProseMirror img {
             max-width: 100%;
+            max-height: 16rem;
             height: auto;
             border-radius: 8px;
             margin: 1rem 0;
+            object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
           }
 
           .ProseMirror table {

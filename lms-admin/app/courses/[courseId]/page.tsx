@@ -1,16 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "../../../components/auth-context";
-import { Button } from "../../../components/ui/button";
+import { useAuth } from "@/components/auth-context";
+import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  UniversalDataTable,
-  createActionsColumn,
-} from "@/components/universal-data-table";
-import { ColumnDef } from "@tanstack/react-table";
+import { TestsTable } from "@/components/tables/TestsTable";
+import { LessonsTable } from "@/components/tables/LessonsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -46,7 +43,13 @@ interface Test {
   description: string;
   questions: any[];
   order: number;
-  courseId: string;
+  courseId?: string;
+  course: string | { _id: string; title: string; level: string };
+  passingScore: number;
+  timeLimit: number;
+  isFinal: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function CourseDetailPage() {
@@ -77,104 +80,11 @@ export default function CourseDetailPage() {
     title: "",
     description: "",
     order: 1,
+    passingScore: 70,
+    timeLimit: 30,
+    isFinal: false,
   });
   const [creatingTest, setCreatingTest] = useState(false);
-  // Lesson columns
-  const lessonColumns: ColumnDef<Lesson>[] = [
-    {
-      accessorKey: "order",
-      header: "Order",
-      cell: ({ row }) => (
-        <span
-          className="cursor-pointer hover:text-blue-600"
-          onClick={() =>
-            router.push(`/courses/${courseId}/lessons/${row.original._id}`)
-          }
-        >
-          {row.getValue("order")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "title",
-      header: "Title",
-      cell: ({ row }) => (
-        <span
-          className="cursor-pointer hover:text-blue-600 font-medium"
-          onClick={() =>
-            router.push(`/courses/${courseId}/lessons/${row.original._id}`)
-          }
-        >
-          {row.getValue("title")}
-        </span>
-      ),
-    },
-    createActionsColumn<Lesson>((lesson) => [
-      {
-        label: "View/Edit",
-        onClick: () => handleEditLesson(lesson),
-      },
-      {
-        label: "Delete",
-        onClick: () => handleDeleteLesson(lesson._id),
-        isDanger: true,
-        separator: true,
-      },
-    ]),
-  ];
-  // Test columns
-  const testColumns: ColumnDef<Test>[] = [
-    {
-      accessorKey: "order",
-      header: "Order",
-      cell: ({ row }) => (
-        <span
-          className="cursor-pointer hover:text-blue-600"
-          onClick={() =>
-            router.push(`/courses/${courseId}/tests/${row.original._id}`)
-          }
-        >
-          {row.getValue("order")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "title",
-      header: "Title",
-      cell: ({ row }) => (
-        <span
-          className="cursor-pointer hover:text-blue-600 font-medium"
-          onClick={() =>
-            router.push(`/courses/${courseId}/tests/${row.original._id}`)
-          }
-        >
-          {row.getValue("title")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "questions",
-      header: "Questions",
-      cell: ({ getValue }) => (getValue() as any[])?.length || 0,
-    },
-    createActionsColumn<Test>((test) => [
-      {
-        label: "View/Edit",
-        onClick: () => handleEditTest(test),
-      },
-      {
-        label: "Manage Questions",
-        onClick: () =>
-          router.push(`/courses/${courseId}/tests/${test._id}/questions`),
-      },
-      {
-        label: "Delete",
-        onClick: () => handleDeleteTest(test._id),
-        isDanger: true,
-        separator: true,
-      },
-    ]),
-  ];
 
   // Fetch course data
   useEffect(() => {
@@ -222,7 +132,7 @@ export default function CourseDetailPage() {
         const testsData = await testsRes.json();
         if (testsData.success) setTests(testsData.data);
       } catch (err) {
-        setError("Failed to fetch course data");
+        setError("Не удалось загрузить данные курса");
       } finally {
         setLoading(false);
       }
@@ -230,14 +140,9 @@ export default function CourseDetailPage() {
 
     fetchCourseData();
   }, [isAuthenticated, token, courseId]);
-  // Lesson handlers
-  const handleEditLesson = (lesson: Lesson) => {
-    // Navigate to lesson detail page for editing
-    router.push(`/courses/${courseId}/lessons/${lesson._id}`);
-  };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) return;
+    if (!confirm("Вы уверены, что хотите удалить этот урок?")) return;
 
     try {
       const res = await fetch(
@@ -256,10 +161,10 @@ export default function CourseDetailPage() {
         // Remove lesson from local state
         setLessons((prev) => prev.filter((lesson) => lesson._id !== lessonId));
       } else {
-        alert(data.message || "Failed to delete lesson");
+        alert(data.message || "Не удалось удалить урок");
       }
     } catch (error) {
-      alert("Error deleting lesson");
+      alert("Ошибка при удалении урока");
     }
   };
 
@@ -287,22 +192,17 @@ export default function CourseDetailPage() {
         setLessonDialogOpen(false);
         setLessonForm({ title: "", content: "", order: 1 });
       } else {
-        alert(data.message || "Failed to create lesson");
+        alert(data.message || "Не удалось создать урок");
       }
     } catch (error) {
-      alert("Error creating lesson");
+      alert("Ошибка при создании урока");
     } finally {
       setCreatingLesson(false);
     }
   };
-  // Test handlers
-  const handleEditTest = (test: Test) => {
-    // Navigate to test detail page for editing
-    router.push(`/courses/${courseId}/tests/${test._id}`);
-  };
 
   const handleDeleteTest = async (testId: string) => {
-    if (!confirm("Are you sure you want to delete this test?")) return;
+    if (!confirm("Вы уверены, что хотите удалить этот тест?")) return;
 
     try {
       const res = await fetch(
@@ -321,10 +221,10 @@ export default function CourseDetailPage() {
         // Remove test from local state
         setTests((prev) => prev.filter((test) => test._id !== testId));
       } else {
-        alert(data.message || "Failed to delete test");
+        alert(data.message || "Не удалось удалить тест");
       }
     } catch (error) {
-      alert("Error deleting test");
+      alert("Ошибка при удалении теста");
     }
   };
 
@@ -340,19 +240,30 @@ export default function CourseDetailPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ ...testForm, courseId, questions: [] }),
+          body: JSON.stringify({
+            ...testForm,
+            course: courseId,
+            questions: [],
+          }),
         }
       );
       const data = await res.json();
       if (res.ok) {
         setTests((prev) => [...prev, data.data]);
         setTestDialogOpen(false);
-        setTestForm({ title: "", description: "", order: 1 });
+        setTestForm({
+          title: "",
+          description: "",
+          order: 1,
+          passingScore: 70,
+          timeLimit: 30,
+          isFinal: false,
+        });
       } else {
-        alert(data.message || "Failed to create test");
+        alert(data.message || "Не удалось создать тест");
       }
     } catch (error) {
-      alert("Error creating test");
+      alert("Ошибка при создании теста");
     } finally {
       setCreatingTest(false);
     }
@@ -381,12 +292,12 @@ export default function CourseDetailPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Courses
+              Назад к курсам
             </Button>
           </div>
 
           {loading ? (
-            <div>Loading...</div>
+            <div>Загрузка...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : course ? (
@@ -403,10 +314,10 @@ export default function CourseDetailPage() {
                 <div className="flex justify-between items-center mb-4">
                   <TabsList>
                     <TabsTrigger value="lessons">
-                      Lessons ({lessons.length})
+                      Уроки ({lessons.length})
                     </TabsTrigger>
                     <TabsTrigger value="tests">
-                      Tests ({tests.length})
+                      Тесты ({tests.length})
                     </TabsTrigger>
                   </TabsList>
 
@@ -417,11 +328,11 @@ export default function CourseDetailPage() {
                         onOpenChange={setLessonDialogOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button>+ New Lesson</Button>
+                          <Button>+ Новый урок</Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Create New Lesson</DialogTitle>
+                            <DialogTitle>Создать новый урок</DialogTitle>
                           </DialogHeader>
                           <form
                             onSubmit={handleCreateLesson}
@@ -431,7 +342,7 @@ export default function CourseDetailPage() {
                               <Label htmlFor="lesson-title">Title</Label>
                               <Input
                                 id="lesson-title"
-                                placeholder="Lesson title"
+                                placeholder="Название урока"
                                 value={lessonForm.title}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -443,11 +354,11 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="lesson-order">Order</Label>
+                              <Label htmlFor="lesson-order">Порядок</Label>
                               <Input
                                 id="lesson-order"
                                 type="number"
-                                placeholder="Order"
+                                placeholder="Порядок"
                                 value={lessonForm.order}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -460,11 +371,11 @@ export default function CourseDetailPage() {
                             </div>
                             <div className="flex flex-col gap-1">
                               <Label htmlFor="lesson-content">
-                                Content (Markdown)
+                                Содержание (Markdown)
                               </Label>
                               <Textarea
                                 id="lesson-content"
-                                placeholder="Lesson content in markdown"
+                                placeholder="Содержание урока в формате markdown"
                                 value={lessonForm.content}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -479,8 +390,8 @@ export default function CourseDetailPage() {
                             <DialogFooter>
                               <Button type="submit" disabled={creatingLesson}>
                                 {creatingLesson
-                                  ? "Creating..."
-                                  : "Create Lesson"}
+                                  ? "Создание..."
+                                  : "Создать урок"}
                               </Button>
                             </DialogFooter>
                           </form>
@@ -494,21 +405,21 @@ export default function CourseDetailPage() {
                         onOpenChange={setTestDialogOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button>+ New Test</Button>
+                          <Button>+ Новый тест</Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Create New Test</DialogTitle>
+                            <DialogTitle>Создать новый тест</DialogTitle>
                           </DialogHeader>
                           <form
                             onSubmit={handleCreateTest}
                             className="flex flex-col gap-4"
                           >
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-title">Title</Label>
+                              <Label htmlFor="test-title">Название</Label>
                               <Input
                                 id="test-title"
-                                placeholder="Test title"
+                                placeholder="Название теста"
                                 value={testForm.title}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -520,11 +431,11 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-order">Order</Label>
+                              <Label htmlFor="test-order">Порядок</Label>
                               <Input
                                 id="test-order"
                                 type="number"
-                                placeholder="Order"
+                                placeholder="Порядок"
                                 value={testForm.order}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -536,12 +447,10 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-description">
-                                Description
-                              </Label>
+                              <Label htmlFor="test-description">Описание</Label>
                               <Textarea
                                 id="test-description"
-                                placeholder="Test description"
+                                placeholder="Описание теста"
                                 value={testForm.description}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -552,9 +461,66 @@ export default function CourseDetailPage() {
                                 rows={3}
                               />
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <Label htmlFor="test-passing-score">
+                                  Проходной балл (%)
+                                </Label>
+                                <Input
+                                  id="test-passing-score"
+                                  type="number"
+                                  placeholder="70"
+                                  min="0"
+                                  max="100"
+                                  value={testForm.passingScore}
+                                  onChange={(e) =>
+                                    setTestForm((f) => ({
+                                      ...f,
+                                      passingScore: parseInt(e.target.value),
+                                    }))
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <Label htmlFor="test-time-limit">
+                                  Ограничение времени (минуты)
+                                </Label>
+                                <Input
+                                  id="test-time-limit"
+                                  type="number"
+                                  placeholder="30"
+                                  min="1"
+                                  value={testForm.timeLimit}
+                                  onChange={(e) =>
+                                    setTestForm((f) => ({
+                                      ...f,
+                                      timeLimit: parseInt(e.target.value),
+                                    }))
+                                  }
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="test-is-final"
+                                checked={testForm.isFinal}
+                                onChange={(e) =>
+                                  setTestForm((f) => ({
+                                    ...f,
+                                    isFinal: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <Label htmlFor="test-is-final">
+                                Это финальный тест (открывает следующий уровень)
+                              </Label>
+                            </div>
                             <DialogFooter>
                               <Button type="submit" disabled={creatingTest}>
-                                {creatingTest ? "Creating..." : "Create Test"}
+                                {creatingTest ? "Создание..." : "Создать тест"}
                               </Button>
                             </DialogFooter>
                           </form>
@@ -565,16 +531,25 @@ export default function CourseDetailPage() {
                 </div>
 
                 <TabsContent value="lessons">
-                  <UniversalDataTable columns={lessonColumns} data={lessons} />
+                  <LessonsTable
+                    lessons={lessons}
+                    courseId={courseId}
+                    onDeleteLesson={handleDeleteLesson}
+                  />
                 </TabsContent>
 
                 <TabsContent value="tests">
-                  <UniversalDataTable columns={testColumns} data={tests} />
+                  <TestsTable
+                    tests={tests}
+                    courseId={courseId}
+                    onDeleteTest={handleDeleteTest}
+                    variant="simple"
+                  />
                 </TabsContent>
               </Tabs>
             </div>
           ) : (
-            <div>Course not found</div>
+            <div>Курс не найден</div>
           )}
         </div>
       </SidebarInset>

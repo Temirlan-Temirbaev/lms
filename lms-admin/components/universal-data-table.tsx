@@ -38,7 +38,7 @@ export function createActionsColumn<T>(
 ): ColumnDef<T> {
   return {
     id: "actions",
-    header: "Actions",
+    header: "Действия",
     cell: ({ row }) => {
       const itemActions = actions(row.original).filter(
         (action) => !action.hidden
@@ -49,40 +49,30 @@ export function createActionsColumn<T>(
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex h-8 w-8 p-0"
-              size="icon"
-            >
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Открыть меню</span>
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                viewBox="0 0 24 24"
               >
-                <circle cx="12" cy="12" r="1" />
-                <circle cx="12" cy="5" r="1" />
-                <circle cx="12" cy="19" r="1" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z"
+                />
               </svg>
-              <span className="sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-36">
+          <DropdownMenuContent align="end">
             {itemActions.map((action, index) => (
               <React.Fragment key={index}>
-                {action.separator && <DropdownMenuSeparator />}
+                {action.separator && index > 0 && <DropdownMenuSeparator />}
                 <DropdownMenuItem
                   onClick={action.onClick}
-                  className={
-                    action.isDanger
-                      ? "text-destructive focus:text-destructive"
-                      : ""
-                  }
+                  className={action.isDanger ? "text-red-600" : ""}
                 >
                   {action.label}
                 </DropdownMenuItem>
@@ -185,7 +175,7 @@ export function UniversalDataTable<T>({
                   colSpan={tableColumns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Нет результатов.
                 </TableCell>
               </TableRow>
             )}
