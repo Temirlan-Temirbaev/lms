@@ -6,9 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "translate:kazakh": "node scripts/translate-to-kazakh.js",
-    "translate:dry-run": "node scripts/translate-to-kazakh.js --dry-run"
+    "lint": "next lint"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

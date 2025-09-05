@@ -137,7 +137,7 @@ export default function PlacementTestQuestionsPage() {
           setError(data.message || "Орналастыру тестін жүктеу қатесі");
         }
       } catch (error) {
-        console.error("Error fetching placement test:", error);
+        console.error("Деңгей анықтау тестін жүктеу кезінде қате:", error);
         setError("Орналастыру тестін жүктеу қатесі");
       } finally {
         setLoading(false);
@@ -204,7 +204,7 @@ export default function PlacementTestQuestionsPage() {
         alert(data.message || "Сұрақты жою қатесі");
       }
     } catch (error) {
-      console.error("Error deleting question:", error);
+      console.error("Сұрақты жою кезінде қате:", error);
       alert("Сұрақты жою қатесі");
     }
   };

@@ -63,7 +63,7 @@ export default function NewPlacementTestPage() {
         alert(`Орналастыру тестін жасау қатесі: ${error.message}`);
       }
     } catch (error) {
-      console.error("Error creating placement test:", error);
+      console.error("Деңгей анықтау тестін жасау кезінде қате:", error);
       alert('Орналастыру тестін жасау сәтсіз аяқталды');
     } finally {
       setLoading(false);

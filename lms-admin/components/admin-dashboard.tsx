@@ -78,7 +78,7 @@ export function AdminDashboard() {
         );
 
         if (!usersRes.ok || !coursesRes.ok) {
-          throw new Error("Failed to fetch dashboard data");
+          throw new Error("Бақылау тақтасы деректерін алу сәтсіз аяқталды");
         }
 
         const usersData = await usersRes.json();
@@ -169,8 +169,8 @@ export function AdminDashboard() {
         });
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Не удалось загрузить статистику"
-        );
+        err instanceof Error ? err.message : "Статистиканы жүктеу мүмкін болмады"
+      );
       } finally {
         setLoading(false);
       }
@@ -207,7 +207,7 @@ export function AdminDashboard() {
           onClick={() => window.location.reload()}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          Повторить
+          Қайталау
         </button>
       </div>
     );
@@ -221,20 +221,20 @@ export function AdminDashboard() {
       <div>
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <Users className="h-6 w-6 text-blue-600" />
-          Статистика пользователей
+          Пайдаланушы статистикасы
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего пользователей
+                Барлық пайдаланушылар
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.users.total}</div>
               <p className="text-xs text-muted-foreground">
-                Все зарегистрированные пользователи
+                Барлық тіркелген пайдаланушылар
               </p>
             </CardContent>
           </Card>
@@ -242,14 +242,14 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Администраторы
+                Әкімшілер
               </CardTitle>
               <UserCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.users.admins}</div>
               <p className="text-xs text-muted-foreground">
-                Администраторы системы
+                Жүйе әкімшілері
               </p>
             </CardContent>
           </Card>
@@ -257,14 +257,14 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Обычные пользователи
+                Қарапайым пайдаланушылар
               </CardTitle>
               <UserX className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.users.regular}</div>
               <p className="text-xs text-muted-foreground">
-                Изучающие пользователи
+                Оқушы пайдаланушылар
               </p>
             </CardContent>
           </Card>
@@ -272,7 +272,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Новые на этой неделе
+                Осы аптада жаңалар
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -281,7 +281,7 @@ export function AdminDashboard() {
                 {stats.users.recentlyJoined}
               </div>
               <p className="text-xs text-muted-foreground">
-                Недавно присоединились
+                Жақында қосылғандар
               </p>
             </CardContent>
           </Card>
@@ -292,13 +292,13 @@ export function AdminDashboard() {
       <div>
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-green-600" />
-          Статистика контента
+          Мазмұн статистикасы
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего курсов
+                Барлық курстар
               </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -317,14 +317,14 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего уроков
+                Барлық сабақтар
               </CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.lessons.total}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.lessons.completed} завершений
+                {stats.lessons.completed} аяқталған
               </p>
             </CardContent>
           </Card>
@@ -332,14 +332,14 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего тестов
+                Барлық тесттер
               </CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.tests.total}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.tests.completed} попыток
+                {stats.tests.completed} әрекет
               </p>
             </CardContent>
           </Card>
@@ -347,7 +347,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Средний балл
+                Орташа ұпай
               </CardTitle>
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -355,7 +355,7 @@ export function AdminDashboard() {
               <div className="text-2xl font-bold">
                 {stats.tests.averageScore}%
               </div>
-              <p className="text-xs text-muted-foreground">Результаты тестов</p>
+              <p className="text-xs text-muted-foreground">Тест нәтижелері</p>
             </CardContent>
           </Card>
         </div>
@@ -365,13 +365,13 @@ export function AdminDashboard() {
       <div>
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <Clock className="h-6 w-6 text-purple-600" />
-          Статус тестов определения уровня
+          Деңгей анықтау тесттерінің мәртебесі
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Тесты пройдены
+                Тесттер өтілді
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
@@ -380,7 +380,7 @@ export function AdminDashboard() {
                 {stats.placementTests.taken}
               </div>
               <p className="text-xs text-muted-foreground">
-                Пользователи прошли тест определения уровня
+                Пайдаланушылар деңгей анықтау тестін өтті
               </p>
             </CardContent>
           </Card>
@@ -388,7 +388,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Тесты ожидают
+                Тесттер күтуде
               </CardTitle>
               <TrendingDown className="h-4 w-4 text-orange-600" />
             </CardHeader>
@@ -397,7 +397,7 @@ export function AdminDashboard() {
                 {stats.placementTests.notTaken}
               </div>
               <p className="text-xs text-muted-foreground">
-                Пользователи должны пройти тест определения уровня
+                Пайдаланушылар деңгей анықтау тестін өтуі керек
               </p>
             </CardContent>
           </Card>

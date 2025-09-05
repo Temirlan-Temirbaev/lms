@@ -103,8 +103,8 @@ export default function PlacementTestDetailPage() {
         setError('Тестті жүктеу кезінде қате орын алды');
       }
     } catch (error) {
-      console.error("Error fetching placement test:", error);
-      setError('Тестті жүктеу кезінде қате орын алды');
+      console.error("Деңгей анықтау тестін жүктеу кезінде қате:", error);
+      setError('Орналастыру тестін алу қатесі');
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ export default function PlacementTestDetailPage() {
         alert(`Тест құру кезінде қате орын алды: ${error.message}`);
       }
     } catch (error) {
-      console.error("Error updating placement test:", error);
+      console.error("Деңгей анықтау тестін жаңарту кезінде қате:", error);
       alert('Тест құру сәтсіз аяқталды');
     } finally {
       setSaving(false);
@@ -225,7 +225,7 @@ export default function PlacementTestDetailPage() {
           return result.data;
         }
       } catch (error) {
-        console.error("Error migrating questions:", error);
+        console.error("Сұрақтарды көшіру кезінде қате:", error);
       }
     }
     

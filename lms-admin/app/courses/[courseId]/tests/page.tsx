@@ -61,12 +61,12 @@ export default function TestsPage() {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch tests");
+        throw new Error("Тесттерді алу сәтсіз аяқталды");
       }
       const data = await response.json();
       if (data.success) setTests(data.data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch tests");
+      setError(err instanceof Error ? err.message : "Тесттерді алу сәтсіз аяқталды");
     } finally {
       setLoading(false);
     }
@@ -84,12 +84,12 @@ export default function TestsPage() {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch course");
+        throw new Error("Курсты алу сәтсіз аяқталды");
       }
       const data = await response.json();
       if (data.success) setCourse(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch course");
+      setError(err instanceof Error ? err.message : "Курсты алу сәтсіз аяқталды");
     }
   };
 
@@ -103,7 +103,7 @@ export default function TestsPage() {
   }, [isAuthenticated, token, courseId]);
 
   const handleDeleteTest = async (testId: string) => {
-    if (!confirm("Are you sure you want to delete this test?")) {
+    if (!confirm("Бұл тестті жоюға сенімдісіз бе?")) {
       return;
     }
 
@@ -120,13 +120,13 @@ export default function TestsPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete test");
+        throw new Error("Тестті жою сәтсіз аяқталды");
       }
 
       // Refresh tests after successful deletion
       await fetchTests();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete test");
+      setError(err instanceof Error ? err.message : "Тестті жою сәтсіз аяқталды");
     }
   };
 
@@ -154,7 +154,7 @@ export default function TestsPage() {
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading tests...</p>
+                <p className="text-gray-600">Тесттер жүктелуде...</p>
               </div>
             </div>
           ) : error ? (
@@ -162,7 +162,7 @@ export default function TestsPage() {
               <div className="text-center">
                 <p className="text-red-600 mb-4">{error}</p>
                 <Button onClick={() => window.location.reload()}>
-                  Try Again
+                  Қайта көру
                 </Button>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function TestsPage() {
                 <div className="flex items-center space-x-3">
                   <FileText className="h-8 w-8 text-green-600" />
                   <div>
-                    <h1 className="text-3xl font-bold">Tests</h1>
+                    <h1 className="text-3xl font-bold">Тесттер</h1>
                     {course && (
                       <p className="text-gray-600">
                         Course: {course.title} ({course.level})
@@ -185,14 +185,14 @@ export default function TestsPage() {
                   className="flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Add Test</span>
+                  <span>Тест қосу</span>
                 </Button>
               </div>
 
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>All Tests ({tests.length})</span>
+                    <span>Барлық тесттер ({tests.length})</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -207,10 +207,10 @@ export default function TestsPage() {
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-4">
-                        No tests found for this course.
+                        Бұл курс үшін тесттер табылмады.
                       </p>
                       <Button onClick={handleCreateTest} variant="outline">
-                        Create First Test
+                        Алғашқы тестті жасау
                       </Button>
                     </div>
                   )}

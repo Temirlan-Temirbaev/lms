@@ -611,7 +611,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <button
                 onClick={navigateUp}
                 className="ml-2 p-1 hover:bg-gray-100 rounded"
-                title="Подняться на уровень выше"
+                title="Жоғарғы деңгейге көтерілу"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -620,8 +620,8 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
         </DialogHeader>
         <Tabs defaultValue="browse" className="flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-            <TabsTrigger value="browse">Обзор файлов</TabsTrigger>
-            <TabsTrigger value="upload">Загрузить новые</TabsTrigger>
+            <TabsTrigger value="browse">Файлдарды шолу</TabsTrigger>
+            <TabsTrigger value="upload">Жаңаларын жүктеу</TabsTrigger>
           </TabsList>
           <TabsContent
             value="browse"
@@ -632,7 +632,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Поиск файлов..."
+                  placeholder="Файлдарды іздеу..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -645,14 +645,14 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                   size="sm"
                   onClick={() => setFilter("all")}
                 >
-                  Все
+                  Барлығы
                 </Button>
                 <Button
                   variant={filter === "images" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilter("images")}
                 >
-                  Изображения
+                  Суреттер
                 </Button>
                 <Button
                   variant={filter === "audio" ? "default" : "outline"}
@@ -668,7 +668,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateFolder(!showCreateFolder)}
-                  title="Создать новую папку"
+                  title="Жаңа қалта жасау"
                 >
                   <FolderPlus className="h-4 w-4" />
                 </Button>
@@ -694,7 +694,7 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
               <div className="flex gap-2 items-center p-3 bg-blue-50 border border-blue-200 rounded-md">
                 <FolderPlus className="h-4 w-4 text-blue-600" />
                 <Input
-                  placeholder="Введите название папки... (поддерживается русский, қазақ, العربية, 中文, и т.д.)"
+                  placeholder="Қалта атауын енгізіңіз... (орысша, қазақша, العربية, 中文, т.б. қолдау көрсетіледі)"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   onKeyDown={(e) => {
@@ -751,8 +751,8 @@ export const MediaBrowser: React.FC<MediaBrowserProps> = ({
                     </div>
                     <div className="text-gray-400 text-sm">
                       {searchTerm
-                        ? `Нет файлов, соответствующих "${searchTerm}"`
-                        : "Загрузите файлы для начала работы"}
+                          ? `"${searchTerm}" сәйкес келетін файлдар жоқ`
+                        : "Жұмысты бастау үшін файлдарды жүктеңіз"}
                     </div>
                   </div>
                 ) : viewMode === "grid" ? (

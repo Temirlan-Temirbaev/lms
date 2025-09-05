@@ -105,7 +105,7 @@ export default function PlacementTestQuestionEditPage() {
     content: "",
     options: ["", "", "", ""],
     correctAnswer: "",
-    explanation: "Объяснение не предоставлено",
+    explanation: "Түсіндірме берілмеген",
     points: 1,
     level: "A1",
   });
@@ -149,10 +149,10 @@ export default function PlacementTestQuestionEditPage() {
             });
           }
         } else {
-          setError(data.message || "Failed to fetch placement test");
+          setError(data.message || "Орналастыру тестін алу сәтсіз аяқталды");
         }
       } catch {
-        setError("Error fetching placement test");
+        setError("Деңгей анықтау тестін алу қатесі");
       } finally {
         setLoading(false);
       }
@@ -183,7 +183,7 @@ export default function PlacementTestQuestionEditPage() {
                 return (
                   <audio controls style={{ width: "100%" }}>
                     <source src={href} />
-                    Your browser does not support the audio element.
+                    Сіздің браузеріңіз аудио элементін қолдамайды.
                   </audio>
                 );
               }
@@ -213,7 +213,7 @@ export default function PlacementTestQuestionEditPage() {
       <div className="space-y-4 p-6 border rounded-lg bg-white">
         <div className="mb-4">
           <h3 className="text-xl font-bold text-slate-900 mb-2">
-            {question.question || "Введите ваш вопрос"}
+            {question.question || "Сұрағыңызды енгізіңіз"}
           </h3>
           {question.content && renderQuestionContent(question.content)}
         </div>
@@ -254,7 +254,7 @@ export default function PlacementTestQuestionEditPage() {
 
     const questionToSave = {
       ...questionForm,
-      explanation: questionForm.explanation || "Объяснение не предоставлено",
+      explanation: questionForm.explanation || "Түсіндірме берілмеген",
     };
 
     try {
@@ -278,13 +278,13 @@ export default function PlacementTestQuestionEditPage() {
         if (res.ok) {
           router.push(`/placement-tests/${placementTestId}/questions`);
         } else {
-          alert(data.message || "Failed to add question");
+          alert(data.message || "Сұрақты қосу сәтсіз аяқталды");
         }
       } else {
         // Update existing question
         const questionToUpdate = placementTest.questions[questionIndex];
         if (!questionToUpdate?._id) {
-          alert("Question ID not found");
+          alert("Сұрақ ID табылмады");
           return;
         }
 
@@ -304,11 +304,11 @@ export default function PlacementTestQuestionEditPage() {
         if (res.ok) {
           router.push(`/placement-tests/${placementTestId}/questions`);
         } else {
-          alert(data.message || "Failed to update question");
+          alert(data.message || "Сұрақты жаңарту сәтсіз аяқталды");
         }
       }
     } catch {
-      alert("Error saving question");
+      alert("Сұрақты сақтау қатесі");
     } finally {
       setSaving(false);
     }
@@ -350,12 +350,12 @@ export default function PlacementTestQuestionEditPage() {
   const renderMatchingFields = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Настройка сопоставления</CardTitle>
+        <CardTitle>Сәйкестендіру баптаулары</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Левая колонка</Label>
+            <Label>Сол жақ баған</Label>
             {questionForm.options?.slice(0, Math.ceil((questionForm.options?.length || 0) / 2)).map((option, index) => (
               <div key={index} className="flex gap-2 mt-2">
                 <Input
@@ -371,7 +371,7 @@ export default function PlacementTestQuestionEditPage() {
             ))}
           </div>
           <div>
-            <Label>Правая колонка</Label>
+            <Label>Оң жақ баған</Label>
             {questionForm.options?.slice(Math.ceil((questionForm.options?.length || 0) / 2)).map((option, index) => {
               const actualIndex = index + Math.ceil((questionForm.options?.length || 0) / 2);
               return (
@@ -383,7 +383,7 @@ export default function PlacementTestQuestionEditPage() {
                       newOptions[actualIndex] = e.target.value;
                       setQuestionForm({ ...questionForm, options: newOptions });
                     }}
-                    placeholder={`Соответствие ${index + 1}`}
+                    placeholder={`Сәйкестік ${index + 1}`}
                   />
                 </div>
               );
@@ -477,7 +477,7 @@ export default function PlacementTestQuestionEditPage() {
                 setQuestionForm({ ...questionForm, correctAnswer: newAnswers });
               }}
             >
-              Удалить
+              Жою
             </Button>
           </div>
         )) || []}
@@ -498,7 +498,7 @@ export default function PlacementTestQuestionEditPage() {
   const renderInputFields = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Правильный ответ</CardTitle>
+        <CardTitle>Дұрыс жауап</CardTitle>
       </CardHeader>
       <CardContent>
         <Input
@@ -506,7 +506,7 @@ export default function PlacementTestQuestionEditPage() {
           onChange={(e) =>
             setQuestionForm({ ...questionForm, correctAnswer: e.target.value })
           }
-          placeholder="Введите правильный ответ"
+          placeholder="Дұрыс жауапты енгізіңіз"
         />
       </CardContent>
     </Card>
@@ -515,15 +515,15 @@ export default function PlacementTestQuestionEditPage() {
   const renderCategoriesFields = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Настройка категорий</CardTitle>
+        <CardTitle>Санаттар баптаулары</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Создайте категории и элементы, которые нужно распределить по категориям.
+          Санаттар мен санаттар бойынша бөлінетін элементтерді жасаңыз.
         </p>
         <div className="space-y-4">
           <div>
-            <Label>Категории</Label>
+            <Label>Санаттар</Label>
             {questionForm.options?.map((category, index) => (
               <div key={index} className="flex gap-2 mt-2">
                 <Input
@@ -533,7 +533,7 @@ export default function PlacementTestQuestionEditPage() {
                     newOptions[index] = e.target.value;
                     setQuestionForm({ ...questionForm, options: newOptions });
                   }}
-                  placeholder={`Категория ${index + 1}`}
+                  placeholder={`Санат ${index + 1}`}
                 />
                 <Button
                   type="button"
@@ -544,7 +544,7 @@ export default function PlacementTestQuestionEditPage() {
                     setQuestionForm({ ...questionForm, options: newOptions });
                   }}
                 >
-                  Удалить
+                  Жою
                 </Button>
               </div>
             ))}
@@ -557,7 +557,7 @@ export default function PlacementTestQuestionEditPage() {
                 setQuestionForm({ ...questionForm, options: newOptions });
               }}
             >
-              Добавить категорию
+              Санат қосу
             </Button>
           </div>
         </div>
@@ -569,10 +569,10 @@ export default function PlacementTestQuestionEditPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Вопрос с множественным выбором</CardTitle>
+          <CardTitle>Көп таңдаулы сұрақ</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Add new option input */}
+          {/* Жаңа нұсқа енгізу */}
           <div>
             <Label className="text-base font-semibold">Нұсқаларды қосу</Label>
             <div className="mt-3 flex gap-2">
@@ -631,7 +631,7 @@ export default function PlacementTestQuestionEditPage() {
                   key={index}
                   className="flex items-center gap-3 p-4 border rounded-lg bg-slate-50"
                 >
-                  {/* Option Input */}
+                  {/* Нұсқа енгізу */}
                   <div className="flex-1">
                     <Input
                       placeholder={`Нұсқа ${String.fromCharCode(65 + index)}`}
@@ -694,7 +694,7 @@ export default function PlacementTestQuestionEditPage() {
                       });
                     }}
                   >
-                    Удалить
+                    Жою
                   </Button>
                 </div>
               ))}

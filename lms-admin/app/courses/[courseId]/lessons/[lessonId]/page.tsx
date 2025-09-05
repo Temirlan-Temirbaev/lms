@@ -106,7 +106,7 @@ export default function LessonViewPage() {
           });
         }
       } catch (err) {
-        setError("Failed to fetch lesson data");
+        setError("Сабақ деректерін жүктеу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -134,10 +134,10 @@ export default function LessonViewPage() {
         setLesson(data.data);
         setIsEditing(false);
       } else {
-        alert(data.message || "Failed to update lesson");
+        alert(data.message || "Сабақты жаңарту сәтсіз аяқталды");
       }
     } catch (error) {
-      alert("Error updating lesson");
+      alert("Сабақты жаңарту кезінде қате");
     } finally {
       setSaving(false);
     }
@@ -176,12 +176,12 @@ export default function LessonViewPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к курсу
+              Курсқа оралу
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : lesson && course ? (
@@ -194,7 +194,7 @@ export default function LessonViewPage() {
                     Course: {course.title} • Order: {lesson.order}
                   </p>
                   <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">Урок {lesson.order}</Badge>
+                    <Badge variant="secondary">Сабақ {lesson.order}</Badge>
                     <Badge variant="outline">{course.level}</Badge>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function LessonViewPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Редактировать урок
+                      Сабақты өңдеу
                     </Button>
                   ) : (
                     <>
@@ -214,7 +214,7 @@ export default function LessonViewPage() {
                         onClick={handleCancel}
                         disabled={saving}
                       >
-                        Отмена
+                        Болдырмау
                       </Button>
                       <Button
                         onClick={handleSave}
@@ -222,7 +222,7 @@ export default function LessonViewPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saving ? "Сохранение..." : "Сохранить изменения"}
+                        {saving ? "Сақталуда..." : "Өзгерістерді сақтау"}
                       </Button>
                     </>
                   )}
@@ -233,23 +233,23 @@ export default function LessonViewPage() {
               {isEditing ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Редактировать урок</CardTitle>
+                    <CardTitle>Сабақты өңдеу</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Название</Label>
+                        <Label htmlFor="title">Атауы</Label>
                         <Input
                           id="title"
                           value={editForm.title}
                           onChange={(e) =>
                             setEditForm({ ...editForm, title: e.target.value })
                           }
-                          placeholder="Название урока"
+                          placeholder="Сабақ атауы"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="order">Порядок</Label>
+                        <Label htmlFor="order">Реті</Label>
                         <Input
                           id="order"
                           type="number"
@@ -260,12 +260,12 @@ export default function LessonViewPage() {
                               order: parseInt(e.target.value),
                             })
                           }
-                          placeholder="Порядок"
+                          placeholder="Реті"
                         />
                       </div>
                     </div>{" "}
                     <div className="space-y-2">
-                      <Label htmlFor="content">Содержание</Label>
+                      <Label htmlFor="content">Мазмұны</Label>
                       <div className="border rounded-md overflow-hidden">
                         {" "}
                         <NotionEditor
@@ -274,8 +274,8 @@ export default function LessonViewPage() {
                           onChange={(markdown) =>
                             setEditForm({ ...editForm, content: markdown })
                           }
-                          placeholder="Начните писать содержание урока..."
-                          onTableInsert={() => setShowTableDialog(true)}
+                          placeholder="Сабақ мазмұнын жаза бастаңыз..."
+                           onTableInsert={() => setShowTableDialog(true)}
                         />
                       </div>
                     </div>
@@ -289,19 +289,19 @@ export default function LessonViewPage() {
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
-                      Предварительный просмотр
+                      Алдын ала қарау
                     </TabsTrigger>
                     <TabsTrigger
                       value="raw"
                       className="flex items-center gap-2"
                     >
-                      Исходное содержание
+                      Бастапқы мазмұн
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="preview">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Содержание урока</CardTitle>
+                        <CardTitle>Сабақ мазмұны</CardTitle>
                       </CardHeader>{" "}
                       <CardContent>
                         {lesson.content ? (
@@ -405,8 +405,8 @@ export default function LessonViewPage() {
                                     return (
                                       <audio controls style={{ width: "100%" }}>
                                         <source src={href} />
-                                        Your browser does not support the audio
-                                        element.
+                                        Сіздің браузеріңіз аудио элементін
+                                        қолдамайды.
                                       </audio>
                                     );
                                   }
@@ -435,8 +435,8 @@ export default function LessonViewPage() {
                                     style={{ width: "100%" }}
                                     {...props}
                                   >
-                                    Your browser does not support the audio
-                                    element.
+                                    Сіздің браузеріңіз аудио элементін
+                                      қолдамайды.
                                   </audio>
                                 ),
                               }}
@@ -446,7 +446,7 @@ export default function LessonViewPage() {
                           </div>
                         ) : (
                           <p className="text-muted-foreground italic">
-                            No content available
+                            Мазмұн қолжетімді емес
                           </p>
                         )}
                       </CardContent>
@@ -455,11 +455,11 @@ export default function LessonViewPage() {
                   <TabsContent value="raw">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Raw Markdown Content</CardTitle>
+                        <CardTitle>Markdown мазмұны</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <pre className="whitespace-pre-wrap bg-muted p-4 rounded-md text-sm font-mono">
-                          {lesson.content || "No content available"}
+                          {lesson.content || "Мазмұн қолжетімді емес"}
                         </pre>
                       </CardContent>
                     </Card>
@@ -470,25 +470,25 @@ export default function LessonViewPage() {
               {/* Metadata */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Lesson Information</CardTitle>
+                  <CardTitle>Сабақ туралы ақпарат</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-medium">Lesson ID:</span>
+                      <span className="font-medium">Сабақ ID:</span>
                       <p className="text-muted-foreground font-mono">
                         {lesson._id}
                       </p>
                     </div>
                     <div>
-                      <span className="font-medium">Course ID:</span>
+                      <span className="font-medium">Курс ID:</span>
                       <p className="text-muted-foreground font-mono">
                         {lesson.courseId}
                       </p>
                     </div>
                     {lesson.createdAt && (
                       <div>
-                        <span className="font-medium">Created:</span>
+                        <span className="font-medium">Жасалған:</span>
                         <p className="text-muted-foreground">
                           {new Date(lesson.createdAt).toLocaleString()}
                         </p>
@@ -496,7 +496,7 @@ export default function LessonViewPage() {
                     )}
                     {lesson.updatedAt && (
                       <div>
-                        <span className="font-medium">Last Updated:</span>
+                        <span className="font-medium">Соңғы жаңарту:</span>
                         <p className="text-muted-foreground">
                           {new Date(lesson.updatedAt).toLocaleString()}
                         </p>
@@ -507,7 +507,7 @@ export default function LessonViewPage() {
               </Card>
             </div>
           ) : (
-            <div>Lesson not found</div>
+            <div>Сабақ табылмады</div>
           )}
         </div>
       </SidebarInset>

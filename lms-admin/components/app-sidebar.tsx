@@ -17,18 +17,18 @@ import Image from "next/image";
 
 const data = {
   user: {
-    name: "Администратор",
+    name: "Әкімші",
     email: "admin@example.com",
     avatar: "/avatars/admin.jpg",
   },
   navMain: [
     {
-      title: "Курсы",
+      title: "Курстар",
       url: "/courses",
       icon: IconBook,
     },
     {
-      title: "Пользователи",
+      title: "Пайдаланушылар",
       url: "/users",
       icon: IconUsers,
     },
@@ -38,7 +38,7 @@ const data = {
       icon: IconClipboardList,
     },
     {
-      title: "Файлы",
+      title: "Файлдар",
       url: "/files",
       icon: IconFolder,
     },

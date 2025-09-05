@@ -42,8 +42,8 @@ export function SiteHeader() {
                     <User className="h-3 w-3 text-blue-600" />
                   </div>
                   <span className="text-sm font-medium hidden sm:inline">
-                    {user?.name || user?.email || "Администратор"}
-                  </span>
+                  {user?.name || user?.email || "Әкімші"}
+                </span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -51,8 +51,8 @@ export function SiteHeader() {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user?.name || "Пользователь-администратор"}
-                  </p>
+                  {user?.name || "Пайдаланушы-әкімші"}
+                </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
@@ -61,12 +61,12 @@ export function SiteHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>
                 <Shield className="mr-2 h-4 w-4" />
-                Роль: {user?.role || "администратор"}
+                Рөлі: {user?.role || "әкімші"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
-                Выйти
+                Шығу
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

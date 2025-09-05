@@ -53,12 +53,12 @@ interface Question {
 }
 
 const QUESTION_TYPES = [
-  { value: "multiple-choice", label: "Множественный выбор" },
-  { value: "matching", label: "Сопоставление" },
-  { value: "ordering", label: "Упорядочивание" },
-  { value: "fill-in-blanks", label: "Заполнить пропуски" },
-  { value: "input", label: "Текстовый ввод" },
-  { value: "categories", label: "Категории" },
+  { value: "multiple-choice", label: "Көп таңдау" },
+  { value: "matching", label: "Сәйкестендіру" },
+    { value: "ordering", label: "Реттеу" },
+  { value: "fill-in-blanks", label: "Бос орындарды толтыру" },
+    { value: "input", label: "Мәтін енгізу" },
+  { value: "categories", label: "Санаттар" },
 ];
 
 export default function QuestionsManagementPage() {
@@ -86,22 +86,22 @@ export default function QuestionsManagementPage() {
     },
     {
       accessorKey: "question",
-      header: "Вопрос",
+      header: "Сұрақ",
       cell: ({ row }) => (
         <div className="max-w-xs truncate">{row.getValue("question")}</div>
       ),
     },
     {
       accessorKey: "points",
-      header: "Баллы",
+      header: "Ұпайлар",
     },
     createActionsColumn<Question>((question) => [
       {
-        label: "Редактировать",
+        label: "Өңдеу",
         onClick: () => handleEditQuestion(question),
       },
       {
-        label: "Удалить",
+        label: "Жою",
         onClick: () => handleDeleteQuestion(question),
         isDanger: true,
         separator: true,
@@ -144,7 +144,7 @@ export default function QuestionsManagementPage() {
           setTest(testData.data);
         }
       } catch {
-        setError("Не удалось загрузить данные теста");
+        setError("Тест деректерін жүктеу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -167,7 +167,7 @@ export default function QuestionsManagementPage() {
   };
 
   const handleDeleteQuestion = async (question: Question) => {
-    if (!confirm("Вы уверены, что хотите удалить этот вопрос?")) return;
+    if (!confirm("Бұл сұрақты жойғыңыз келетініне сенімдісіз бе?")) return;
 
     if (!test) return;
 
@@ -179,7 +179,7 @@ export default function QuestionsManagementPage() {
     );
 
     if (questionIndex === -1) {
-      alert("Вопрос не найден");
+      alert("Сұрақ табылмады");
       return;
     }
 
@@ -204,10 +204,10 @@ export default function QuestionsManagementPage() {
       if (res.ok) {
         setTest({ ...test, questions: updatedQuestions });
       } else {
-        alert(data.message || "Не удалось удалить вопрос");
+        alert(data.message || "Сұрақты жою мүмкін болмады");
       }
     } catch {
-      alert("Ошибка при удалении вопроса");
+      alert("Сұрақты жою кезінде қате");
     }
   };
 
@@ -240,12 +240,12 @@ export default function QuestionsManagementPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к тесту
+              Тестке оралу
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : test && course ? (
@@ -253,16 +253,16 @@ export default function QuestionsManagementPage() {
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-3xl font-bold">Управление вопросами</h1>
+                  <h1 className="text-3xl font-bold">Сұрақтарды басқару</h1>
                   <p className="text-muted-foreground mt-1">
                     Тест: {test.title} • Курс: {course.title}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="secondary">
-                      {test.questions?.length || 0} Вопросов
+                      {test.questions?.length || 0} Сұрақ
                     </Badge>
                     <Badge variant="outline">
-                      {test.passingScore}% Проходной балл
+                      {test.passingScore}% Өту балы
                     </Badge>
                     <Badge variant="outline">{test.timeLimit} мин</Badge>
                   </div>
@@ -272,14 +272,14 @@ export default function QuestionsManagementPage() {
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Добавить вопрос
+                  Сұрақ қосу
                 </Button>
               </div>
 
               {/* Questions Table */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Вопросы</CardTitle>
+                  <CardTitle>Сұрақтар</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <UniversalDataTable
@@ -290,7 +290,7 @@ export default function QuestionsManagementPage() {
               </Card>
             </div>
           ) : (
-            <div>Тест не найден</div>
+            <div>Тест табылмады</div>
           )}
         </div>
       </SidebarInset>

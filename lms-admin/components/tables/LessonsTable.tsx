@@ -39,7 +39,7 @@ export function LessonsTable({
   const columns: ColumnDef<Lesson>[] = [
     {
       accessorKey: "order",
-      header: "Order",
+      header: "Реті",
       cell: ({ row }) => (
         <Badge
           variant="secondary"
@@ -54,7 +54,7 @@ export function LessonsTable({
     },
     {
       accessorKey: "title",
-      header: "Title",
+      header: "Атауы",
       cell: ({ row }) => (
         <div
           className="cursor-pointer hover:text-blue-600 font-medium"
@@ -68,12 +68,12 @@ export function LessonsTable({
     },
     createActionsColumn<Lesson>((lesson) => [
       {
-        label: "Просмотр/Редактирование",
+        label: "Қарау/Өңдеу",
         onClick: () => handleEditLesson(lesson),
         icon: <Edit className="h-4 w-4" />,
       },
       {
-        label: "Удалить",
+        label: "Жою",
         onClick: () => onDeleteLesson(lesson._id),
         isDanger: true,
         separator: true,

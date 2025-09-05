@@ -36,8 +36,7 @@ export default function Page() {
           <div className="min-h-screen flex-1 rounded-xl bg-muted/50 p-8">
             <div className="mb-8">
               <h1 className="text-3xl font-bold tracking-tight">
-                Добро пожаловать, {user?.name || user?.email}! Вот что
-                происходит в вашей системе.
+                Қош келдіңіз, {user?.name || user?.email}! Міне сіздің жүйеңізде не болып жатыр.
               </h1>
             </div>
             <AdminDashboard />

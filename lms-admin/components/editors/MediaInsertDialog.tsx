@@ -119,8 +119,8 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                   <Button variant="outline" className="w-full">
                     <FolderOpen className="h-4 w-4 mr-2" />
                     {mediaType === "image"
-                      ? "Обзор медиабиблиотеки"
-                      : "Обзор аудиобиблиотеки"}
+                      ? "Медиа кітапханасын шолу"
+                        : "Аудио кітапханасын шолу"}
                   </Button>
                 </MediaBrowser>
               </TabsContent>
@@ -139,7 +139,7 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
             </Label>
             <Input
               id="altText"
-              placeholder="Описание изображения"
+              placeholder="Сурет сипаттамасы"
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
             />
@@ -189,7 +189,7 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
             <Label htmlFor="audioCaption">Подпись (необязательно)</Label>
             <Input
               id="audioCaption"
-              placeholder="Описание аудио"
+              placeholder="Аудио сипаттамасы"
               value={audioCaption}
               onChange={(e) => setAudioCaption(e.target.value)}
             />
@@ -201,7 +201,7 @@ export const MediaInsertDialog: React.FC<MediaInsertDialogProps> = ({
                     <Music className="h-6 w-6 text-gray-400" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {audioCaption || "Аудиофайл"}
+                        {audioCaption || "Аудио файл"}
                       </p>
                       <audio controls className="w-full mt-2">
                         <source src={audioUrl} type="audio/mpeg" />
