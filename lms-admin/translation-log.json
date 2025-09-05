@@ -1,0 +1,702 @@
+{
+  "timestamp": "2025-09-05T06:02:39.480Z",
+  "totalTranslations": 116,
+  "translations": [
+    {
+      "file": "app/courses/[courseId]/lessons/[lessonId]/page.tsx",
+      "original": "Failed to fetch lesson data",
+      "translated": "Сабақ деректерін алу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/[lessonId]/page.tsx",
+      "original": "Failed to update lesson",
+      "translated": "Сабақты жаңарту сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/[lessonId]/page.tsx",
+      "original": "Error updating lesson",
+      "translated": "Сабақты жаңарту кезінде қате",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/page.tsx",
+      "original": "Failed to fetch lessons",
+      "translated": "Сабақтарды ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/page.tsx",
+      "original": "Failed to fetch lessons",
+      "translated": "Сабақтарды ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/page.tsx",
+      "original": "Failed to fetch course",
+      "translated": "Курсты ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/page.tsx",
+      "original": "Failed to fetch course",
+      "translated": "Курсты ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/lessons/page.tsx",
+      "original": "Are you sure you want to delete this lesson?",
+      "translated": "Сіз осы сабақты жойғыңыз келе ме?",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/page.tsx",
+      "original": "Содержание (Markdown)",
+      "translated": "Мазмұны (НЕГІЗГІ)",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Failed to save question",
+      "translated": "Сұрақты сақтау сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Enter item to be ordered...",
+      "translated": "Тапсырыс берілетін затты енгізіңіз ...",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Введите правильные ответы (по одному на строку)&#10;например:&#10;идти&#10;ходить",
+      "translated": "Дұрыс жауаптарды енгізіңіз (бір жолдан бір)\nМысалы:\nберу\nсеруендеу",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Название категории или URL изображения",
+      "translated": "Санат атауы немесе URL суреттері",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "например, Я _____ в школу каждый день.",
+      "translated": "Мысалы, мен күн сайын мектепке _____ аламын.",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "например, Я _____ в школу каждый день.",
+      "translated": "Мысалы, мен күн сайын мектепке _____ аламын.",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Drag items to the correct categories:",
+      "translated": "Элементтерді дұрыс санаттарға сүйреңіз:",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Add Option",
+      "translated": "Опция қосыңыз",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "No options yet. Add options above to get started.",
+      "translated": "Әлі опциялар жоқ. ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Please select which option is\n                        правильный ответ.",
+      "translated": "Қай опцияны таңдаңыз\n                        ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Each item on the left\n                      should have its correct match on the right. Students will\n                      need to match these pairs correctly.",
+      "translated": "Сол жақтағы әр зат\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "No items yet. Add items above to get started.",
+      "translated": "Әлі заттар жоқ. ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Students will see these\n                        items in random order and need to arrange them in the\n                        correct sequence shown above.",
+      "translated": "Оқушылар мұны көреді\n                        ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Основная инструкция для студентов (например, &quot;Завершите\n                  предложения&quot;)",
+      "translated": "Студенттерге арналған негізгі нұсқаулық (мысалы, «аяқталды\n                  Ұсыныстар «)",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Sentence with Blanks",
+      "translated": "Бланкілері бар сөйлем",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Use _____ (5 underscores) to create blanks in your sentence.\n                  Each _____ will become an input field for students.",
+      "translated": "Сөйлемдегі бланкілерді жасау үшін _____ (5 астын сызу) қолданыңыз.\n                  ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Blanks detected:",
+      "translated": "Бланктер анықталды:",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Add _____ to your sentence above to create blanks,\n                          then configure answers here.",
+      "translated": "Бланкілерді құру үшін жоғарыдағы сөйлемге _____ қосыңыз,\n                          ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Shows as the main instruction to\n                    students",
+      "translated": "Негізгі нұсқаулық ретінде көрсетеді\n                    ",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Название категории/URL",
+      "translated": "Санат атауы / url",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Категории еще не созданы. Нажмите &quot;Добавить\n                      категорию&quot;, чтобы начать.",
+      "translated": "Санаттар әлі жасалған жоқ. «Қосу» түймесін басыңыз\n                      «Бастау» санаты.",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Основная инструкция для студентов (например,\n                              &quot;Завершите предложения&quot;)",
+      "translated": "Студенттерге арналған негізгі нұсқаулық (мысалы,\n                              «Ұсыныстарды аяқтаңыз»)",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Используйте _____ (5 подчеркиваний) для создания\n                              пропусков в вашем предложении.",
+      "translated": "Жасау үшін _____ (5 астын сызыңыз) қолданыңыз\n                              Сіздің сөйлеміңізде өтеді.",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Основная инструкция для студентов (например,\n                                &quot;Завершите предложения&quot;)",
+      "translated": "Студенттерге арналған негізгі нұсқаулық (мысалы,\n                                «Ұсыныстарды аяқтаңыз»)",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/[testId]/questions/[questionId]/page.tsx",
+      "original": "Используйте _____ (5 подчеркиваний) для создания\n                                пропусков в вашем предложении.",
+      "translated": "Жасау үшін _____ (5 астын сызыңыз) қолданыңыз\n                                Сіздің сөйлеміңізде өтеді.",
+      "language": "ru"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/page.tsx",
+      "original": "Failed to fetch tests",
+      "translated": "Тесттер алу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/page.tsx",
+      "original": "Failed to fetch tests",
+      "translated": "Тесттер алу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/page.tsx",
+      "original": "Failed to fetch course",
+      "translated": "Курсты ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/page.tsx",
+      "original": "Failed to fetch course",
+      "translated": "Курсты ала алмады",
+      "language": "en"
+    },
+    {
+      "file": "app/courses/[courseId]/tests/page.tsx",
+      "original": "Are you sure you want to delete this test?",
+      "translated": "Бұл тестілеуді жойғыңыз келе ме?",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": "No authentication token",
+      "translated": "Аутентификация таңбалауышы жоқ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": "No authentication token",
+      "translated": "Аутентификация таңбалауышы жоқ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": "].subfolders.push(sanitizedName);\n      }\n    }\n\n    setFolderStructure(newStructure);\n    return sanitizedName;\n  };\n\n  // Handle folder creation\n  const handleCreateFolder = async () => {\n    if (!newFolderName.trim()) return;\n\n    setCreatingFolder(true);\n    try {\n      await createFolder(newFolderName);\n      setUploadStatus(`Folder",
+      "translated": "] .SubFolders.Push (санитарлық жасөспірімдер);\n      ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": ", error);\n      const errorMessage =\n        error instanceof Error ? error.message :",
+      "translated": ", қате);\n      ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": ");\n    }\n  };\n\n  const navigateToRoot = () => {\n    setCurrentPath(",
+      "translated": ");\n    ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": "}];\n\n    parts.forEach((part, index) => {\n      const path = parts.slice(0, index + 1).join(",
+      "translated": "}]];\n\n    ",
+      "language": "en"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": ">\n                        {searchTerm\n                          ? `Нет файлов, соответствующих",
+      "translated": ">\n                        {ІздеушіM\n                          ? `Сәйкес файлдар жоқ",
+      "language": "ru"
+    },
+    {
+      "file": "app/files/page.tsx",
+      "original": ">\n                        {isDragActive\n                          ?",
+      "translated": ">\n                        ",
+      "language": "en"
+    },
+    {
+      "file": "app/login/page.tsx",
+      "original": "Войдите в систему управления Qazaqsha",
+      "translated": "Qazaqsha басқару жүйесін енгізіңіз",
+      "language": "ru"
+    },
+    {
+      "file": "app/placement-tests/[id]/page.tsx",
+      "original": "Error fetching placement test:",
+      "translated": "Орналастыру сынағын алу қатесі:",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/page.tsx",
+      "original": "Error updating placement test:",
+      "translated": "Орналастыру тестін жаңарту кезінде қате пайда болды:",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "Failed to fetch placement test",
+      "translated": "Орналастыру сынағын алу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "Error fetching placement test",
+      "translated": "Орналастыру сынағын алу қатесі",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "Failed to add question",
+      "translated": "Сұрақты қосу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "Failed to update question",
+      "translated": "Сұрақты жаңарту сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "например, Я _____ в школу каждый день.",
+      "translated": "Мысалы, мен күн сайын мектепке _____ аламын.",
+      "language": "ru"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/[questionId]/page.tsx",
+      "original": "Используйте _____ (5 подчеркиваний) для создания\n                            пропусков в вашем предложении.",
+      "translated": "Жасау үшін _____ (5 астын сызыңыз) қолданыңыз\n                            Сіздің сөйлеміңізде өтеді.",
+      "language": "ru"
+    },
+    {
+      "file": "app/placement-tests/[id]/questions/page.tsx",
+      "original": "Error fetching placement test:",
+      "translated": "Орналастыру сынағын алу қатесі:",
+      "language": "en"
+    },
+    {
+      "file": "app/placement-tests/new/page.tsx",
+      "original": "Error creating placement test:",
+      "translated": "Орналастыру сынағын құру қатесі:",
+      "language": "en"
+    },
+    {
+      "file": "app/users/[userId]/page.tsx",
+      "original": "../../../components/ui/select",
+      "translated": "../..//@/componentents/ui/select",
+      "language": "en"
+    },
+    {
+      "file": "app/users/[userId]/page.tsx",
+      "original": "../../../components/ui/badge",
+      "translated": "../../@/componentents/ui/badge",
+      "language": "en"
+    },
+    {
+      "file": "app/users/[userId]/page.tsx",
+      "original": "Untitled Lesson",
+      "translated": "Атаусыз сабақ",
+      "language": "en"
+    },
+    {
+      "file": "components/admin-charts.tsx",
+      "original": ";\n  ageDistribution: Array",
+      "translated": ";\n  ",
+      "language": "en"
+    },
+    {
+      "file": "components/admin-charts.tsx",
+      "original": ";\n  courseCompletion: Array",
+      "translated": ";\n  ",
+      "language": "en"
+    },
+    {
+      "file": "components/chart-area-interactive.tsx",
+      "original": "Total for the last 3 months",
+      "translated": "Барлығы соңғы 3 айда",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Select all",
+      "translated": "Барлығын таңдаңыз",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Section Type",
+      "translated": "Бөлім түрі",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent",
+      "translated": "Ішке кіріңіз / 30 Фокус / 30 Фокус көрінетін: BG-QUAN: BG-енгізу / 30 Қара түсті / 30 H-8 W-16 ҚАРАША ҚАЗІР / 30 В-16 Жиек ашық",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent",
+      "translated": "Ішке кіріңіз / 30 Фокус / 30 Фокус көрінетін: BG-QUAN: BG-енгізу / 30 Қара түсті / 30 H-8 W-16 ҚАРАША ҚАЗІР / 30 В-16 Жиек ашық",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Executive Summary",
+      "translated": "Талдамалы жазбахат",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Add Section",
+      "translated": "Бөлім қосу",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Showing total visitors for the last 6 months",
+      "translated": "Соңғы 6 айдағы келушілерді көрсету",
+      "language": "en"
+    },
+    {
+      "file": "components/data-table.tsx",
+      "original": "Executive Summary",
+      "translated": "Талдамалы жазбахат",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Upload failed",
+      "translated": "Жүктеу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Upload failed",
+      "translated": "Жүктеу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Drop the audio file here...",
+      "translated": "Аудио файлды осы жерге тастаңыз ...",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Drag & drop an audio file here, or click to select",
+      "translated": "Аудио файлды осы жерге апарыңыз немесе таңдау үшін басыңыз",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Description of the audio",
+      "translated": "Дыбыс сипаттамасы",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/AudioInsertDialog.tsx",
+      "original": "Caption (optional)",
+      "translated": "Тақырып (міндетті емес)",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/ImageInsertDialog.tsx",
+      "original": "Upload failed",
+      "translated": "Жүктеу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/ImageInsertDialog.tsx",
+      "original": "Upload failed",
+      "translated": "Жүктеу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/ImageInsertDialog.tsx",
+      "original": "Drop the image here...",
+      "translated": "Суретті осы жерге тастаңыз ...",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/ImageInsertDialog.tsx",
+      "original": "Drag & drop an image here, or click to select",
+      "translated": "Суретті осы жерге апарыңыз немесе тастаңыз немесе таңдау үшін басыңыз",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/ImageInsertDialog.tsx",
+      "original": "Description of the image",
+      "translated": "Суреттің сипаттамасы",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Processing file:",
+      "translated": "Файл:",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Failed to load files:",
+      "translated": "Файлдарды жүктеу сәтсіз аяқталды:",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "No authentication token",
+      "translated": "Аутентификация таңбалауышы жоқ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "No authentication token",
+      "translated": "Аутентификация таңбалауышы жоқ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ")\n      // Replace multiple spaces with single space, then convert spaces to hyphens\n      .replace(/\\s+/g,",
+      "translated": ")\n      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ");\n    }\n\n    // For now, we'll create the folder structure locally\n    // When files are uploaded to this folder, the folder will be created on the server\n    const newStructure = { ...folderStructure };\n    newStructure[folderPath] = { files: [], subfolders: [] };\n\n    // Update parent folder's subfolders\n    if (currentPath) {\n      if (!newStructure[currentPath]) {\n        newStructure[currentPath] = { files: [], subfolders: [] };\n      }\n      if (!newStructure[currentPath].subfolders.includes(sanitizedName)) {\n        newStructure[currentPath].subfolders.push(sanitizedName);\n      }\n    } else {\n      if (!newStructure[",
+      "translated": ");\n    ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "].subfolders.push(sanitizedName);\n      }\n    }\n\n    setFolderStructure(newStructure);\n    return sanitizedName;\n  };\n\n  // Handle folder creation\n  const handleCreateFolder = async () => {\n    if (!newFolderName.trim()) return;\n\n    setCreatingFolder(true);\n    try {\n      await createFolder(newFolderName);\n      setUploadStatus(`Folder",
+      "translated": "] .SubFolders.Push (санитарлық жасөспірімдер);\n      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ", error);\n      const errorMessage =\n        error instanceof Error ? error.message :",
+      "translated": ", қате);\n      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "}];\n\n    parts.forEach((part, index) => {\n      const path = parts.slice(0, index + 1).join(",
+      "translated": "}]];\n\n    ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">\n                      {searchTerm\n                        ? `Нет файлов, соответствующих",
+      "translated": ">\n                      {ІздеушіM\n                        ? `Сәйкес файлдар жоқ",
+      "language": "ru"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ",\n                                  file.url\n                                );\n                                // Fallback to icon if image fails to load\n                                const target = e.target as HTMLImageElement;\n                                target.style.display =",
+      "translated": ",\n                                  ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">Failed to load<br/><small class=",
+      "translated": "> Жүктеу сәтсіз аяқталды <br/> <кішкентай сынып =",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">\n                  <strong>Upload location:</strong> /{currentPath ||",
+      "translated": ">\n                  ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">\n                      {isDragActive\n                        ?",
+      "translated": ">\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">\n                      Supports: {acceptedTypes.join(",
+      "translated": ">\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": ">\n                      Files with duplicate names will be automatically renamed\n                      (e.g.,",
+      "translated": ">\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Failed to load",
+      "translated": "Жүктеу сәтсіз аяқталды",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Upload location:",
+      "translated": "Орналасқан жері:",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Navigate to different folders above to change upload location",
+      "translated": "Жүктеу орнын өзгерту үшін жоғарыдағы әр түрлі қалталар тармағына өтіңіз",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "Files with duplicate names will be automatically renamed\n                      (e.g., \"image (2).jpg\")",
+      "translated": "Қайталанатын атаулары бар файлдар автоматты түрде өзгертіледі\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/MediaBrowser.tsx",
+      "original": "✓ International characters supported: русский, қазақ,\n                      العربية, 中文",
+      "translated": "✓ Халықаралық кейіпкерлер қолдау көрсетілді: русский, қазақ,\n                      ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/NotionEditor.tsx",
+      "original": "Error converting markdown to HTML:",
+      "translated": "Нысананы HTML-ге түрлендіру кезінде қате пайда болды:",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/NotionEditor.tsx",
+      "original": "Error converting HTML to markdown:",
+      "translated": "HTML-ді түзетуге түрлендіру қатесі:",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/NotionEditor.tsx",
+      "original": ";\n  },\n});\n\n// Add rule to handle tables as markdown\n// This will convert HTML tables to markdown tables\n// Handles <table>, <thead>, <tbody>, <tr>, <th>, <td>\nturndownService.addRule(\"tables\", {\n  filter: function (node) {\n    return node.nodeName === \"TABLE\";\n  },\n  replacement: function (content, node) {\n    let markdown = \"\";\n    const table = node as HTMLTableElement;\n    const rows = Array.from(table.querySelectorAll(\"tr\"));\n    if (rows.length === 0) return \"\\n\";\n    // Header row\n    const headerCells = rows[0].querySelectorAll(\"th,td\");\n    markdown +=\n      \"|\" +\n      Array.from(headerCells)\n        .map((cell) =>",
+      "translated": ";\n  ",
+      "language": "en"
+    },
+    {
+      "file": "components/editors/NotionEditor.tsx",
+      "original": ")\n        .join(\"|\") +\n      \"|\\n\";\n    // Separator\n    markdown +=\n      \"|\" +\n      Array.from(headerCells)\n        .map(() => \"------\")\n        .join(\"|\") +\n      \"|\\n\";\n    // Data rows\n    for (let i = 1; i < rows.length; i++) {\n      const cells = rows[i].querySelectorAll(\"td,th\");\n      markdown +=\n        \"|\" +\n        Array.from(cells)\n          .map((cell) =>",
+      "translated": ")\n        ",
+      "language": "en"
+    },
+    {
+      "file": "components/section-cards.tsx",
+      "original": "Down 20% this period",
+      "translated": "Бұл кезеңнің 20% төмен",
+      "language": "en"
+    },
+    {
+      "file": "components/section-cards.tsx",
+      "original": "Active Accounts",
+      "translated": "Белсенді шоттар",
+      "language": "en"
+    },
+    {
+      "file": "components/section-cards.tsx",
+      "original": "Meets growth projections",
+      "translated": "Өсу болжамдарына сәйкес келеді",
+      "language": "en"
+    },
+    {
+      "file": "components/tables/PlacementTestsTable.tsx",
+      "original": "Row clicked for placement test:",
+      "translated": "Орналастыру тестіне арналған жолды шертіңіз:",
+      "language": "en"
+    },
+    {
+      "file": "components/tables/TestsTable.tsx",
+      "original": "Row clicked for test:",
+      "translated": "Тест үшін жолды шертіңіз:",
+      "language": "en"
+    },
+    {
+      "file": "components/ui/alert.tsx",
+      "original": "));\nAlert.displayName = \"Alert\";\n\nconst AlertTitle = React.forwardRef",
+      "translated": "));\n",
+      "language": "en"
+    },
+    {
+      "file": "components/ui/chart.tsx",
+      "original": "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
+      "translated": "[&> svg]: мәтінді өшірілген FLEX W-TOLL W-Tulle xlak-with икемді-2 [&> svg]: H-2.5 [&> svg]: w-2.5",
+      "language": "en"
+    },
+    {
+      "file": "components/ui/input.tsx",
+      "original": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+      "translated": "Сурет: Мәтінді алдыңғы қатарлы толтырғыш: Мәтінді өшіру: БГ-Бастапқы таңдау: мәтін-бастауыш ",
+      "language": "en"
+    }
+  ]
+}

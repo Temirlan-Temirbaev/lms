@@ -22,8 +22,9 @@ app.use(express.urlencoded({ extended: true, charset: 'utf8' }));
 app.use(
   cors({
     origin: [
-      "http://localhost:3000", // Next.js
+      "http://localhost:3001", // Next.js
       "http://localhost:19006", // Expo/React Native web
+      // "http://localhost:8081", // Mobile app
     ],
     credentials: true,
   },
@@ -72,4 +73,4 @@ mongoose
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);
-  }); 
+  });
