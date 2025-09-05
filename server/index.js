@@ -22,10 +22,13 @@ app.use(express.urlencoded({ extended: true, charset: 'utf8' }));
 app.use(
   cors({
     origin: [
-      "http://localhost:3001", // Next.js
+      "http://localhost:3000", // Next.js
       "http://localhost:19006", // Expo/React Native web
       "https://admin.qazaqshapp.kz", // Production admin
       "https://qazaqshapp.kz", // Production API
+      "http://10.127.123.232",
+      "http://10.127.123.232:3000", // Your local IP for admin
+      "http://10.127.123.232:19006", // Your local IP for mobile
     ],
     credentials: true,
   },
