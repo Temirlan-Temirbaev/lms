@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconBook, IconFolder, IconUsers } from "@tabler/icons-react";
+import { IconBook, IconFolder, IconUsers, IconClipboardList } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
 import {
@@ -31,6 +31,11 @@ const data = {
       title: "Пользователи",
       url: "/users",
       icon: IconUsers,
+    },
+    {
+      title: "Бастапқы тест",
+      url: "/placement-tests",
+      icon: IconClipboardList,
     },
     {
       title: "Файлы",
