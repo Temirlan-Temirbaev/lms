@@ -56,15 +56,15 @@ export default function CoursesPage() {
   const [editOpen, setEditOpen] = useState(false);
 
   const courseColumns: ColumnDef<Course>[] = [
-    { accessorKey: "title", header: "Название" },
-    { accessorKey: "level", header: "Уровень" },
+    { accessorKey: "title", header: "Атауы" },
+    { accessorKey: "level", header: "Деңгей" },
     createActionsColumn<Course>((course) => [
       {
-        label: "Редактировать",
+        label: "Өңдеу",
         onClick: () => handleEditCourse(course),
       },
       {
-        label: "Удалить",
+        label: "Жою",
         onClick: () => handleDeleteCourse(course._id),
         isDanger: true,
         separator: true,
@@ -84,9 +84,9 @@ export default function CoursesPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setCourses(data.data);
-        else setError(data.message || "Не удалось загрузить курсы");
+        else setError(data.message || "Курстарды жүктеу мүмкін болмады");
       })
-      .catch(() => setError("Не удалось загрузить курсы"))
+      .catch(() => setError("Курстарды жүктеу мүмкін болмады"))
       .finally(() => setLoading(false));
   }, [isAuthenticated, token]);
 
@@ -101,7 +101,7 @@ export default function CoursesPage() {
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Вы уверены, что хотите удалить этот курс?")) return;
+    if (!confirm("Бұл курсты жоюға сенімдісіз бе?")) return;
 
     try {
       const res = await fetch(
@@ -117,10 +117,10 @@ export default function CoursesPage() {
       if (res.ok) {
         setCourses((prev) => prev.filter((c) => c._id !== courseId));
       } else {
-        alert("Не удалось удалить курс");
+        alert("Курсты жою мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при удалении курса");
+      alert("Курсты жою кезінде қате");
     }
   };
 
@@ -151,10 +151,10 @@ export default function CoursesPage() {
         setEditingCourse(null);
         setForm({ title: "", level: "A1", description: "" });
       } else {
-        setFormError(data.message || "Не удалось обновить курс");
+        setFormError(data.message || "Курсты жаңарту мүмкін болмады");
       }
     } catch (error) {
-      setFormError("Ошибка при обновлении курса");
+      setFormError("Курсты жаңарту кезінде қате");
     } finally {
       setCreating(false);
     }
@@ -189,14 +189,14 @@ export default function CoursesPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Курсы</h1>
+            <h1 className="text-2xl font-bold">Курстар</h1>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setOpen(true)}>+ Новый курс</Button>
+                <Button onClick={() => setOpen(true)}>+ Жаңа курс</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Создать курс</DialogTitle>
+                  <DialogTitle>Курс жасау</DialogTitle>
                 </DialogHeader>
                 <form
                   onSubmit={async (e) => {
@@ -218,8 +218,8 @@ export default function CoursesPage() {
                       const data = await res.json();
                       if (!res.ok)
                         throw new Error(
-                          data.message || "Не удалось создать курс"
-                        );
+                        data.message || "Курс жасау мүмкін болмады"
+                      );
                       setOpen(false);
                       setForm({ title: "", level: "A1", description: "" });
                       // Refresh courses
@@ -233,10 +233,10 @@ export default function CoursesPage() {
                   className="flex flex-col gap-4"
                 >
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="course-title">Название</Label>
+                    <Label htmlFor="course-title">Атауы</Label>
                     <Input
                       id="course-title"
-                      placeholder="Название"
+                      placeholder="Атауы"
                       value={form.title}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, title: e.target.value }))
@@ -245,7 +245,7 @@ export default function CoursesPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="course-level">Уровень</Label>
+                    <Label htmlFor="course-level">Деңгей</Label>
                     <Select
                       value={form.level}
                       onValueChange={(level) =>
@@ -253,7 +253,7 @@ export default function CoursesPage() {
                       }
                     >
                       <SelectTrigger id="course-level">
-                        <SelectValue placeholder="Уровень" />
+                        <SelectValue placeholder="Деңгей" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A1">A1</SelectItem>
@@ -266,10 +266,10 @@ export default function CoursesPage() {
                     </Select>
                   </div>
                   <div className="flex-col gap-1 hidden">
-                    <Label htmlFor="course-description">Описание</Label>
+                    <Label htmlFor="course-description">Сипаттама</Label>
                     <Textarea
                       id="course-description"
-                      placeholder="Описание"
+                      placeholder="Сипаттама"
                       value={form.description}
                       onChange={(e: any) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
@@ -281,7 +281,7 @@ export default function CoursesPage() {
                   )}
                   <DialogFooter>
                     <Button type="submit" disabled={creating}>
-                      {creating ? "Создание..." : "Создать"}
+                      {creating ? "Жасалуда..." : "Жасау"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -290,17 +290,17 @@ export default function CoursesPage() {
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Редактировать курс</DialogTitle>
+                  <DialogTitle>Курсты өңдеу</DialogTitle>
                 </DialogHeader>
                 <form
                   onSubmit={handleUpdateCourse}
                   className="flex flex-col gap-4"
                 >
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="edit-course-title">Название</Label>
+                    <Label htmlFor="edit-course-title">Атауы</Label>
                     <Input
                       id="edit-course-title"
-                      placeholder="Название"
+                      placeholder="Атауы"
                       value={form.title}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, title: e.target.value }))
@@ -309,7 +309,7 @@ export default function CoursesPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="edit-course-level">Уровень</Label>
+                    <Label htmlFor="edit-course-level">Деңгей</Label>
                     <Select
                       value={form.level}
                       onValueChange={(level) =>
@@ -317,7 +317,7 @@ export default function CoursesPage() {
                       }
                     >
                       <SelectTrigger id="edit-course-level">
-                        <SelectValue placeholder="Уровень" />
+                        <SelectValue placeholder="Деңгей" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A1">A1</SelectItem>
@@ -330,10 +330,10 @@ export default function CoursesPage() {
                     </Select>
                   </div>
                   <div className="flex-col gap-1 hidden">
-                    <Label htmlFor="edit-course-description">Описание</Label>
+                    <Label htmlFor="edit-course-description">Сипаттама</Label>
                     <Textarea
                       id="edit-course-description"
-                      placeholder="Описание"
+                      placeholder="Сипаттама"
                       value={form.description}
                       onChange={(e: any) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
@@ -345,7 +345,7 @@ export default function CoursesPage() {
                   )}
                   <DialogFooter>
                     <Button type="submit" disabled={creating}>
-                      {creating ? "Обновление..." : "Обновить"}
+                      {creating ? "Жаңартылуда..." : "Жаңарту"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -353,7 +353,7 @@ export default function CoursesPage() {
             </Dialog>
           </div>
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : (

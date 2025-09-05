@@ -132,7 +132,7 @@ export default function CourseDetailPage() {
         const testsData = await testsRes.json();
         if (testsData.success) setTests(testsData.data);
       } catch (err) {
-        setError("Не удалось загрузить данные курса");
+        setError("Курс деректерін жүктеу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -142,7 +142,7 @@ export default function CourseDetailPage() {
   }, [isAuthenticated, token, courseId]);
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Вы уверены, что хотите удалить этот урок?")) return;
+    if (!confirm("Бұл сабақты жоюға сенімдісіз бе?")) return;
 
     try {
       const res = await fetch(
@@ -161,10 +161,10 @@ export default function CourseDetailPage() {
         // Remove lesson from local state
         setLessons((prev) => prev.filter((lesson) => lesson._id !== lessonId));
       } else {
-        alert(data.message || "Не удалось удалить урок");
+        alert(data.message || "Сабақты жою мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при удалении урока");
+      alert("Сабақты жою кезінде қате");
     }
   };
 
@@ -192,17 +192,17 @@ export default function CourseDetailPage() {
         setLessonDialogOpen(false);
         setLessonForm({ title: "", content: "", order: 1 });
       } else {
-        alert(data.message || "Не удалось создать урок");
+        alert(data.message || "Сабақ жасау мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при создании урока");
+      alert("Сабақ жасау кезінде қате");
     } finally {
       setCreatingLesson(false);
     }
   };
 
   const handleDeleteTest = async (testId: string) => {
-    if (!confirm("Вы уверены, что хотите удалить этот тест?")) return;
+    if (!confirm("Бұл тестті жоюға сенімдісіз бе?")) return;
 
     try {
       const res = await fetch(
@@ -221,10 +221,10 @@ export default function CourseDetailPage() {
         // Remove test from local state
         setTests((prev) => prev.filter((test) => test._id !== testId));
       } else {
-        alert(data.message || "Не удалось удалить тест");
+        alert(data.message || "Тестті жою мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при удалении теста");
+      alert("Тестті жою кезінде қате");
     }
   };
 
@@ -260,10 +260,10 @@ export default function CourseDetailPage() {
           isFinal: false,
         });
       } else {
-        alert(data.message || "Не удалось создать тест");
+        alert(data.message || "Тест жасау мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при создании теста");
+      alert("Тест жасау кезінде қате");
     } finally {
       setCreatingTest(false);
     }
@@ -292,19 +292,19 @@ export default function CourseDetailPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к курсам
+              Курстарға қайту
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : course ? (
             <div>
               <div className="mb-6">
                 <h1 className="text-2xl font-bold">{course.title}</h1>
-                <p className="text-muted-foreground">Level: {course.level}</p>
+                <p className="text-muted-foreground">Деңгей: {course.level}</p>
               </div>{" "}
               <Tabs
                 value={activeTab}
@@ -314,10 +314,10 @@ export default function CourseDetailPage() {
                 <div className="flex justify-between items-center mb-4">
                   <TabsList>
                     <TabsTrigger value="lessons">
-                      Уроки ({lessons.length})
+                      Сабақтар ({lessons.length})
                     </TabsTrigger>
                     <TabsTrigger value="tests">
-                      Тесты ({tests.length})
+                      Тесттер ({tests.length})
                     </TabsTrigger>
                   </TabsList>
 
@@ -328,21 +328,21 @@ export default function CourseDetailPage() {
                         onOpenChange={setLessonDialogOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button>+ Новый урок</Button>
+                          <Button>+ Жаңа сабақ</Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Создать новый урок</DialogTitle>
+                            <DialogTitle>Жаңа сабақ жасау</DialogTitle>
                           </DialogHeader>
                           <form
                             onSubmit={handleCreateLesson}
                             className="flex flex-col gap-4"
                           >
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="lesson-title">Title</Label>
+                              <Label htmlFor="lesson-title">Атауы</Label>
                               <Input
                                 id="lesson-title"
-                                placeholder="Название урока"
+                                placeholder="Сабақ атауы"
                                 value={lessonForm.title}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -354,11 +354,11 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="lesson-order">Порядок</Label>
+                              <Label htmlFor="lesson-order">Реті</Label>
                               <Input
                                 id="lesson-order"
                                 type="number"
-                                placeholder="Порядок"
+                                placeholder="Реті"
                                 value={lessonForm.order}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -371,11 +371,11 @@ export default function CourseDetailPage() {
                             </div>
                             <div className="flex flex-col gap-1">
                               <Label htmlFor="lesson-content">
-                                Содержание (Markdown)
+                                Мазмұны (Markdown)
                               </Label>
                               <Textarea
                                 id="lesson-content"
-                                placeholder="Содержание урока в формате markdown"
+                                placeholder="Сабақ мазмұны markdown форматында"
                                 value={lessonForm.content}
                                 onChange={(e) =>
                                   setLessonForm((f) => ({
@@ -390,8 +390,8 @@ export default function CourseDetailPage() {
                             <DialogFooter>
                               <Button type="submit" disabled={creatingLesson}>
                                 {creatingLesson
-                                  ? "Создание..."
-                                  : "Создать урок"}
+                                  ? "Жасалуда..."
+                                  : "Сабақ жасау"}
                               </Button>
                             </DialogFooter>
                           </form>
@@ -405,21 +405,21 @@ export default function CourseDetailPage() {
                         onOpenChange={setTestDialogOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button>+ Новый тест</Button>
+                          <Button>+ Жаңа тест</Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Создать новый тест</DialogTitle>
+                            <DialogTitle>Жаңа тест жасау</DialogTitle>
                           </DialogHeader>
                           <form
                             onSubmit={handleCreateTest}
                             className="flex flex-col gap-4"
                           >
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-title">Название</Label>
+                              <Label htmlFor="test-title">Атауы</Label>
                               <Input
                                 id="test-title"
-                                placeholder="Название теста"
+                                placeholder="Тест атауы"
                                 value={testForm.title}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -431,11 +431,11 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-order">Порядок</Label>
+                              <Label htmlFor="test-order">Реті</Label>
                               <Input
                                 id="test-order"
                                 type="number"
-                                placeholder="Порядок"
+                                placeholder="Реті"
                                 value={testForm.order}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -447,10 +447,10 @@ export default function CourseDetailPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <Label htmlFor="test-description">Описание</Label>
+                              <Label htmlFor="test-description">Сипаттама</Label>
                               <Textarea
                                 id="test-description"
-                                placeholder="Описание теста"
+                                placeholder="Тест сипаттамасы"
                                 value={testForm.description}
                                 onChange={(e) =>
                                   setTestForm((f) => ({
@@ -464,7 +464,7 @@ export default function CourseDetailPage() {
                             <div className="grid grid-cols-2 gap-4">
                               <div className="flex flex-col gap-1">
                                 <Label htmlFor="test-passing-score">
-                                  Проходной балл (%)
+                                  Өту балы (%)
                                 </Label>
                                 <Input
                                   id="test-passing-score"
@@ -484,7 +484,7 @@ export default function CourseDetailPage() {
                               </div>
                               <div className="flex flex-col gap-1">
                                 <Label htmlFor="test-time-limit">
-                                  Ограничение времени (минуты)
+                                  Уақыт шектеуі (минут)
                                 </Label>
                                 <Input
                                   id="test-time-limit"
@@ -515,12 +515,12 @@ export default function CourseDetailPage() {
                                 }
                               />
                               <Label htmlFor="test-is-final">
-                                Это финальный тест (открывает следующий уровень)
+                                Бұл соңғы тест (келесі деңгейді ашады)
                               </Label>
                             </div>
                             <DialogFooter>
                               <Button type="submit" disabled={creatingTest}>
-                                {creatingTest ? "Создание..." : "Создать тест"}
+                                {creatingTest ? "Жасалуда..." : "Тест жасау"}
                               </Button>
                             </DialogFooter>
                           </form>
@@ -549,7 +549,7 @@ export default function CourseDetailPage() {
               </Tabs>
             </div>
           ) : (
-            <div>Курс не найден</div>
+            <div>Курс табылмады</div>
           )}
         </div>
       </SidebarInset>

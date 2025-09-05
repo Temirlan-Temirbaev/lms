@@ -14,6 +14,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Edit3, Eye, Plus, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+// Question type translations
+const questionTypeTranslations: Record<string, string> = {
+  "multiple-choice": "Көп таңдау",
+  "matching": "Сәйкестендіру",
+  "ordering": "Реттеу",
+  "fill-in-blanks": "Бос орындарды толтыру",
+  "input": "Мәтін енгізу",
+  "categories": "Санаттар",
+};
+
 interface Course {
   _id: string;
   title: string;
@@ -102,7 +112,7 @@ export default function TestDetailPage() {
           });
         }
       } catch {
-        setError("Не удалось получить данные теста");
+        setError("Тест деректерін алу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -130,10 +140,10 @@ export default function TestDetailPage() {
         setTest(data.data);
         setIsEditing(false);
       } else {
-        alert(data.message || "Не удалось обновить тест");
+        alert(data.message || "Тестті жаңарту мүмкін болмады");
       }
     } catch {
-      alert("Ошибка при обновлении теста");
+      alert("Тестті жаңарту кезінде қате");
     } finally {
       setSaving(false);
     }
@@ -180,12 +190,12 @@ export default function TestDetailPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к курсу
+              Курсқа оралу
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : test && course ? (
@@ -195,16 +205,16 @@ export default function TestDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold">{test.title}</h1>
                   <p className="text-muted-foreground mt-1">
-                    Курс: {course?.title || "Неизвестно"} • Порядок:{" "}
-                    {test?.order || "Н/Д"}
+                    Курс: {course?.title || "Белгісіз"} • Реті:{" "}
+                    {test?.order || "Белгісіз"}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="secondary">Тест {test.order}</Badge>
                     <Badge variant="outline">
-                      {course?.level || "Неизвестно"}
+                      {course?.level || "Белгісіз"}
                     </Badge>
                     <Badge variant="outline">
-                      {test.questions?.length || 0} Вопросов
+                      {test.questions?.length || 0} Сұрақ
                     </Badge>
                   </div>
                 </div>
@@ -215,7 +225,7 @@ export default function TestDetailPage() {
                     className="flex items-center gap-2"
                   >
                     <Settings className="h-4 w-4" />
-                    Управление вопросами
+                    Сұрақтарды басқару
                   </Button>
                   {!isEditing ? (
                     <Button
@@ -223,7 +233,7 @@ export default function TestDetailPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Редактировать тест
+                      Тестті өңдеу
                     </Button>
                   ) : (
                     <>
@@ -232,7 +242,7 @@ export default function TestDetailPage() {
                         onClick={handleCancel}
                         disabled={saving}
                       >
-                        Отмена
+                        Болдырмау
                       </Button>
                       <Button
                         onClick={handleSave}
@@ -240,7 +250,7 @@ export default function TestDetailPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saving ? "Сохранение..." : "Сохранить изменения"}
+                        {saving ? "Сақталуда..." : "Өзгерістерді сақтау"}
                       </Button>
                     </>
                   )}
@@ -251,23 +261,23 @@ export default function TestDetailPage() {
               {isEditing ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Редактировать тест</CardTitle>
+                    <CardTitle>Тестті өңдеу</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Название</Label>
+                        <Label htmlFor="title">Атауы</Label>
                         <Input
                           id="title"
                           value={editForm.title}
                           onChange={(e) =>
                             setEditForm({ ...editForm, title: e.target.value })
                           }
-                          placeholder="Название теста"
+                          placeholder="Тест атауы"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="order">Порядок</Label>
+                        <Label htmlFor="order">Реті</Label>
                         <Input
                           id="order"
                           type="number"
@@ -278,12 +288,12 @@ export default function TestDetailPage() {
                               order: parseInt(e.target.value),
                             })
                           }
-                          placeholder="Порядок"
+                          placeholder="Реттік нөмір"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Описание</Label>
+                      <Label htmlFor="description">Сипаттама</Label>
                       <Textarea
                         id="description"
                         value={editForm.description}
@@ -293,14 +303,14 @@ export default function TestDetailPage() {
                             description: e.target.value,
                           })
                         }
-                        placeholder="Описание теста"
+                        placeholder="Тест сипаттамасы"
                         rows={6}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="passing-score">
-                          Проходной балл (%)
+                          Өту балы (%)
                         </Label>
                         <Input
                           id="passing-score"
@@ -319,7 +329,7 @@ export default function TestDetailPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="time-limit">
-                          Ограничение времени (минуты)
+                          Уақыт шектеуі (минут)
                         </Label>
                         <Input
                           id="time-limit"
@@ -349,7 +359,7 @@ export default function TestDetailPage() {
                         }
                       />
                       <Label htmlFor="is-final">
-                        Это финальный тест (открывает следующий уровень)
+                        Бұл қорытынды тест (келесі деңгейді ашады)
                       </Label>
                     </div>
                   </CardContent>
@@ -362,7 +372,7 @@ export default function TestDetailPage() {
                       <CardHeader>
                         <CardTitle className="flex items-center">
                           <Eye className="h-5 w-5 mr-2" />
-                          Описание теста
+                          Тест сипаттамасы
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -372,7 +382,7 @@ export default function TestDetailPage() {
                           </div>
                         ) : (
                           <p className="text-muted-foreground italic">
-                            Описание недоступно
+                            Сипаттама қолжетімсіз
                           </p>
                         )}
                       </CardContent>
@@ -381,14 +391,14 @@ export default function TestDetailPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
-                          <span>Вопросы ({test.questions?.length || 0})</span>
+                          <span>Сұрақтар ({test.questions?.length || 0})</span>
                           <Button
                             size="sm"
                             onClick={handleManageQuestions}
                             className="flex items-center gap-2"
                           >
                             <Plus className="h-4 w-4" />
-                            Добавить вопросы
+                            Сұрақтар қосу
                           </Button>
                         </CardTitle>
                       </CardHeader>
@@ -402,20 +412,20 @@ export default function TestDetailPage() {
                               >
                                 <div className="flex justify-between items-start mb-2">
                                   <p className="font-medium">
-                                    Вопрос {index + 1}
+                                    Сұрақ {index + 1}
                                   </p>
                                   <Badge variant="outline" className="text-xs">
-                                    {question.type}
+                                    {questionTypeTranslations[question.type] || question.type}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground truncate">
                                   {typeof question.question === "string"
                                     ? question.question
-                                    : "Текст вопроса отсутствует"}
+                                    : "Сұрақ мәтіні жоқ"}
                                 </p>
                                 {question.points && (
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    {question.points} баллов
+                                    {question.points} ұпай
                                   </p>
                                 )}
                               </div>
@@ -424,10 +434,10 @@ export default function TestDetailPage() {
                         ) : (
                           <div className="text-center py-8">
                             <p className="text-muted-foreground mb-4">
-                              Вопросы еще не добавлены
+                              Сұрақтар әлі қосылмаған
                             </p>
                             <Button onClick={handleManageQuestions}>
-                              Добавить первый вопрос
+                              Алғашқы сұрақты қосу
                             </Button>
                           </div>
                         )}
@@ -439,12 +449,12 @@ export default function TestDetailPage() {
                   <div className="lg:col-span-1">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Детали теста</CardTitle>
+                        <CardTitle>Тест мәліметтері</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            ID теста
+                            Тест ID
                           </Label>
                           <p className="text-sm font-mono break-all">
                             {test._id}
@@ -453,25 +463,25 @@ export default function TestDetailPage() {
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            ID курса
+                            Курс ID
                           </Label>
                           <p className="text-sm font-mono break-all">
                             {typeof test.course === "string"
                               ? test.course
-                              : test.course?._id || "Неизвестно"}
+                              : test.course?._id || "Белгісіз"}
                           </p>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Порядок
+                            Реті
                           </Label>
                           <Badge variant="secondary">{test.order}</Badge>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Всего вопросов
+                            Барлық сұрақтар
                           </Label>
                           <Badge variant="outline">
                             {test.questions?.length || 0}
@@ -480,7 +490,7 @@ export default function TestDetailPage() {
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Проходной балл
+                            Өту балы
                           </Label>
                           <Badge variant="secondary">
                             {test.passingScore}%
@@ -489,7 +499,7 @@ export default function TestDetailPage() {
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">
-                            Ограничение времени
+                            Уақыт шектеуі
                           </Label>
                           <Badge variant="outline">{test.timeLimit} мин</Badge>
                         </div>
@@ -497,16 +507,16 @@ export default function TestDetailPage() {
                         {test.isFinal && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">
-                              Тип теста
+                              Тест түрі
                             </Label>
-                            <Badge variant="destructive">Финальный тест</Badge>
+                            <Badge variant="destructive">Қорытынды тест</Badge>
                           </div>
                         )}
 
                         {test.createdAt && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">
-                              Создано
+                              Жасалған күні
                             </Label>
                             <p className="text-sm">
                               {new Date(test.createdAt).toLocaleDateString()}
@@ -517,7 +527,7 @@ export default function TestDetailPage() {
                         {test.updatedAt && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">
-                              Последнее обновление
+                              Соңғы жаңарту
                             </Label>
                             <p className="text-sm">
                               {new Date(test.updatedAt).toLocaleDateString()}
@@ -531,7 +541,7 @@ export default function TestDetailPage() {
               )}
             </div>
           ) : (
-            <div>Тест не найден</div>
+            <div>Тест табылмады</div>
           )}
         </div>
       </SidebarInset>

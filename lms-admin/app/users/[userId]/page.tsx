@@ -119,7 +119,7 @@ export default function UserDetailPage() {
           });
         }
       } catch (err) {
-        setError("Не удалось получить данные пользователя");
+        setError("Пайдаланушы деректерін алу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -156,7 +156,7 @@ export default function UserDetailPage() {
       const lessons = await Promise.all(lessonPromises);
       setLessonDetails(lessons.filter((lesson) => lesson !== null));
     } catch (err) {
-      console.error("Не удалось получить детали уроков:", err);
+      console.error("Сабақ мәліметтерін алу мүмкін болмады:", err);
     } finally {
       setLoadingDetails(false);
     }
@@ -190,7 +190,7 @@ export default function UserDetailPage() {
       const tests = await Promise.all(testPromises);
       setTestDetails(tests.filter((test) => test !== null));
     } catch (err) {
-      console.error("Не удалось получить детали тестов:", err);
+      console.error("Тест мәліметтерін алу мүмкін болмады:", err);
     } finally {
       setLoadingDetails(false);
     }
@@ -229,10 +229,10 @@ export default function UserDetailPage() {
         setUser(data.data);
         setIsEditing(false);
       } else {
-        alert(data.message || "Не удалось обновить пользователя");
+        alert(data.message || "Пайдаланушыны жаңарту мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при обновлении пользователя");
+      alert("Пайдаланушыны жаңарту кезінде қате");
     } finally {
       setSaving(false);
     }
@@ -276,12 +276,12 @@ export default function UserDetailPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к пользователям
+              Пайдаланушыларға оралу
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : user ? (
@@ -310,8 +310,8 @@ export default function UserDetailPage() {
                       }
                     >
                       {user.progress?.placementTestTaken
-                        ? "Тест определения уровня пройден"
-                        : "Тест определения уровня не пройден"}
+                        ? "Деңгей анықтау тесті өтілген"
+                        : "Деңгей анықтау тесті өтілмеген"}
                     </Badge>
                   </div>
                 </div>
@@ -319,16 +319,16 @@ export default function UserDetailPage() {
                   {!isEditing ? (
                     <Button onClick={() => setIsEditing(true)}>
                       <Edit3 className="h-4 w-4 mr-2" />
-                      Редактировать пользователя
+                      Пайдаланушыны өңдеу
                     </Button>
                   ) : (
                     <div className="flex gap-2">
                       <Button onClick={handleCancel} variant="outline">
-                        Отмена
+                        Болдырмау
                       </Button>
                       <Button onClick={handleSave} disabled={saving}>
                         <Save className="h-4 w-4 mr-2" />
-                        {saving ? "Сохранение..." : "Сохранить изменения"}
+                        {saving ? "Сақталуда..." : "Өзгерістерді сақтау"}
                       </Button>
                     </div>
                   )}
@@ -342,7 +342,7 @@ export default function UserDetailPage() {
                     <div className="flex items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-600">
-                          Завершенные уроки
+                          Аяқталған сабақтар
                         </p>
                         <p className="text-2xl font-bold">
                           {user.progress?.completedLessons?.length || 0}
@@ -356,7 +356,7 @@ export default function UserDetailPage() {
                     <div className="flex items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-600">
-                          Завершенные тесты
+                          Аяқталған тесттер
                         </p>
                         <p className="text-2xl font-bold">
                           {user.progress?.completedTests?.length || 0}
@@ -370,7 +370,7 @@ export default function UserDetailPage() {
                     <div className="flex items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-600">
-                          Средний балл
+                          Орташа ұпай
                         </p>
                         <p className="text-2xl font-bold">
                           {user.progress?.completedTests?.length > 0
@@ -392,7 +392,7 @@ export default function UserDetailPage() {
                     <div className="flex items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-600">
-                          Текущий уровень
+                          Ағымдағы деңгей
                         </p>
                         <p className="text-2xl font-bold">
                           {user.progress?.currentLevel || "A1"}
@@ -408,7 +408,7 @@ export default function UserDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
-                    Информация о пользователе
+                    Пайдаланушы туралы ақпарат
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -416,7 +416,7 @@ export default function UserDetailPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="name">Имя</Label>
+                          <Label htmlFor="name">Аты</Label>
                           <Input
                             id="name"
                             value={editForm.name}
@@ -426,7 +426,7 @@ export default function UserDetailPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="email">Email</Label>
+                          <Label htmlFor="email">Электрондық пошта</Label>
                           <Input
                             id="email"
                             type="email"
@@ -455,7 +455,7 @@ export default function UserDetailPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="age">Возраст</Label>
+                          <Label htmlFor="age">Жасы</Label>
                           <Input
                             id="age"
                             type="number"
@@ -473,7 +473,7 @@ export default function UserDetailPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="role">Роль</Label>
+                          <Label htmlFor="role">Рөлі</Label>
                           <Select
                             value={editForm.role}
                             onValueChange={(value) =>
@@ -481,18 +481,18 @@ export default function UserDetailPage() {
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите роль" />
+                              <SelectValue placeholder="Рөлді таңдаңыз" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="user">Пользователь</SelectItem>
+                              <SelectItem value="user">Пайдаланушы</SelectItem>
                               <SelectItem value="admin">
-                                Администратор
-                              </SelectItem>
+                          Әкімші
+                        </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="level">Текущий уровень</Label>
+                          <Label htmlFor="level">Ағымдағы деңгей</Label>
                           <Select
                             value={editForm.currentLevel}
                             onValueChange={(value) =>
@@ -500,7 +500,7 @@ export default function UserDetailPage() {
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите уровень" />
+                              <SelectValue placeholder="Деңгейді таңдаңыз" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="A1">A1</SelectItem>
@@ -513,7 +513,7 @@ export default function UserDetailPage() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="gender">Пол</Label>
+                          <Label htmlFor="gender">Жынысы</Label>
                           <Select
                             value={editForm.gender}
                             onValueChange={(value) =>
@@ -521,12 +521,12 @@ export default function UserDetailPage() {
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите пол" />
+                              <SelectValue placeholder="Жынысты таңдаңыз" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="male">Мужской</SelectItem>
-                              <SelectItem value="female">Женский</SelectItem>
-                              <SelectItem value="other">Другой</SelectItem>
+                              <SelectItem value="male">Ер</SelectItem>
+                        <SelectItem value="female">Әйел</SelectItem>
+                        <SelectItem value="other">Басқа</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -537,9 +537,9 @@ export default function UserDetailPage() {
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Имя
-                          </Label>
-                          <p className="text-lg">{user.name || "Не указано"}</p>
+                              Аты:
+                            </Label>
+                            <p className="text-lg">{user.name || "Көрсетілмеген"}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
@@ -552,64 +552,70 @@ export default function UserDetailPage() {
                             Телефон
                           </Label>
                           <p className="text-lg">
-                            {user.telephone || "Не указано"}
+                            {user.telephone || "Көрсетілмеген"}
                           </p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Возраст
-                          </Label>
-                          <p className="text-lg">{user.age || "Не указано"}</p>
+                      Жасы:
+                    </Label>
+                    <p className="text-lg">{user.age || "Көрсетілмеген"}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Роль
-                          </Label>
-                          <p className="text-lg">{user.role}</p>
+                              Рөлі:
+                            </Label>
+                            <p className="text-lg">{user.role}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Текущий уровень
-                          </Label>
+                              Ағымдағы деңгей:
+                            </Label>
                           <p className="text-lg">
                             {user.progress?.currentLevel || "A1"}
                           </p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Пол
+                            Жынысы
                           </Label>
                           <p className="text-lg">
-                            {user.gender || "Не указано"}
+                            {user.gender === "male"
+                              ? "Ер"
+                              : user.gender === "female"
+                              ? "Әйел"
+                              : user.gender === "other"
+                              ? "Басқа"
+                              : "Көрсетілмеген"}
                           </p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Тест определения уровня
+                            Деңгей анықтау тесті
                           </Label>
                           <p className="text-lg">
                             {user.progress?.placementTestTaken
-                              ? "Пройден"
-                              : "Не пройден"}
+                            ? "Өтілген"
+                            : "Өтілмеген"}
                           </p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Завершенные уроки
+                            Аяқталған сабақтар
                           </Label>
                           <p className="text-lg">
                             {user.progress?.completedLessons?.length || 0}{" "}
-                            уроков
+                            сабақ
                           </p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-500">
-                            Дата создания
+                            Тіркелген күні
                           </Label>
                           <p className="text-lg">
                             {user.createdAt
                               ? new Date(user.createdAt).toLocaleDateString()
-                              : "Н/Д"}
+                              : "Көрсетілмеген"}
                           </p>
                         </div>
                       </div>
@@ -638,7 +644,7 @@ export default function UserDetailPage() {
                       >
                         <CardTitle className="flex items-center gap-2">
                           <BookOpen className="h-5 w-5" />
-                          Completed Lessons (
+                          Аяқталған сабақтар (
                           {user.progress.completedLessons.length})
                         </CardTitle>
                         {showCompletedLessons ? (
@@ -654,19 +660,19 @@ export default function UserDetailPage() {
                           <div className="flex items-center justify-center py-8">
                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                             <span className="ml-2">
-                              Loading lesson details...
-                            </span>
+                  Сабақ мәліметтері жүктелуде...
+                </span>
                           </div>
                         ) : (
                           <div className="rounded-md border">
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Order</TableHead>
-                                  <TableHead>Title</TableHead>
-                                  <TableHead>Course</TableHead>
-                                  <TableHead>Content Preview</TableHead>
-                                  <TableHead>Lesson ID</TableHead>
+                                  <TableHead>Реті</TableHead>
+                                  <TableHead>Атауы</TableHead>
+                                  <TableHead>Курс</TableHead>
+                                  <TableHead>Мазмұн алдын ала қарау</TableHead>
+                                  <TableHead>Сабақ ID</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -683,12 +689,12 @@ export default function UserDetailPage() {
                                           </Badge>
                                         </TableCell>
                                         <TableCell className="font-medium">
-                                          {lesson.title || "Untitled Lesson"}
+                                          {lesson.title || "Атаусыз сабақ"}
                                         </TableCell>
                                         <TableCell>
                                           {typeof lesson.course === "object"
                                             ? lesson.course?.title
-                                            : "N/A"}
+                                            : "Жоқ"}
                                         </TableCell>
                                         <TableCell className="max-w-xs">
                                           <p className="truncate text-sm text-muted-foreground">
@@ -697,7 +703,7 @@ export default function UserDetailPage() {
                                                   0,
                                                   100
                                                 ) + "..."
-                                              : "No content"}
+                                              : "Мазмұн жоқ"}
                                           </p>
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
@@ -714,7 +720,7 @@ export default function UserDetailPage() {
                                       {user.progress.completedLessons.map(
                                         (lessonId, index) => (
                                           <div key={index} className="mb-2">
-                                            Lesson ID: {lessonId}
+                                            Сабақ ID: {lessonId}
                                           </div>
                                         )
                                       )}
@@ -747,7 +753,7 @@ export default function UserDetailPage() {
                       >
                         <CardTitle className="flex items-center gap-2">
                           <FileText className="h-5 w-5" />
-                          Completed Tests ({user.progress.completedTests.length}
+                          Аяқталған тесттер ({user.progress.completedTests.length}
                           )
                         </CardTitle>
                         {showCompletedTests ? (
@@ -763,7 +769,7 @@ export default function UserDetailPage() {
                           <div className="flex items-center justify-center py-8">
                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                             <span className="ml-2">
-                              Загрузка деталей теста...
+                              Тест мәліметтері жүктелуде...
                             </span>
                           </div>
                         ) : (
@@ -771,14 +777,14 @@ export default function UserDetailPage() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Порядок</TableHead>
-                                  <TableHead>Название теста</TableHead>
+                                  <TableHead>Реті</TableHead>
+                                  <TableHead>Тест атауы</TableHead>
                                   <TableHead>Курс</TableHead>
-                                  <TableHead>Баллы</TableHead>
-                                  <TableHead>Вопросы</TableHead>
-                                  <TableHead>Ограничение времени</TableHead>
-                                  <TableHead>Дата завершения</TableHead>
-                                  <TableHead>Тип теста</TableHead>
+                                  <TableHead>Ұпайлар</TableHead>
+                                  <TableHead>Сұрақтар</TableHead>
+                                  <TableHead>Уақыт шектеуі</TableHead>
+                                  <TableHead>Аяқталған күні</TableHead>
+                                  <TableHead>Тест түрі</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -793,16 +799,16 @@ export default function UserDetailPage() {
                                       <TableRow key={test._id || index}>
                                         <TableCell>
                                           <Badge variant="outline">
-                                            {test.order || "Н/Д"}
+                                            {test.order || "Белгісіз"}
                                           </Badge>
                                         </TableCell>
                                         <TableCell className="font-medium">
-                                          {test.title || "Тест без названия"}
+                                          {test.title || "Атаусыз тест"}
                                         </TableCell>
                                         <TableCell>
                                           {typeof test.course === "object"
                                             ? test.course?.title
-                                            : "Н/Д"}
+                                            : "Белгісіз"}
                                         </TableCell>
                                         <TableCell>
                                           <Badge
@@ -819,18 +825,18 @@ export default function UserDetailPage() {
                                           <div className="text-xs text-muted-foreground mt-1">
                                             {test.score >=
                                             (test.passingScore || 70)
-                                              ? "Сдан"
-                                              : "Не сдан"}
+                                              ? "Өтті"
+                                              : "Сәтсіз"}
                                           </div>
                                         </TableCell>
                                         <TableCell>
                                           <Badge variant="outline">
                                             {test.questions?.length || 0}{" "}
-                                            вопросов
+                                            сұрақ
                                           </Badge>
                                         </TableCell>
                                         <TableCell>
-                                          {test.timeLimit || "Н/Д"} мин
+                                          {test.timeLimit || "Белгісіз"} мин
                                         </TableCell>
                                         <TableCell className="text-sm">
                                           {new Date(
@@ -851,8 +857,8 @@ export default function UserDetailPage() {
                                             }
                                           >
                                             {test.isFinal
-                                              ? "Финальный"
-                                              : "Обычный"}
+                                              ? "Қорытынды"
+                                              : "Қарапайым"}
                                           </Badge>
                                         </TableCell>
                                       </TableRow>
@@ -869,7 +875,7 @@ export default function UserDetailPage() {
                                             key={index}
                                             className="mb-2 flex justify-between items-center max-w-md mx-auto"
                                           >
-                                            <span>ID теста: {test.testId}</span>
+                                            <span>Тест ID: {test.testId}</span>
                                             <Badge
                                               variant={
                                                 test.score >= 70
@@ -904,14 +910,14 @@ export default function UserDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
-                    Прогресс по уровням
+                    Деңгейлер бойынша прогресс
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-2">
-                        Доступные уровни
+                        Қол жетімді деңгейлер
                       </p>
                       <div className="flex gap-2 flex-wrap">
                         {(user.progress?.availableLevels || ["A1"]).map(
@@ -932,7 +938,7 @@ export default function UserDetailPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-2">
-                        Тест определения уровня
+                        Деңгей анықтау тестінің мәртебесі
                       </p>
                       <Badge
                         variant={
@@ -942,8 +948,8 @@ export default function UserDetailPage() {
                         }
                       >
                         {user.progress?.placementTestTaken
-                          ? "Завершен"
-                          : "Не пройден"}
+                          ? "Аяқталған"
+                          : "Өтілмеген"}
                       </Badge>
                     </div>
                   </div>
@@ -951,7 +957,7 @@ export default function UserDetailPage() {
               </Card>
             </div>
           ) : (
-            <div>Пользователь не найден</div>
+            <div>Пайдаланушы табылмады</div>
           )}
         </div>
       </SidebarInset>

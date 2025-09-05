@@ -71,12 +71,12 @@ interface Question {
 }
 
 const QUESTION_TYPES = [
-  { value: "multiple-choice", label: "Множественный выбор" },
-  { value: "matching", label: "Сопоставление" },
-  { value: "ordering", label: "Упорядочивание" },
-  { value: "fill-in-blanks", label: "Заполнение пропусков" },
-  { value: "input", label: "Текстовый ввод" },
-  { value: "categories", label: "Категории" },
+  { value: "multiple-choice", label: "Көп таңдау" },
+  { value: "matching", label: "Сәйкестендіру" },
+    { value: "ordering", label: "Реттеу" },
+  { value: "fill-in-blanks", label: "Бос орындарды толтыру" },
+    { value: "input", label: "Мәтін енгізу" },
+  { value: "categories", label: "Санаттар" },
 ];
 
 export default function QuestionEditPage() {
@@ -101,7 +101,7 @@ export default function QuestionEditPage() {
     content: "",
     options: ["", "", "", ""],
     correctAnswer: "",
-    explanation: "Объяснение не предоставлено", // Dummy explanation
+    explanation: "Түсіндірме берілмеген", // Dummy explanation
     points: 1,
   });
 
@@ -132,7 +132,7 @@ export default function QuestionEditPage() {
                 return (
                   <audio controls style={{ width: "100%" }}>
                     <source src={href} />
-                    Your browser does not support the audio element.
+                    Сіздің браузеріңіз аудио элементін қолдамайды.
                   </audio>
                 );
               }
@@ -163,8 +163,8 @@ export default function QuestionEditPage() {
         <div className="mb-4">
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {question.type === "fill-in-blanks"
-              ? question.title || "Введите заголовок вопроса"
-              : question.question || "Введите ваш вопрос"}
+              ? question.title || "Сұрақ тақырыбын енгізіңіз"
+              : question.question || "Сұрағыңызды енгізіңіз"}
           </h3>
           {question.content && renderQuestionContent(question.content)}
         </div>
@@ -172,7 +172,7 @@ export default function QuestionEditPage() {
         {question.type === "multiple-choice" && (
           <div className="space-y-2">
             <p className="text-sm text-slate-600 mb-3">
-              Выберите правильный ответ:
+              Дұрыс жауапты таңдаңыз:
             </p>
             {question.options?.map((option, index) => (
               <div
@@ -186,7 +186,7 @@ export default function QuestionEditPage() {
                   className="mr-3"
                 />
                 <span className="text-slate-700">
-                  {option || `Вариант ${index + 1}`}
+                  {option || `Нұсқа ${index + 1}`}
                 </span>
               </div>
             ))}
@@ -195,7 +195,7 @@ export default function QuestionEditPage() {
 
         {question.type === "matching" && (
           <div className="space-y-3">
-            <p className="text-sm text-slate-600 mb-3">Сопоставьте элементы:</p>
+            <p className="text-sm text-slate-600 mb-3">Элементтерді сәйкестендіріңіз:</p>
             {question.options?.map((option, index) => (
               <div key={index} className="flex items-center gap-4">
                 <div className="flex-1 p-3 border rounded-lg bg-slate-50">
@@ -205,14 +205,14 @@ export default function QuestionEditPage() {
                 <div className="flex-1 p-3 border rounded-lg bg-blue-50">
                   <div className="text-slate-700">
                     {(question.correctAnswer as string[])?.[index] ||
-                      "Соответствие не установлено"}
+                      "Сәйкестік орнатылмаған"}
                   </div>
                 </div>
               </div>
             ))}
             {(!question.options || question.options.length === 0) && (
               <p className="text-slate-500 italic">
-                Пары для сопоставления еще не настроены.
+                Сәйкестендіру жұптары әлі орнатылмаған.
               </p>
             )}
           </div>
@@ -221,7 +221,7 @@ export default function QuestionEditPage() {
         {question.type === "ordering" && (
           <div className="space-y-2">
             <p className="text-sm text-slate-600 mb-3">
-              Расположите элементы в правильном порядке:
+              Элементтерді дұрыс ретпен орналастырыңыз:
             </p>
             {question.options?.map((option, index) => (
               <div
@@ -250,7 +250,7 @@ export default function QuestionEditPage() {
               </div>
             )}
 
-            <p className="text-sm text-slate-600 mb-3">Заполните пропуски:</p>
+            <p className="text-sm text-slate-600 mb-3">Бос орындарды толтырыңыз:</p>
             <div className="p-4 border rounded-lg bg-slate-50">
               {question.question && question.question.includes("_____") ? (
                 (() => {
@@ -296,9 +296,9 @@ export default function QuestionEditPage() {
                       </div>
                       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>Note:</strong> This question has{" "}
-                          {parts.length - 1} blanks. Students will fill each
-                          blank separately.
+                          <strong>Ескерту:</strong> Бұл сұрақта{" "}
+                          {parts.length - 1} бос орын бар. Студенттер әр
+                          бос орынды жеке толтырады.
                         </p>
                       </div>
                     </div>
@@ -307,14 +307,14 @@ export default function QuestionEditPage() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-slate-500 mb-2">
-                    No blanks defined yet. Use _____ in your question to create
+                    Әлі бос орындар анықталмаған. Сұрақта _____ пайдаланыңыз
                     blanks.
                   </p>
                   <input
                     type="text"
                     disabled
                     className="w-full max-w-md p-2 border rounded bg-white"
-                    placeholder="Answer will appear here"
+                    placeholder="Жауап осында көрсетіледі"
                   />
                 </div>
               )}
@@ -324,7 +324,7 @@ export default function QuestionEditPage() {
 
         {question.type === "input" && (
           <div className="space-y-3">
-            <p className="text-sm text-slate-600 mb-3">Enter your answer:</p>
+            <p className="text-sm text-slate-600 mb-3">Жауабыңызды енгізіңіз:</p>
             <input
               type="text"
               disabled
@@ -334,7 +334,7 @@ export default function QuestionEditPage() {
                   ? question.correctAnswer.join(" / ")
                   : question.correctAnswer || ""
               }
-              placeholder="Type your answer here..."
+              placeholder="Жауабыңызды осында теріңіз..."
             />
           </div>
         )}
@@ -342,13 +342,13 @@ export default function QuestionEditPage() {
         {question.type === "categories" && (
           <div className="space-y-4">
             <p className="text-sm text-slate-600 mb-3">
-              Drag items to the correct categories:
+              Элементтерді дұрыс санаттарға сүйреңіз:
             </p>
 
             {/* Available items */}
             <div className="mb-4">
               <h4 className="text-sm font-medium text-slate-700 mb-2">
-                Available Items ({question.options?.length || 0}):
+                Қолжетімді элементтер ({question.options?.length || 0}):
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {question.options?.map((option, index) => (
@@ -367,7 +367,7 @@ export default function QuestionEditPage() {
                               "none";
                           }}
                         />
-                        <span className="text-xs">Image {index + 1}</span>
+                        <span className="text-xs">Сурет {index + 1}</span>
                       </div>
                     ) : (
                       <span className="text-center">
@@ -403,7 +403,7 @@ export default function QuestionEditPage() {
                               }}
                             />
                             <h4 className="text-xs text-slate-600">
-                              Категория изображения
+                              Санат суреті
                             </h4>
                           </div>
                         ) : (
@@ -426,7 +426,7 @@ export default function QuestionEditPage() {
                           return itemsArray && itemsArray.length > 0 ? (
                             <div className="text-sm text-slate-600">
                               <p className="font-medium mb-2">
-                                Expected items ({itemsArray.length}):
+                                Күтілетін элементтер ({itemsArray.length}):
                               </p>
                               <div className="grid grid-cols-1 gap-1">
                                 {itemsArray.map((item, itemIndex) => (
@@ -446,7 +446,7 @@ export default function QuestionEditPage() {
                                             ).style.display = "none";
                                           }}
                                         />
-                                        <span>Image Item</span>
+                                        <span>Сурет элементі</span>
                                       </div>
                                     ) : (
                                       item
@@ -457,7 +457,7 @@ export default function QuestionEditPage() {
                             </div>
                           ) : (
                             <div className="text-sm text-slate-500 text-center">
-                              No items assigned
+                              Құтылған элементтер жоқ
                             </div>
                           );
                         })()}
@@ -471,11 +471,11 @@ export default function QuestionEditPage() {
 
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-slate-500">
-            Тип вопроса:{" "}
+            Сұрақ түрі:{" "}
             {QUESTION_TYPES.find((t) => t.value === question.type)?.label}
           </div>
           <div className="text-sm font-medium text-slate-600">
-            Баллы: {question.points}
+            Ұпайлар: {question.points}
           </div>
         </div>
       </div>
@@ -557,7 +557,7 @@ export default function QuestionEditPage() {
           }
         }
       } catch {
-        setError("Failed to fetch test data");
+        setError("Тест деректерін жүктеу мүмкін болмады");
       } finally {
         setLoading(false);
       }
@@ -614,7 +614,7 @@ export default function QuestionEditPage() {
     // Ensure question has a dummy explanation
     const questionToSave = {
       ...questionForm,
-      explanation: "Объяснение не предоставлено", // Always set dummy explanation
+      explanation: "Түсіндірме берілмеген", // Always set dummy explanation
     };
 
     const updatedQuestions = isNewQuestion
@@ -642,10 +642,10 @@ export default function QuestionEditPage() {
         // Navigate back to questions list
         router.push(`/courses/${courseId}/tests/${testId}/questions`);
       } else {
-        alert(data.message || "Failed to save question");
+        alert(data.message || "Сұрақты сақтау мүмкін болмады");
       }
     } catch {
-      alert("Error saving question");
+      alert("Сұрақты сақтау кезінде қате");
     } finally {
       setSaving(false);
     }
@@ -655,7 +655,7 @@ export default function QuestionEditPage() {
     const newForm: Question = {
       ...questionForm,
       type: type as Question["type"],
-      explanation: "Объяснение не предоставлено", // Always keep dummy explanation
+      explanation: "Түсіндірме берілмеген", // Always keep dummy explanation
     };
 
     // Set default values based on question type
@@ -687,8 +687,8 @@ export default function QuestionEditPage() {
       case "categories":
         newForm.options = [];
         newForm.correctAnswer = {
-          "Category 1": [],
-          "Category 2": [],
+          "Санат 1": [],
+                "Санат 2": [],
         };
         break;
     }
@@ -702,15 +702,15 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Вопрос с множественным выбором</CardTitle>
+              <CardTitle>Көп таңдаулы сұрақ</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Add new option input */}
+              {/* Жаңа нұсқа енгізу */}
               <div>
-                <Label className="text-base font-semibold">Add Options</Label>
+                <Label className="text-base font-semibold">Нұсқаларды қосу</Label>
                 <div className="mt-3 flex gap-2">
                   <Input
-                    placeholder="Enter new option..."
+                    placeholder="Жаңа нұсқа енгізіңіз..."
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         const newOptions = [
@@ -748,7 +748,7 @@ export default function QuestionEditPage() {
                       }
                     }}
                   >
-                    Add Option
+                    Нұсқа қосу
                   </Button>
                 </div>
               </div>
@@ -756,7 +756,7 @@ export default function QuestionEditPage() {
               {/* Configure Options */}
               <div>
                 <Label className="text-base font-semibold">
-                  Configure Options
+                  Нұсқаларды баптау
                 </Label>
                 <div className="mt-3 space-y-3">
                   {questionForm.options?.map((option, index) => (
@@ -764,10 +764,10 @@ export default function QuestionEditPage() {
                       key={index}
                       className="flex items-center gap-3 p-4 border rounded-lg bg-slate-50"
                     >
-                      {/* Option Input */}
+                      {/* Нұсқа енгізу */}
                       <div className="flex-1">
                         <Input
-                          placeholder={`Option ${String.fromCharCode(
+                          placeholder={`Нұсқа ${String.fromCharCode(
                             65 + index
                           )}`}
                           value={option}
@@ -791,7 +791,7 @@ export default function QuestionEditPage() {
                         />
                       </div>
 
-                      {/* Выбор правильного ответа */}
+                      {/* Дұрыс жауапты таңдау */}
                       <div className="flex items-center gap-2">
                         <input
                           type="radio"
@@ -806,7 +806,7 @@ export default function QuestionEditPage() {
                           className="w-4 h-4"
                         />
                         <Label className="text-sm font-medium text-green-700">
-                          Correct
+                          Дұрыс
                         </Label>
                       </div>
 
@@ -842,7 +842,7 @@ export default function QuestionEditPage() {
                     questionForm.options.length === 0) && (
                     <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                       <p className="text-gray-500">
-                        No options yet. Add options above to get started.
+                        Нұсқалар әлі жоқ. Бастау үшін жоғарыда нұсқаларды қосыңыз.
                       </p>
                     </div>
                   )}
@@ -852,9 +852,9 @@ export default function QuestionEditPage() {
                 {questionForm.options && questionForm.options.length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>Инструкции:</strong> Студенты увидят эти варианты
-                      и должны выбрать правильный ответ. Убедитесь, что отметили
-                      один вариант как правильный, используя переключатели.
+                      <strong>Нұсқаулар:</strong> Студенттер осы нұсқаларды көреді
+                      және дұрыс жауапты таңдауы керек. Ауыстырғыштарды пайдаланып,
+                      бір нұсқаны дұрыс деп белгілегеніңізге көз жеткізіңіз.
                     </p>
                   </div>
                 )}
@@ -865,8 +865,8 @@ export default function QuestionEditPage() {
                   !questionForm.correctAnswer && (
                     <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <p className="text-sm text-yellow-800">
-                        <strong>Warning:</strong> Please select which option is
-                        правильный ответ.
+                        <strong>Ескерту:</strong> Қай нұсқа
+                        дұрыс жауап екенін таңдаңыз.
                       </p>
                     </div>
                   )}
@@ -879,15 +879,15 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Вопрос на сопоставление</CardTitle>
+              <CardTitle>Сәйкестендіру сұрағы</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Add/Remove Items */}
               <div>
-                <Label className="text-base font-semibold">Manage Items</Label>
+                <Label className="text-base font-semibold">Элементтерді басқару</Label>
                 <div className="mt-3 flex gap-2">
                   <Input
-                    placeholder="Enter new item to match..."
+                    placeholder="Сәйкестендіру үшін жаңа элемент енгізіңіз..."
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         const newOptions = [
@@ -935,7 +935,7 @@ export default function QuestionEditPage() {
                       }
                     }}
                   >
-                    Add Item
+                    Элемент қосу
                   </Button>
                 </div>
               </div>
@@ -943,7 +943,7 @@ export default function QuestionEditPage() {
               {/* Matching Pairs with Preview Style */}
               <div>
                 <Label className="text-base font-semibold">
-                  Configure Matches
+                  Сәйкестендіруді баптау
                 </Label>
                 <div className="mt-3 space-y-3">
                   {questionForm.options?.map((option, index) => (
@@ -951,11 +951,11 @@ export default function QuestionEditPage() {
                       key={index}
                       className="flex items-center gap-4 p-4 border rounded-lg bg-slate-50"
                     >
-                      {/* Left side - Item */}
+                      {/* Сол жақ - Элемент */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Input
-                            placeholder={`Item ${index + 1}`}
+                            placeholder={`Элемент ${index + 1}`}
                             value={option}
                             onChange={(e) => {
                               const newOptions = [
@@ -998,11 +998,11 @@ export default function QuestionEditPage() {
                       {/* Arrow */}
                       <div className="text-slate-400 text-xl font-bold">→</div>
 
-                      {/* Right side - Match */}
+                      {/* Оң жақ - Сәйкестік */}
                       <div className="flex-1">
                         <Input
-                          placeholder={`Correct match for "${
-                            option || `Item ${index + 1}`
+                          placeholder={`"${
+                            option || `Элемент ${index + 1}`
                           }"`}
                           value={
                             (questionForm.correctAnswer as string[])?.[index] ||
@@ -1029,8 +1029,8 @@ export default function QuestionEditPage() {
                     questionForm.options.length === 0) && (
                     <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                       <p className="text-gray-500">
-                        Пар для сопоставления пока нет. Добавьте элементы выше,
-                        чтобы начать.
+                        Сәйкестендіру жұптары әлі жоқ. Бастау үшін жоғарыдан
+                        элементтер қосыңыз.
                       </p>
                     </div>
                   )}
@@ -1040,9 +1040,9 @@ export default function QuestionEditPage() {
                 {questionForm.options && questionForm.options.length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>Instructions:</strong> Each item on the left
-                      should have its correct match on the right. Students will
-                      need to match these pairs correctly.
+                      <strong>Нұсқаулық:</strong> Сол жақтағы әр элементтің
+                      оң жағында дұрыс сәйкесі болуы керек. Студенттер осы
+                      жұптарды дұрыс сәйкестендіруі қажет.
                     </p>
                   </div>
                 )}
@@ -1055,15 +1055,15 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Ordering Question</CardTitle>
+              <CardTitle>Реттеу сұрағы</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Add new item input */}
               <div>
-                <Label className="text-base font-semibold">Add Items</Label>
+                <Label className="text-base font-semibold">Элементтерді қосу</Label>
                 <div className="mt-3 flex gap-2">
                   <Input
-                    placeholder="Enter item to be ordered..."
+                    placeholder="Реттелетін элементті енгізіңіз..."
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         const newItem = e.currentTarget.value.trim();
@@ -1107,7 +1107,7 @@ export default function QuestionEditPage() {
                       }
                     }}
                   >
-                    Add Item
+                    Элемент қосу
                   </Button>
                 </div>
               </div>
@@ -1115,7 +1115,7 @@ export default function QuestionEditPage() {
               {/* Correct Order Management */}
               <div>
                 <Label className="text-base font-semibold">
-                  Correct Order (drag to reorder)
+                  Дұрыс рет (қайта реттеу үшін сүйреңіз)
                 </Label>
                 <div className="mt-3 space-y-2">
                   {(questionForm.correctAnswer as string[])?.map(
@@ -1142,7 +1142,7 @@ export default function QuestionEditPage() {
                                 correctAnswer: newCorrectAnswer,
                               });
                             }}
-                            placeholder={`Item ${index + 1}`}
+                            placeholder={`Элемент ${index + 1}`}
                             className="bg-white"
                           />
                         </div>
@@ -1239,7 +1239,7 @@ export default function QuestionEditPage() {
                     (questionForm.correctAnswer as string[]).length === 0) && (
                     <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                       <p className="text-gray-500">
-                        No items yet. Add items above to get started.
+                        Элементтер әлі жоқ. Бастау үшін жоғарыда элементтерді қосыңыз.
                       </p>
                     </div>
                   )}
@@ -1250,9 +1250,9 @@ export default function QuestionEditPage() {
                   (questionForm.correctAnswer as string[]).length > 0 && (
                     <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-800">
-                        <strong>Instructions:</strong> Students will see these
-                        items in random order and need to arrange them in the
-                        correct sequence shown above.
+                        <strong>Нұсқаулық:</strong> Студенттер бұл элементтерді
+                        кездейсоқ ретпен көреді және оларды жоғарыда көрсетілген
+                        дұрыс ретпен орналастыруы керек.
                       </p>
                     </div>
                   )}
@@ -1265,20 +1265,20 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Fill in Blanks Question</CardTitle>
+              <CardTitle>Бос орындарды толтыру сұрағы</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Title Field */}
               <div>
                 <Label className="text-base font-semibold">
-                  Question Title/Instruction
+                  Сұрақ тақырыбы/Нұсқаулық
                 </Label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Основная инструкция для студентов (например, &quot;Завершите
-                  предложения&quot;)
+                  Студенттерге арналған негізгі нұсқаулық (мысалы, &quot;Сөйлемдерді
+                  аяқтаңыз&quot;)
                 </p>
                 <Input
-                  placeholder="e.g., Complete the sentences below"
+                  placeholder="мысалы, Төмендегі сөйлемдерді толықтырыңыз"
                   value={questionForm.title || ""}
                   onChange={(e) =>
                     setQuestionForm({
@@ -1292,14 +1292,14 @@ export default function QuestionEditPage() {
               {/* Question with Blanks */}
               <div>
                 <Label className="text-base font-semibold">
-                  Sentence with Blanks
+                  Бос орындары бар сөйлем
                 </Label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Use _____ (5 underscores) to create blanks in your sentence.
-                  Each _____ will become an input field for students.
+                  Сөйлемде бос орын жасау үшін _____ (5 астын сызу) пайдаланыңыз.
+                  Әр _____ студенттер үшін енгізу өрісіне айналады.
                 </p>
                 <Textarea
-                  placeholder="e.g., I _____ to school every day and _____ my homework."
+                  placeholder="мысалы, Мен күн сайын мектепке _____ және үй тапсырмамды _____."
                   value={questionForm.question}
                   onChange={(e) =>
                     setQuestionForm({
@@ -1313,9 +1313,9 @@ export default function QuestionEditPage() {
                 {questionForm.question && (
                   <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
                     <p className="text-sm text-blue-800">
-                      <strong>Blanks detected:</strong>{" "}
+                      <strong>Анықталған бос орындар:</strong>{" "}
                       {(questionForm.question.match(/_____/g) || []).length}{" "}
-                      blank(s)
+                      бос орын
                     </p>
                   </div>
                 )}
@@ -1324,7 +1324,7 @@ export default function QuestionEditPage() {
               {/* Correct Answers */}
               <div>
                 <Label className="text-base font-semibold">
-                  Правильные ответы
+                  Дұрыс жауаптар
                 </Label>
                 {(() => {
                   const blankCount = (
@@ -1335,8 +1335,8 @@ export default function QuestionEditPage() {
                     return (
                       <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
                         <p className="text-gray-500">
-                          Add _____ to your sentence above to create blanks,
-                          then configure answers here.
+                          Бос орындар жасау үшін жоғарыдағы сөйлемге _____ қосыңыз,
+                          содан кейін мұнда жауаптарды конфигурациялаңыз.
                         </p>
                       </div>
                     );
@@ -1352,9 +1352,8 @@ export default function QuestionEditPage() {
                   return (
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        Настройте правильные ответы для каждого пропуска. Вы
-                        можете предоставить несколько приемлемых ответов для
-                        каждого пропуска.
+                        Әр бос орын үшін дұрыс жауаптарды орнатыңыз. Әр бос орын
+                        үшін бірнеше қолайлы жауап бере аласыз.
                       </p>
                       {Array.from({ length: blankCount }, (_, index) => {
                         const blankId = `blank${index + 1}`;
@@ -1366,10 +1365,10 @@ export default function QuestionEditPage() {
                             className="p-4 border rounded-lg bg-slate-50"
                           >
                             <Label className="font-medium">
-                              Пропуск {index + 1} - Правильные ответы
+                              Бос орын {index + 1} - Дұрыс жауаптар
                             </Label>
                             <Textarea
-                              placeholder="Введите правильные ответы (по одному на строку)&#10;например:&#10;идти&#10;ходить"
+                              placeholder="Дұрыс жауаптарды енгізіңіз (әр жолға бір жауап)&#10;мысалы:&#10;жүру&#10;бару"
                               value={
                                 Array.isArray(blankAnswers)
                                   ? blankAnswers.join("\n")
@@ -1402,24 +1401,24 @@ export default function QuestionEditPage() {
               {/* Instructions */}
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">
-                  How it works:
+                  Қалай жұмыс істейді:
                 </h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>
-                    • <strong>Title:</strong> Shows as the main instruction to
-                    students
+                    • <strong>Тақырып:</strong> Студенттерге негізгі нұсқаулық
+                    ретінде көрсетіледі
                   </li>
                   <li>
-                    • <strong>Sentence:</strong> Each _____ becomes an input
-                    field
+                    • <strong>Сөйлем:</strong> Әр _____ енгізу өрісіне
+                    айналады
                   </li>
                   <li>
-                    • <strong>Ответы:</strong> Ответы студентов проверяются
-                    против ваших правильных ответов
+                    • <strong>Жауаптар:</strong> Студенттердің жауаптары
+                    сіздің дұрыс жауаптарыңызбен тексеріледі
                   </li>
                   <li>
-                    • <strong>Несколько ответов:</strong> Вы можете принимать
-                    разные правильные ответы для каждого пропуска
+                    • <strong>Бірнеше жауап:</strong> Сіз әр бос орын үшін
+                    әртүрлі дұрыс жауаптарды қабылдай аласыз
                   </li>
                 </ul>
               </div>
@@ -1431,13 +1430,13 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Text Input</CardTitle>
+              <CardTitle>Мәтін енгізу</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Правильный(е) ответ(ы)</Label>
+                <Label>Дұрыс жауап(тар)</Label>
                 <Textarea
-                  placeholder="Введите возможные правильные ответы (по одному на строку)"
+                  placeholder="Мүмкін дұрыс жауаптарды енгізіңіз (әр жолға біреуден)"
                   value={
                     Array.isArray(questionForm.correctAnswer)
                       ? questionForm.correctAnswer.join("\n")
@@ -1463,18 +1462,18 @@ export default function QuestionEditPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Категории</CardTitle>
+              <CardTitle>Санаттар</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-base font-semibold">
-                  Available Items
+                  Қолжетімді элементтер
                 </Label>
 
                 {/* Add new item input */}
                 <div className="mt-3 flex gap-2">
                   <Input
-                    placeholder="Enter item text or image URL..."
+                    placeholder="Элемент мәтінін немесе сурет URL-ін енгізіңіз..."
                     value={newItemInput}
                     onChange={(e) => setNewItemInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -1510,7 +1509,7 @@ export default function QuestionEditPage() {
                     }}
                     size="sm"
                   >
-                    Добавить элемент
+                    Элемент қосу
                   </Button>
                 </div>
 
@@ -1519,7 +1518,7 @@ export default function QuestionEditPage() {
                   {questionForm.options && questionForm.options.length > 0 ? (
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">
-                        Текущие элементы ({questionForm.options.length}):
+                        Ағымдағы элементтер ({questionForm.options.length}):
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {questionForm.options.map((option, index) => (
@@ -1540,7 +1539,7 @@ export default function QuestionEditPage() {
                                   }}
                                 />
                                 <span className="text-sm text-gray-700 max-w-[150px] truncate">
-                                  Изображение {index + 1}
+                                  Сурет {index + 1}
                                 </span>
                               </div>
                             ) : (
@@ -1581,7 +1580,7 @@ export default function QuestionEditPage() {
                                 });
                               }}
                               className="w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Удалить элемент"
+                              title="Элементті жою"
                             >
                               ×
                             </button>
@@ -1592,8 +1591,8 @@ export default function QuestionEditPage() {
                   ) : (
                     <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
                       <p className="text-gray-500 text-sm">
-                        Элементы еще не добавлены. Введите текст выше и нажмите
-                        Enter или нажмите &quot;Добавить элемент&quot;.
+                        Элементтер әлі қосылмаған. Жоғарыда мәтін енгізіп Enter
+                        басыңыз немесе &quot;Элемент қосу&quot; түймесін басыңыз.
                       </p>
                     </div>
                   )}
@@ -1602,7 +1601,7 @@ export default function QuestionEditPage() {
               {/* Categories Section */}
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <Label className="text-base font-semibold">Категории</Label>
+                  <Label className="text-base font-semibold">Санаттар</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1628,7 +1627,7 @@ export default function QuestionEditPage() {
                       });
                     }}
                   >
-                    Добавить категорию
+                    Санат қосу
                   </Button>
                 </div>
 
@@ -1651,11 +1650,11 @@ export default function QuestionEditPage() {
                           <div className="flex gap-2 items-start">
                             <div className="flex-1">
                               <Label className="text-sm font-medium">
-                                Название категории/URL
+                                Санат атауы/URL
                               </Label>
                               <div className="flex gap-2 mt-1">
                                 <Input
-                                  placeholder="Название категории или URL изображения"
+                                  placeholder="Санат атауы немесе сурет URL-і"
                                   value={category}
                                   onChange={(e) => {
                                     const newCorrectAnswer = {
@@ -1696,7 +1695,7 @@ export default function QuestionEditPage() {
                                     variant="outline"
                                     size="sm"
                                   >
-                                    Обзор изображений
+                                    Суреттерді шолу
                                   </Button>
                                 </MediaBrowser>
                               </div>
@@ -1720,7 +1719,7 @@ export default function QuestionEditPage() {
                               }}
                               className="mt-6"
                             >
-                              Удалить категорию
+                              Санатты жою
                             </Button>
                           </div>
 
@@ -1731,7 +1730,7 @@ export default function QuestionEditPage() {
                                 <div className="text-center">
                                   <img
                                     src={category}
-                                    alt="Предварительный просмотр категории"
+                                    alt="Санаттың алдын ала қарауы"
                                     className="max-w-full max-h-20 mx-auto object-contain"
                                     onError={(e) => {
                                       (
@@ -1740,7 +1739,7 @@ export default function QuestionEditPage() {
                                     }}
                                   />
                                   <p className="text-xs text-gray-500 mt-1">
-                                    Категория изображения
+                                    Санат суреті
                                   </p>
                                 </div>
                               ) : (
@@ -1754,7 +1753,7 @@ export default function QuestionEditPage() {
                           {/* Items Assignment with Checkboxes */}
                           <div>
                             <Label className="text-sm font-medium">
-                              Выберите элементы для этой категории
+                              Осы санат үшін элементтерді таңдаңыз
                             </Label>
                             <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded p-2 bg-white">
                               {questionForm.options?.map(
@@ -1841,7 +1840,7 @@ export default function QuestionEditPage() {
                               {(!questionForm.options ||
                                 questionForm.options.length === 0) && (
                                 <p className="text-gray-500 text-sm">
-                                  No items available. Add items above first.
+                                  Қолжетімді элементтер жоқ. Алдымен жоғарыда элементтерді қосыңыз.
                                 </p>
                               )}
                             </div>
@@ -1849,7 +1848,7 @@ export default function QuestionEditPage() {
                             {/* Show assigned items */}
                             <div className="mt-2 p-2 bg-blue-50 rounded border">
                               <p className="text-sm font-medium text-blue-900">
-                                Элементы в этой категории ({itemsArray.length}):
+                                Осы санаттағы элементтер ({itemsArray.length}):
                               </p>
                               {itemsArray.length > 0 ? (
                                 <div className="mt-1 flex flex-wrap gap-1">
@@ -1859,14 +1858,14 @@ export default function QuestionEditPage() {
                                       className="px-2 py-1 bg-blue-200 text-blue-800 rounded text-xs"
                                     >
                                       {item?.startsWith?.("http")
-                                        ? `Изображение ${idx + 1}`
+                                        ? `Сурет ${idx + 1}`
                                         : item}
                                     </span>
                                   ))}
                                 </div>
                               ) : (
                                 <p className="text-sm text-blue-600 mt-1">
-                                  Элементы не назначены
+                                  Элементтер тағайындалмаған
                                 </p>
                               )}
                             </div>
@@ -1882,8 +1881,7 @@ export default function QuestionEditPage() {
                 ).length === 0 && (
                   <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                     <p className="text-gray-500">
-                      Категории еще не созданы. Нажмите &quot;Добавить
-                      категорию&quot;, чтобы начать.
+                      Санаттар әлі жасалмаған. Бастау үшін &quot;Санат қосу&quot; түймесін басыңыз.
                     </p>
                   </div>
                 )}
@@ -1924,12 +1922,12 @@ export default function QuestionEditPage() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к вопросам
+              Сұрақтарға оралу
             </Button>
           </div>
 
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : test && course ? (
@@ -1939,8 +1937,8 @@ export default function QuestionEditPage() {
                 <div>
                   <h1 className="text-3xl font-bold">
                     {isNewQuestion
-                      ? "Создать новый вопрос"
-                      : "Редактировать вопрос"}
+                      ? "Жаңа сұрақ қосу"
+                      : "Сұрақты өңдеу"}
                   </h1>
                   <p className="text-muted-foreground mt-1">
                     Тест: {test.title} • Курс: {course.title}
@@ -1954,7 +1952,7 @@ export default function QuestionEditPage() {
                       }
                     </Badge>
                     <Badge variant="outline">
-                      {questionForm.points} баллов
+                      {questionForm.points} ұпай
                     </Badge>
                   </div>
                 </div>
@@ -1965,7 +1963,7 @@ export default function QuestionEditPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Редактировать вопрос
+                      Сұрақты өңдеу
                     </Button>
                   ) : (
                     <>
@@ -1974,7 +1972,7 @@ export default function QuestionEditPage() {
                         onClick={handleCancel}
                         disabled={saving}
                       >
-                        Отмена
+                        Болдырмау
                       </Button>
                       <Button
                         onClick={handleSaveQuestion}
@@ -1982,7 +1980,7 @@ export default function QuestionEditPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saving ? "Сохранение..." : "Сохранить вопрос"}
+                        {saving ? "Сақталуда..." : "Сұрақты сақтау"}
                       </Button>
                     </>
                   )}
@@ -1993,13 +1991,13 @@ export default function QuestionEditPage() {
               {isEditing ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Редактировать вопрос</CardTitle>
+                    <CardTitle>Сұрақты өңдеу</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Question Type */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Тип вопроса</CardTitle>
+                        <CardTitle>Сұрақ түрі</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <Select
@@ -2023,21 +2021,21 @@ export default function QuestionEditPage() {
                     {/* Question Text */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Вопрос</CardTitle>
+                        <CardTitle>Сұрақ</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Title field for fill-in-blanks */}
                         {questionForm.type === "fill-in-blanks" && (
                           <div>
                             <Label className="text-base font-semibold">
-                              Заголовок/Инструкция вопроса
+                              Сұрақ тақырыбы/Нұсқаулық
                             </Label>
                             <p className="text-sm text-muted-foreground mb-2">
-                              Основная инструкция для студентов (например,
-                              &quot;Завершите предложения&quot;)
+                              Студенттерге арналған негізгі нұсқаулық (мысалы,
+                              &quot;Сөйлемдерді толықтырыңыз&quot;)
                             </p>
                             <Input
-                              placeholder="например, Завершите предложения ниже"
+                              placeholder="мысалы, Төмендегі сөйлемдерді толықтырыңыз"
                               value={questionForm.title || ""}
                               onChange={(e) =>
                                 setQuestionForm({
@@ -2052,20 +2050,19 @@ export default function QuestionEditPage() {
                         <div>
                           <Label className="text-base font-semibold">
                             {questionForm.type === "fill-in-blanks"
-                              ? "Предложение с пропусками"
-                              : "Текст вопроса"}
+                              ? "Бос орындары бар сөйлем"
+                              : "Сұрақ мәтіні"}
                           </Label>
                           {questionForm.type === "fill-in-blanks" && (
                             <p className="text-sm text-muted-foreground mb-2">
-                              Используйте _____ (5 подчеркиваний) для создания
-                              пропусков в вашем предложении.
+                              Сөйлемде бос орындар жасау үшін _____ (5 асты сызық) қолданыңыз.
                             </p>
                           )}
                           <Textarea
                             placeholder={
                               questionForm.type === "fill-in-blanks"
-                                ? "например, Я _____ в школу каждый день."
-                                : "Введите ваш вопрос"
+                                  ? "мысалы, Мен күн сайын мектепке _____."
+                                  : "Сұрағыңызды енгізіңіз"
                             }
                             value={questionForm.question}
                             onChange={(e) =>
@@ -2084,7 +2081,7 @@ export default function QuestionEditPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle>
-                          Содержание (Markdown с поддержкой медиа)
+                          Мазмұн (Медиа қолдауымен Markdown)
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -2098,7 +2095,7 @@ export default function QuestionEditPage() {
                                 content: markdown,
                               })
                             }
-                            placeholder="Добавьте дополнительное содержание, изображения, аудио и т.д..."
+                            placeholder="Қосымша мазмұн, суреттер, аудио және т.б. қосыңыз..."
                           />
                         </div>
                       </CardContent>
@@ -2110,7 +2107,7 @@ export default function QuestionEditPage() {
                     {/* Points */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Баллы</CardTitle>
+                        <CardTitle>Ұпайлар</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <Input
@@ -2136,21 +2133,21 @@ export default function QuestionEditPage() {
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
-                      Предварительный просмотр
+                      Алдын ала қарау
                     </TabsTrigger>
                     <TabsTrigger
                       value="edit"
                       className="flex items-center gap-2"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Редактировать
+                      Өңдеу
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="preview">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Предварительный просмотр вопроса</CardTitle>
+                        <CardTitle>Сұрақты алдын ала қарау</CardTitle>
                       </CardHeader>
                       <CardContent>{renderQuestionPreview()}</CardContent>
                     </Card>
@@ -2158,10 +2155,10 @@ export default function QuestionEditPage() {
 
                   <TabsContent value="edit">
                     <div className="space-y-6">
-                      {/* Тип вопроса */}
+                      {/* Сұрақ түрі */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Тип вопроса</CardTitle>
+                          <CardTitle>Сұрақ түрі</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <Select
@@ -2185,21 +2182,21 @@ export default function QuestionEditPage() {
                       {/* Question Text */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Вопрос</CardTitle>
+                          <CardTitle>Сұрақ</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {/* Title field for fill-in-blanks */}
                           {questionForm.type === "fill-in-blanks" && (
                             <div>
                               <Label className="text-base font-semibold">
-                                Заголовок/Инструкция вопроса
+                                Сұрақ тақырыбы/Нұсқаулығы
                               </Label>
                               <p className="text-sm text-muted-foreground mb-2">
-                                Основная инструкция для студентов (например,
-                                &quot;Завершите предложения&quot;)
+                                Студенттерге арналған негізгі нұсқаулық (мысалы,
+                                &quot;Сөйлемдерді аяқтаңыз&quot;)
                               </p>
                               <Input
-                                placeholder="например, Завершите предложения ниже"
+                                placeholder="мысалы, Төмендегі сөйлемдерді аяқтаңыз"
                                 value={questionForm.title || ""}
                                 onChange={(e) =>
                                   setQuestionForm({
@@ -2215,20 +2212,19 @@ export default function QuestionEditPage() {
                           <div>
                             <Label className="text-base font-semibold">
                               {questionForm.type === "fill-in-blanks"
-                                ? "Предложение с пропусками"
-                                : "Текст вопроса"}
+                                ? "Бос орындары бар сөйлем"
+                               : "Сұрақ мәтіні"}
                             </Label>
                             {questionForm.type === "fill-in-blanks" && (
                               <p className="text-sm text-muted-foreground mb-2">
-                                Используйте _____ (5 подчеркиваний) для создания
-                                пропусков в вашем предложении.
+                                Сөйлемде бос орындар жасау үшін _____ (5 асты сызық) қолданыңыз.
                               </p>
                             )}
                             <Textarea
                               placeholder={
                                 questionForm.type === "fill-in-blanks"
-                                  ? "например, Я _____ в школу каждый день."
-                                  : "Введите ваш вопрос"
+                                  ? "мысалы, Мен күн сайын мектепке _____."
+                                  : "Сұрағыңызды енгізіңіз"
                               }
                               value={questionForm.question}
                               onChange={(e) =>
@@ -2247,8 +2243,8 @@ export default function QuestionEditPage() {
                       <Card>
                         <CardHeader>
                           <CardTitle>
-                            Содержание (Markdown с поддержкой медиа)
-                          </CardTitle>
+                          Мазмұн (Медиа қолдауымен Markdown)
+                        </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="border rounded-md overflow-hidden">
@@ -2261,7 +2257,7 @@ export default function QuestionEditPage() {
                                   content: markdown,
                                 })
                               }
-                              placeholder="Добавьте дополнительное содержание, изображения, аудио и т.д..."
+                              placeholder="Қосымша мазмұн, суреттер, аудио және т.б. қосыңыз..."
                             />
                           </div>
                         </CardContent>
@@ -2273,7 +2269,7 @@ export default function QuestionEditPage() {
                       {/* Points */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Баллы</CardTitle>
+                          <CardTitle>Ұпайлар</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <Input
@@ -2295,7 +2291,7 @@ export default function QuestionEditPage() {
               )}
             </div>
           ) : (
-            <div>Тест не найден</div>
+            <div>Тест табылмады</div>
           )}
         </div>
       </SidebarInset>

@@ -1,106 +1,106 @@
 [
   {
     "id": 1,
-    "header": "Cover page",
-    "type": "Cover page",
-    "status": "In Process",
+    "header": "Мұқаба беті",
+    "type": "Мұқаба беті",
+    "status": "Орындалуда",
     "target": "18",
     "limit": "5",
-    "reviewer": "Eddie Lake"
+    "reviewer": "Эдди Лейк"
   },
   {
     "id": 2,
-    "header": "Table of contents",
-    "type": "Table of contents",
-    "status": "Done",
+    "header": "Мазмұны",
+    "type": "Мазмұны",
+    "status": "Дайын",
     "target": "29",
     "limit": "24",
     "reviewer": "Eddie Lake"
   },
   {
     "id": 3,
-    "header": "Executive summary",
-    "type": "Narrative",
-    "status": "Done",
+    "header": "Атқарушы қорытынды",
+    "type": "Баяндама",
+    "status": "Дайын",
     "target": "10",
     "limit": "13",
     "reviewer": "Eddie Lake"
   },
   {
     "id": 4,
-    "header": "Technical approach",
-    "type": "Narrative",
-    "status": "Done",
+    "header": "Техникалық тәсіл",
+    "type": "Баяндама",
+    "status": "Дайын",
     "target": "27",
     "limit": "23",
-    "reviewer": "Jamik Tashpulatov"
+    "reviewer": "Жамик Ташпулатов"
   },
   {
     "id": 5,
-    "header": "Design",
-    "type": "Narrative",
-    "status": "In Process",
+    "header": "Дизайн",
+    "type": "Баяндама",
+    "status": "Орындалуда",
     "target": "2",
     "limit": "16",
     "reviewer": "Jamik Tashpulatov"
   },
   {
     "id": 6,
-    "header": "Capabilities",
-    "type": "Narrative",
-    "status": "In Process",
+    "header": "Мүмкіндіктер",
+    "type": "Баяндама",
+    "status": "Орындалуда",
     "target": "20",
     "limit": "8",
     "reviewer": "Jamik Tashpulatov"
   },
   {
     "id": 7,
-    "header": "Integration with existing systems",
-    "type": "Narrative",
-    "status": "In Process",
+    "header": "Қолданыстағы жүйелермен интеграция",
+    "type": "Баяндама",
+    "status": "Орындалуда",
     "target": "19",
     "limit": "21",
     "reviewer": "Jamik Tashpulatov"
   },
   {
     "id": 8,
-    "header": "Innovation and Advantages",
-    "type": "Narrative",
-    "status": "Done",
+    "header": "Инновация және артықшылықтар",
+    "type": "Баяндама",
+    "status": "Дайын",
     "target": "25",
     "limit": "26",
-    "reviewer": "Assign reviewer"
+    "reviewer": "Рецензент тағайындау"
   },
   {
     "id": 9,
-    "header": "Overview of EMR's Innovative Solutions",
-    "type": "Technical content",
-    "status": "Done",
+    "header": "EMR инновациялық шешімдеріне шолу",
+    "type": "Техникалық мазмұн",
+    "status": "Дайын",
     "target": "7",
     "limit": "23",
-    "reviewer": "Assign reviewer"
+    "reviewer": "Тексерушіні тағайындау"
   },
   {
     "id": 10,
-    "header": "Advanced Algorithms and Machine Learning",
-    "type": "Narrative",
-    "status": "Done",
+    "header": "Жетілдірілген алгоритмдер және машиналық оқыту",
+    "type": "Баяндама",
+    "status": "Дайын",
     "target": "30",
     "limit": "28",
     "reviewer": "Assign reviewer"
   },
   {
     "id": 11,
-    "header": "Adaptive Communication Protocols",
-    "type": "Narrative",
-    "status": "Done",
+    "header": "Бейімделгіш байланыс хаттамалары",
+    "type": "Баяндама",
+    "status": "Дайын",
     "target": "9",
     "limit": "31",
     "reviewer": "Assign reviewer"
   },
   {
     "id": 12,
-    "header": "Advantages Over Current Technologies",
+    "header": "Қазіргі технологиялардан артықшылықтар",
     "type": "Narrative",
     "status": "Done",
     "target": "12",
@@ -186,7 +186,7 @@
     "status": "In Process",
     "target": "24",
     "limit": "18",
-    "reviewer": "Maya Johnson"
+    "reviewer": "Майя Джонсон"
   },
   {
     "id": 22,
@@ -195,7 +195,7 @@
     "status": "Done",
     "target": "15",
     "limit": "22",
-    "reviewer": "Carlos Rodriguez"
+    "reviewer": "Карлос Родригес"
   },
   {
     "id": 23,
@@ -204,7 +204,7 @@
     "status": "In Process",
     "target": "31",
     "limit": "27",
-    "reviewer": "Sarah Chen"
+    "reviewer": "Сара Чен"
   },
   {
     "id": 24,
@@ -213,7 +213,7 @@
     "status": "Done",
     "target": "8",
     "limit": "12",
-    "reviewer": "Raj Patel"
+    "reviewer": "Радж Патель"
   },
   {
     "id": 25,
@@ -222,7 +222,7 @@
     "status": "In Process",
     "target": "19",
     "limit": "25",
-    "reviewer": "Leila Ahmadi"
+    "reviewer": "Лейла Ахмади"
   },
   {
     "id": 26,
@@ -231,7 +231,7 @@
     "status": "Done",
     "target": "22",
     "limit": "20",
-    "reviewer": "Thomas Wilson"
+    "reviewer": "Томас Уилсон"
   },
   {
     "id": 27,
@@ -267,7 +267,7 @@
     "status": "Done",
     "target": "29",
     "limit": "32",
-    "reviewer": "Sophia Martinez"
+    "reviewer": "София Мартинес"
   },
   {
     "id": 31,
@@ -285,7 +285,7 @@
     "status": "Done",
     "target": "16",
     "limit": "23",
-    "reviewer": "Alex Thompson"
+    "reviewer": "Алекс Томпсон"
   },
   {
     "id": 33,
@@ -294,7 +294,7 @@
     "status": "In Process",
     "target": "27",
     "limit": "24",
-    "reviewer": "Nina Patel"
+    "reviewer": "Нина Патель"
   },
   {
     "id": 34,
@@ -312,7 +312,7 @@
     "status": "In Process",
     "target": "23",
     "limit": "26",
-    "reviewer": "David Kim"
+    "reviewer": "Дэвид Ким"
   },
   {
     "id": 36,
@@ -348,7 +348,7 @@
     "status": "In Process",
     "target": "12",
     "limit": "19",
-    "reviewer": "Maria Garcia"
+    "reviewer": "Мария Гарсия"
   },
   {
     "id": 40,
@@ -357,7 +357,7 @@
     "status": "Done",
     "target": "28",
     "limit": "31",
-    "reviewer": "James Wilson"
+    "reviewer": "Джеймс Уилсон"
   },
   {
     "id": 41,
@@ -375,7 +375,7 @@
     "status": "Done",
     "target": "30",
     "limit": "33",
-    "reviewer": "Priya Singh"
+    "reviewer": "Прия Сингх"
   },
   {
     "id": 43,
@@ -402,7 +402,7 @@
     "status": "In Process",
     "target": "17",
     "limit": "20",
-    "reviewer": "Sarah Johnson"
+    "reviewer": "Сара Джонсон"
   },
   {
     "id": 46,
@@ -429,7 +429,7 @@
     "status": "Done",
     "target": "26",
     "limit": "29",
-    "reviewer": "Michael Chen"
+    "reviewer": "Майкл Чен"
   },
   {
     "id": 49,
@@ -474,7 +474,7 @@
     "status": "In Process",
     "target": "29",
     "limit": "32",
-    "reviewer": "Lisa Wong"
+    "reviewer": "Лиза Вонг"
   },
   {
     "id": 54,
@@ -514,7 +514,7 @@
   },
   {
     "id": 58,
-    "header": "Success Metrics",
+    "header": "Табыс көрсеткіштері",
     "type": "Planning",
     "status": "Done",
     "target": "30",
@@ -546,7 +546,7 @@
     "status": "In Process",
     "target": "25",
     "limit": "28",
-    "reviewer": "Daniel Park"
+    "reviewer": "Дэниел Парк"
   },
   {
     "id": 62,
@@ -582,7 +582,7 @@
     "status": "In Process",
     "target": "19",
     "limit": "22",
-    "reviewer": "Emma Davis"
+    "reviewer": "Эмма Дэвис"
   },
   {
     "id": 66,

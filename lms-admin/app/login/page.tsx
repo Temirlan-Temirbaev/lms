@@ -32,10 +32,10 @@ export default function LoginPage() {
     try {
       const result = await login(username, password);
       if (!result.success) {
-        setError(result.error || "Ошибка входа");
+        setError(result.error || "Кіру қатесі");
       }
     } catch (err) {
-      setError("Произошла непредвиденная ошибка");
+      setError("Күтпеген қате орын алды");
     } finally {
       setLoading(false);
     }
@@ -53,10 +53,10 @@ export default function LoginPage() {
             </div>
             <div className="text-center space-y-2">
               <CardTitle className="text-3xl font-bold text-gray-900">
-                Панель администратора
+                Әкімші панелі
               </CardTitle>
               <p className="text-gray-600">
-                Войдите в систему управления Qazaqsha
+                Qazaqsha басқару жүйесіне кіріңіз
               </p>
             </div>
           </CardHeader>
@@ -75,7 +75,7 @@ export default function LoginPage() {
                   htmlFor="username"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Электронная почта
+                  Электрондық пошта
                 </Label>
                 <Input
                   id="username"
@@ -84,7 +84,7 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   className="h-12"
-                  placeholder="admin@example.com"
+                  placeholder="admin@мысал.com"
                 />
               </div>
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
                   htmlFor="password"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Пароль
+                  Құпия сөз
                 </Label>
                 <Input
                   id="password"
@@ -114,12 +114,12 @@ export default function LoginPage() {
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Вход...
+                    Жүктелуде...
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    Войти в систему
+                    Жүйеге кіру
                   </div>
                 )}
               </Button>
@@ -129,9 +129,9 @@ export default function LoginPage() {
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                 <Shield className="w-6 h-6 text-blue-600 flex-shrink-0" />
                 <div className="text-sm">
-                  <p className="font-medium text-blue-900">Безопасный доступ</p>
+                  <p className="font-medium text-blue-900">Қауіпсіз қатынау</p>
                   <p className="text-blue-700">
-                    Только администраторы могут получить доступ к этой панели
+                    Тек әкімшілер ғана осы панельге қол жеткізе алады
                   </p>
                 </div>
               </div>
@@ -140,9 +140,9 @@ export default function LoginPage() {
             <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
               <UserCheck className="w-6 h-6 text-green-600 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-green-900">Проверка роли</p>
+                <p className="font-medium text-green-900">Рөлді тексеру</p>
                 <p className="text-green-700">
-                  Ваша роль будет проверена после входа в систему
+                  Жүйеге кіргеннен кейін сіздің рөліңіз тексеріледі
                 </p>
               </div>
             </div>

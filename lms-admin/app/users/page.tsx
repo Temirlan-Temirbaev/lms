@@ -60,24 +60,24 @@ export default function UsersPage() {
   const [formError, setFormError] = useState("");
 
   const userColumns: ColumnDef<User>[] = [
-    { accessorKey: "email", header: "Email" },
-    { accessorKey: "name", header: "Имя" },
-    { accessorKey: "role", header: "Роль" },
+    { accessorKey: "email", header: "Электрондық пошта" },
+    { accessorKey: "name", header: "Аты" },
+    { accessorKey: "role", header: "Рөлі" },
     {
       accessorKey: "progress.currentLevel",
-      header: "Уровень",
+      header: "Деңгей",
       cell: ({ row }) => {
         const level = row.original.progress?.currentLevel;
-        return level || "Не определен";
+        return level || "Анықталмаған";
       },
     },
     createActionsColumn<User>((user) => [
       {
-        label: "Редактировать",
+        label: "Өңдеу",
         onClick: () => router.push(`/users/${user._id}`),
       },
       {
-        label: "Удалить",
+        label: "Жою",
         onClick: () => handleDeleteUser(user._id),
         isDanger: true,
         separator: true,
@@ -86,7 +86,7 @@ export default function UsersPage() {
   ];
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Вы уверены, что хотите удалить этого пользователя?")) return;
+    if (!confirm("Бұл пайдаланушыны жоюға сенімдісіз бе?")) return;
 
     try {
       const res = await fetch(
@@ -102,10 +102,10 @@ export default function UsersPage() {
       if (res.ok) {
         setUsers((prev) => prev.filter((u) => u._id !== userId));
       } else {
-        alert("Не удалось удалить пользователя");
+        alert("Пайдаланушыны жою мүмкін болмады");
       }
     } catch (error) {
-      alert("Ошибка при удалении пользователя");
+      alert("Пайдаланушыны жою кезінде қате");
     }
   };
 
@@ -121,9 +121,9 @@ export default function UsersPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setUsers(data.data);
-        else setError(data.message || "Не удалось загрузить пользователей");
+        else setError(data.message || "Пайдаланушыларды жүктеу мүмкін болмады");
       })
-      .catch(() => setError("Не удалось загрузить пользователей"))
+      .catch(() => setError("Пайдаланушыларды жүктеу мүмкін болмады"))
       .finally(() => setLoading(false));
   }, [isAuthenticated, token]);
 
@@ -143,16 +143,16 @@ export default function UsersPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Пользователи</h1>
+            <h1 className="text-2xl font-bold">Пайдаланушылар</h1>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => setOpen(true)}>
-                  + Новый пользователь
+                  + Жаңа пайдаланушы
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Создать пользователя</DialogTitle>
+                  <DialogTitle>Пайдаланушы жасау</DialogTitle>
                 </DialogHeader>
                 <form
                   onSubmit={async (e) => {
@@ -174,7 +174,7 @@ export default function UsersPage() {
                       const data = await res.json();
                       if (!res.ok)
                         throw new Error(
-                          data.message || "Не удалось создать пользователя"
+                          data.message || "Пайдаланушыны жасау мүмкін болмады"
                         );
                       setOpen(false);
                       setForm({
@@ -194,11 +194,11 @@ export default function UsersPage() {
                   className="flex flex-col gap-4"
                 >
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="user-email">Email</Label>
+                    <Label htmlFor="user-email">Электрондық пошта</Label>
                     <Input
                       id="user-email"
                       type="email"
-                      placeholder="Email"
+                      placeholder="Электрондық пошта"
                       value={form.email}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, email: e.target.value }))
@@ -207,10 +207,10 @@ export default function UsersPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="user-name">Имя</Label>
+                    <Label htmlFor="user-name">Аты</Label>
                     <Input
                       id="user-name"
-                      placeholder="Имя"
+                      placeholder="Аты"
                       value={form.name}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, name: e.target.value }))
@@ -219,11 +219,11 @@ export default function UsersPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="user-password">Пароль</Label>
+                    <Label htmlFor="user-password">Құпия сөз</Label>
                     <Input
                       id="user-password"
                       type="password"
-                      placeholder="Пароль"
+                      placeholder="Құпия сөз"
                       value={form.password}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, password: e.target.value }))
@@ -232,17 +232,17 @@ export default function UsersPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="user-role">Роль</Label>
+                    <Label htmlFor="user-role">Рөлі</Label>
                     <Select
                       value={form.role}
                       onValueChange={(role) => setForm((f) => ({ ...f, role }))}
                     >
                       <SelectTrigger id="user-role">
-                        <SelectValue placeholder="Роль" />
+                        <SelectValue placeholder="Рөлі" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">Пользователь</SelectItem>
-                        <SelectItem value="admin">Администратор</SelectItem>
+                        <SelectItem value="user">Пайдаланушы</SelectItem>
+                        <SelectItem value="admin">Әкімші</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -251,7 +251,7 @@ export default function UsersPage() {
                   )}
                   <DialogFooter>
                     <Button type="submit" disabled={creating}>
-                      {creating ? "Создание..." : "Создать"}
+                      {creating ? "Жасалуда..." : "Жасау"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -259,7 +259,7 @@ export default function UsersPage() {
             </Dialog>
           </div>
           {loading ? (
-            <div>Загрузка...</div>
+            <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
           ) : (

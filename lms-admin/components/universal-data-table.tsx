@@ -49,7 +49,7 @@ export function createActionsColumn<T>(
 ): ColumnDef<T> {
   return {
     id: "actions",
-    header: "Действия",
+    header: "Әрекеттер",
     cell: ({ row }) => {
       const item = row.original;
       const actions = getActions(item);
@@ -58,7 +58,7 @@ export function createActionsColumn<T>(
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть меню</span>
+              <span className="sr-only">Мәзірді ашу</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -92,7 +92,7 @@ export function UniversalDataTable<T>({
   data,
   columns,
   searchKey = "name",
-  placeholder = "Поиск...",
+  placeholder = "Іздеу...",
   onRowClick,
 }: UniversalDataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -123,7 +123,7 @@ export function UniversalDataTable<T>({
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder={placeholder}
+          placeholder={`${searchKey} бойынша іздеу...`}
           value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn(searchKey)?.setFilterValue(event.target.value)
@@ -133,7 +133,7 @@ export function UniversalDataTable<T>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Столбцы <ChevronDown className="ml-2 h-4 w-4" />
+              Бағандар <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -204,7 +204,7 @@ export function UniversalDataTable<T>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Результаты не найдены.
+                  Нәтиже жоқ.
                 </TableCell>
               </TableRow>
             )}
@@ -213,8 +213,8 @@ export function UniversalDataTable<T>({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} из{" "}
-          {table.getFilteredRowModel().rows.length} строк выбрано.
+          {table.getFilteredSelectedRowModel().rows.length} /{" "}
+          {table.getFilteredRowModel().rows.length} жол таңдалды.
         </div>
         <div className="space-x-2">
           <Button
@@ -223,7 +223,7 @@ export function UniversalDataTable<T>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Предыдущая
+            Алдыңғы
           </Button>
           <Button
             variant="outline"
@@ -231,7 +231,7 @@ export function UniversalDataTable<T>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Следующая
+            Келесі
           </Button>
         </div>
       </div>

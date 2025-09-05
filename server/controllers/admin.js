@@ -3,6 +3,221 @@ const Lesson = require('../models/Lesson');
 const Test = require('../models/Test');
 const User = require('../models/User');
 const { uploadFile: uploadFileToMinio, deleteFile, listFiles, getFileInfo } = require('../utils/minio');
+const PlacementTest = require('../models/PlacementTest');
+
+// @desc    Get all placement tests
+// @route   GET /api/admin/placement-tests
+// @access  Private
+exports.getPlacementTests = async (req, res, next) => {
+  try {
+    const placementTests = await PlacementTest.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: placementTests.length,
+      data: placementTests
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// @desc    Get single placement test
+// @route   GET /api/admin/placement-tests/:id
+// @access  Private
+exports.getPlacementTest = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+
+    if (!placementTest) {
+      return res.status(404).json({
+        success: false,
+        message: `Placement test not found with id of ${req.params.id}`,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: placementTest
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// @desc    Create new placement test
+// @route   POST /api/admin/placement-tests
+// @access  Private
+exports.createPlacementTest = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.create(req.body);
+    res.status(201).json({ success: true, data: placementTest });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update placement test
+// @route   PUT /api/admin/placement-tests/:id
+// @access  Private
+exports.updatePlacementTest = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+    res.status(200).json({ success: true, data: placementTest });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete placement test
+// @route   DELETE /api/admin/placement-tests/:id
+// @access  Private
+exports.deletePlacementTest = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+    await placementTest.deleteOne();
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Add question to placement test
+// @route   POST /api/admin/placement-tests/:id/questions
+// @access  Private
+exports.addPlacementTestQuestion = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+
+    const newQuestion = {
+      type: req.body.type,
+      question: req.body.question,
+      title: req.body.title,
+      content: req.body.content,
+      options: req.body.options,
+      correctAnswer: req.body.correctAnswer,
+      explanation: req.body.explanation,
+      points: req.body.points || 1,
+      level: req.body.level
+    };
+
+    placementTest.questions.push(newQuestion);
+    await placementTest.save();
+
+    res.status(201).json({
+      success: true,
+      data: placementTest
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update placement test question
+// @route   PUT /api/admin/placement-tests/:id/questions/:questionId
+// @access  Private
+exports.updatePlacementTestQuestion = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+
+    const question = placementTest.questions.id(req.params.questionId);
+    if (!question) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }
+
+    // Update question fields
+    if (req.body.type !== undefined) question.type = req.body.type;
+    if (req.body.question !== undefined) question.question = req.body.question;
+    if (req.body.title !== undefined) question.title = req.body.title;
+    if (req.body.content !== undefined) question.content = req.body.content;
+    if (req.body.options !== undefined) question.options = req.body.options;
+    if (req.body.correctAnswer !== undefined) question.correctAnswer = req.body.correctAnswer;
+    if (req.body.explanation !== undefined) question.explanation = req.body.explanation;
+    if (req.body.points !== undefined) question.points = req.body.points;
+    if (req.body.level !== undefined) question.level = req.body.level;
+
+    await placementTest.save();
+
+    res.status(200).json({
+      success: true,
+      data: placementTest
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete placement test question
+// @route   DELETE /api/admin/placement-tests/:id/questions/:questionId
+// @access  Private
+exports.deletePlacementTestQuestion = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+
+    const question = placementTest.questions.id(req.params.questionId);
+    if (!question) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }
+
+    placementTest.questions.pull(req.params.questionId);
+    await placementTest.save();
+
+    res.status(200).json({
+      success: true,
+      data: placementTest
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get placement test question
+// @route   GET /api/admin/placement-tests/:id/questions/:questionId
+// @access  Private
+exports.getPlacementTestQuestion = async (req, res, next) => {
+  try {
+    const placementTest = await PlacementTest.findById(req.params.id);
+    if (!placementTest) {
+      return res.status(404).json({ success: false, message: 'Placement test not found' });
+    }
+
+    const question = placementTest.questions.id(req.params.questionId);
+    if (!question) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: question
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Get all courses (Admin)
 // @route   GET /api/admin/courses

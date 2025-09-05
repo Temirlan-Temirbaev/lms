@@ -24,6 +24,15 @@ const {
   listFiles,
   getFileInfo,
   listBuckets,
+  getPlacementTests,
+  getPlacementTest,
+  createPlacementTest,
+  updatePlacementTest,
+  deletePlacementTest,
+  addPlacementTestQuestion,
+  updatePlacementTestQuestion,
+  deletePlacementTestQuestion,
+  getPlacementTestQuestion,
 } = require('../controllers/admin');
 
 const router = express.Router();
@@ -59,6 +68,19 @@ const upload = multer({
 router.use(protect);
 // Temporarily disabled for development - uncomment to require admin role
 // router.use(authorize('admin'));
+
+// Placement Tests
+router.route('/placement-tests').get(getPlacementTests);
+router.route('/placement-tests').post(createPlacementTest);
+router.route('/placement-tests/:id').get(getPlacementTest);
+router.route('/placement-tests/:id').put(updatePlacementTest);
+router.route('/placement-tests/:id').delete(deletePlacementTest);
+
+// Placement Test Questions
+router.route('/placement-tests/:id/questions').post(addPlacementTestQuestion);
+router.route('/placement-tests/:id/questions/:questionId').get(getPlacementTestQuestion);
+router.route('/placement-tests/:id/questions/:questionId').put(updatePlacementTestQuestion);
+router.route('/placement-tests/:id/questions/:questionId').delete(deletePlacementTestQuestion);
 
 // Course routes
 router.route('/courses').get(getCourses);

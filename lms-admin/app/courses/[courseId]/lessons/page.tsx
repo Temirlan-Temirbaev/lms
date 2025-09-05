@@ -56,12 +56,12 @@ export default function LessonsPage() {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch lessons");
+        throw new Error("Сабақтарды алу сәтсіз аяқталды");
       }
       const data = await response.json();
       if (data.success) setLessons(data.data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch lessons");
+      setError(err instanceof Error ? err.message : "Сабақтарды алу сәтсіз аяқталды");
     } finally {
       setLoading(false);
     }
@@ -79,12 +79,12 @@ export default function LessonsPage() {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch course");
+        throw new Error("Курсты алу сәтсіз аяқталды");
       }
       const data = await response.json();
       if (data.success) setCourse(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch course");
+      setError(err instanceof Error ? err.message : "Курсты алу сәтсіз аяқталды");
     }
   };
 
@@ -98,7 +98,7 @@ export default function LessonsPage() {
   }, [isAuthenticated, token, courseId]);
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) {
+    if (!confirm("Бұл сабақты жоюға сенімдісіз бе?")) {
       return;
     }
 
@@ -115,13 +115,13 @@ export default function LessonsPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete lesson");
+        throw new Error("Сабақты жою сәтсіз аяқталды");
       }
 
       // Refresh lessons after successful deletion
       await fetchLessons();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete lesson");
+      setError(err instanceof Error ? err.message : "Сабақты жою сәтсіз аяқталды");
     }
   };
 
@@ -149,7 +149,7 @@ export default function LessonsPage() {
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading lessons...</p>
+                <p className="text-gray-600">Сабақтар жүктелуде...</p>
               </div>
             </div>
           ) : error ? (
@@ -157,7 +157,7 @@ export default function LessonsPage() {
               <div className="text-center">
                 <p className="text-red-600 mb-4">{error}</p>
                 <Button onClick={() => window.location.reload()}>
-                  Try Again
+                  Қайта көру
                 </Button>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function LessonsPage() {
                 <div className="flex items-center space-x-3">
                   <BookOpen className="h-8 w-8 text-blue-600" />
                   <div>
-                    <h1 className="text-3xl font-bold">Lessons</h1>
+                    <h1 className="text-3xl font-bold">Сабақтар</h1>
                     {course && (
                       <p className="text-gray-600">
                         Course: {course.title} ({course.level})
@@ -180,14 +180,14 @@ export default function LessonsPage() {
                   className="flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Add Lesson</span>
+                  <span>Сабақ қосу</span>
                 </Button>
               </div>
 
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>All Lessons ({lessons.length})</span>
+                    <span>Барлық сабақтар ({lessons.length})</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -202,10 +202,10 @@ export default function LessonsPage() {
                     <div className="text-center py-8">
                       <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-4">
-                        No lessons found for this course.
+                        Бұл курс үшін сабақтар табылмады.
                       </p>
                       <Button onClick={handleCreateLesson} variant="outline">
-                        Create First Lesson
+                        Алғашқы сабақты жасау
                       </Button>
                     </div>
                   )}

@@ -7,80 +7,85 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   UniversalDataTable,
   createActionsColumn,
 } from "@/components/universal-data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
-interface Course {
-  _id: string;
-  title: string;
-  level: string;
-  description: string;
-}
-
-interface Test {
-  _id: string;
-  title: string;
-  description: string;
-  order: number;
-  course: string;
-  questions: Question[];
-  passingScore: number;
-  timeLimit: number;
-  isFinal: boolean;
-}
 
 interface Question {
   _id?: string;
-  type:
-    | "multiple-choice"
-    | "matching"
-    | "ordering"
-    | "fill-in-blanks"
-    | "input"
-    | "categories";
   question: string;
+  type: "multiple-choice";
   content?: string;
   options?: string[];
-  correctAnswer: any;
-  explanation: string;
+  correctAnswer: string | number;
+  explanation?: string;
   points: number;
+  level: "beginner" | "intermediate" | "advanced";
 }
 
-const QUESTION_TYPES = [
-  { value: "multiple-choice", label: "Көп таңдау" },
-  { value: "matching", label: "Сәйкестендіру" },
-    { value: "ordering", label: "Реттеу" },
-  { value: "fill-in-blanks", label: "Бос орындарды толтыру" },
-    { value: "input", label: "Мәтін енгізу" },
-  { value: "categories", label: "Санаттар" },
-];
+interface PlacementTest {
+  _id: string;
+  title: string;
+  description: string;
+  questions: Question[];
+  timeLimit: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-export default function QuestionsManagementPage() {
+// These will be moved inside the component to access t() function
+
+export default function PlacementTestQuestionsPage() {
   const { isAuthenticated, token } = useAuth();
   const params = useParams();
   const router = useRouter();
-  const courseId = params.courseId as string;
-  const testId = params.testId as string;
+  const placementTestId = params.id as string;
 
-  const [course, setCourse] = useState<Course | null>(null);
-  const [test, setTest] = useState<Test | null>(null);
+  const [placementTest, setPlacementTest] = useState<PlacementTest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const QUESTION_TYPES = [
+    { value: "multiple-choice", label: "Көп нұсқалы" },
+  ];
+
+  const QUESTION_LEVELS = [
+    { value: "beginner", label: "Бастапқы" },
+    { value: "intermediate", label: "Орташа" },
+    { value: "advanced", label: "Жоғары" },
+  ];
+
+  // Function to render question content preview
+  const renderContentPreview = (content?: string) => {
+    if (!content) return <span className="text-muted-foreground italic">Мазмұн жоқ</span>;
+    
+    // Strip HTML tags and limit length for preview
+    const plainText = content.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+    const preview = plainText.length > 100 ? plainText.substring(0, 100) + '...' : plainText;
+    
+    return (
+      <div className="max-w-xs">
+        <span className="text-sm text-muted-foreground">{preview}</span>
+      </div>
+    );
+  };
 
   // Question columns for table
   const questionColumns: ColumnDef<Question>[] = [
     {
       accessorKey: "type",
-      header: "Тип",
+      header: "Түрі",
       cell: ({ row }) => (
         <Badge variant="outline">
-          {QUESTION_TYPES.find((t) => t.value === row.getValue("type"))?.label}
+          {row.getValue("type") === "multiple-choice" ? "Көп нұсқалы" : row.getValue("type")}
         </Badge>
       ),
     },
@@ -93,7 +98,7 @@ export default function QuestionsManagementPage() {
     },
     {
       accessorKey: "points",
-      header: "Ұпайлар",
+      header: "Ұпай",
     },
     createActionsColumn<Question>((question) => [
       {
@@ -109,16 +114,15 @@ export default function QuestionsManagementPage() {
     ]),
   ];
 
-  // Fetch test and course data
+  // Fetch placement test data
   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
-    const fetchData = async () => {
+    const fetchPlacementTest = async () => {
       setLoading(true);
       try {
-        // Fetch course details
-        const courseRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/courses/${courseId}`,
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/placement-tests/${placementTestId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -126,53 +130,43 @@ export default function QuestionsManagementPage() {
             },
           }
         );
-        const courseData = await courseRes.json();
-        if (courseData.success) setCourse(courseData.data);
-
-        // Fetch test details
-        const testRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tests/${testId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const testData = await testRes.json();
-        if (testData.success) {
-          setTest(testData.data);
+        const data = await response.json();
+        if (data.success) {
+          setPlacementTest(data.data);
+        } else {
+          setError(data.message || "Орналастыру тестін жүктеу қатесі");
         }
-      } catch {
-        setError("Тест деректерін жүктеу мүмкін болмады");
+      } catch (error) {
+        console.error("Деңгей анықтау тестін жүктеу кезінде қате:", error);
+        setError("Орналастыру тестін жүктеу қатесі");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [isAuthenticated, token, courseId, testId]);
+    fetchPlacementTest();
+  }, [isAuthenticated, token, placementTestId]);
 
   const handleEditQuestion = (question: Question) => {
     // Find the index of this question in the array
-    const questionIndex = test?.questions.findIndex(
+    const questionIndex = placementTest?.questions.findIndex(
       (q) =>
         (q._id && q._id === question._id) ||
         (q.question === question.question && q.type === question.type)
     );
 
     router.push(
-      `/courses/${courseId}/tests/${testId}/questions/${questionIndex}`
+      `/placement-tests/${placementTestId}/questions/${questionIndex}`
     );
   };
 
   const handleDeleteQuestion = async (question: Question) => {
-    if (!confirm("Бұл сұрақты жойғыңыз келетініне сенімдісіз бе?")) return;
+    if (!confirm("Сұрақты жоюды растайсыз ба?")) return;
 
-    if (!test) return;
+    if (!placementTest) return;
 
     // Find the index of this question in the array
-    const questionIndex = test.questions.findIndex(
+    const questionIndex = placementTest.questions.findIndex(
       (q) =>
         (q._id && q._id === question._id) ||
         (q.question === question.question && q.type === question.type)
@@ -183,48 +177,50 @@ export default function QuestionsManagementPage() {
       return;
     }
 
-    const updatedQuestions = test.questions.filter(
+    const updatedQuestions = placementTest.questions.filter(
       (_, index) => index !== questionIndex
     );
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tests/${testId}`,
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/placement-tests/${placementTestId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ questions: updatedQuestions }),
+          body: JSON.stringify({
+            ...placementTest,
+            questions: updatedQuestions,
+          }),
         }
       );
 
-      const data = await res.json();
-      if (res.ok) {
-        setTest({ ...test, questions: updatedQuestions });
+      const data = await response.json();
+      if (response.ok) {
+        setPlacementTest({ ...placementTest, questions: updatedQuestions });
       } else {
-        alert(data.message || "Сұрақты жою мүмкін болмады");
+        alert(data.message || "Сұрақты жою қатесі");
       }
-    } catch {
-      alert("Сұрақты жою кезінде қате");
+    } catch (error) {
+      console.error("Сұрақты жою кезінде қате:", error);
+      alert("Сұрақты жою қатесі");
     }
   };
 
   const handleCreateQuestion = () => {
-    router.push(`/courses/${courseId}/tests/${testId}/questions/new`);
+    router.push(`/placement-tests/${placementTestId}/questions/new`);
   };
 
   if (!isAuthenticated) return null;
 
   return (
     <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      } as React.CSSProperties}
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
@@ -235,7 +231,7 @@ export default function QuestionsManagementPage() {
               variant="ghost"
               size="sm"
               onClick={() =>
-                router.push(`/courses/${courseId}/tests/${testId}`)
+                router.push(`/placement-tests/${placementTestId}`)
               }
               className="flex items-center gap-2"
             >
@@ -248,23 +244,22 @@ export default function QuestionsManagementPage() {
             <div>Жүктелуде...</div>
           ) : error ? (
             <div className="text-red-500">{error}</div>
-          ) : test && course ? (
+          ) : placementTest ? (
             <div className="space-y-6">
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-3xl font-bold">Сұрақтарды басқару</h1>
                   <p className="text-muted-foreground mt-1">
-                    Тест: {test.title} • Курс: {course.title}
+                    Тақырып: {placementTest.title}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="secondary">
-                      {test.questions?.length || 0} Сұрақ
+                      {placementTest.questions?.length || 0} сұрақ
                     </Badge>
                     <Badge variant="outline">
-                      {test.passingScore}% Өту балы
+                      {placementTest.timeLimit} минут
                     </Badge>
-                    <Badge variant="outline">{test.timeLimit} мин</Badge>
                   </div>
                 </div>
                 <Button
@@ -284,13 +279,13 @@ export default function QuestionsManagementPage() {
                 <CardContent>
                   <UniversalDataTable
                     columns={questionColumns}
-                    data={test.questions || []}
+                    data={placementTest.questions || []}
                   />
                 </CardContent>
               </Card>
             </div>
           ) : (
-            <div>Тест табылмады</div>
+            <div>Орналастыру тесті табылмады</div>
           )}
         </div>
       </SidebarInset>

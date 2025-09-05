@@ -167,11 +167,11 @@ export default function FilesPage() {
         setFolderStructure(structure);
         setFiles(allFiles);
       } else {
-        setError("Не удалось загрузить файлы");
+        setError("Файлдарды жүктеу мүмкін болмады");
       }
     } catch (error) {
-      console.error("Error loading files:", error);
-      setError("Ошибка при загрузке файлов");
+      console.error("Файлдарды жүктеу қатесі:", error);
+      setError("Файлдарды жүктеу кезінде қате");
     } finally {
       setLoading(false);
     }
@@ -190,19 +190,19 @@ export default function FilesPage() {
           if (error.code === "file-too-large") {
             return `Файл "${
               file.name
-            }" слишком большой. Максимальный размер ${formatFileSize(
+            }" тым үлкен. Максималды өлшем ${formatFileSize(
               MAX_FILE_SIZE
             )}.`;
           }
           if (error.code === "file-invalid-type") {
-            return `Файл "${file.name}" имеет недопустимый тип. Разрешены только изображения и аудиофайлы.`;
+            return `Файл "${file.name}" рұқсат етілмеген түрде. Тек суреттер мен аудио файлдарға рұқсат етіледі.`;
           }
           return `Файл "${file.name}": ${error.message}`;
         });
         return errorMessages.join(" ");
       });
 
-      setUploadStatus(`Загрузка не удалась: ${errors.join(" ")}`);
+      setUploadStatus(`Жүктеу сәтсіз аяқталды: ${errors.join(" ")}`);
       setTimeout(() => setUploadStatus(null), 5000);
     },
     onDrop: async (acceptedFiles) => {
@@ -216,17 +216,15 @@ export default function FilesPage() {
             successCount++;
           }
           setUploadStatus(
-            `Успешно загружено ${successCount} файл${
-              successCount > 1 ? "ов" : ""
-            }`
+            `${successCount} файл сәтті жүктелді`
           );
           loadFiles(); // Reload files after upload
           setTimeout(() => setUploadStatus(null), 3000);
         } catch (error) {
-          console.error("Error uploading file:", error);
+          console.error("Файлды жүктеп салу қатесі:", error);
           const errorMessage =
-            error instanceof Error ? error.message : "Unknown error";
-          setUploadStatus(`Не удалось загрузить файлы: ${errorMessage}`);
+            error instanceof Error ? error.message : "Белгісіз қате";
+          setUploadStatus(`Файлдарды жүктеу мүмкін болмады: ${errorMessage}`);
           setTimeout(() => setUploadStatus(null), 5000);
         } finally {
           setUploading(false);
@@ -236,7 +234,7 @@ export default function FilesPage() {
   });
 
   const uploadFile = async (file: File, uploadPath?: string) => {
-    if (!token) throw new Error("No authentication token");
+    if (!token) throw new Error("Аутентификация токені жоқ");
 
     const sanitizedFileName = file.name
       .replace(/\s+/g, "-")
@@ -264,14 +262,14 @@ export default function FilesPage() {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Upload failed: ${response.status}`);
+      throw new Error(errorData.message || `Жүктеу сәтсіз аяқталды: ${response.status}`);
     }
 
     return await response.json();
   };
 
   const handleDeleteFile = async (filename: string) => {
-    if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
+    if (!confirm(`"${filename}" файлын жоюға сенімдісіз бе?`)) return;
 
     setDeleting((prev) => new Set(prev).add(filename));
     try {
@@ -292,11 +290,11 @@ export default function FilesPage() {
         loadFiles(); // Reload to update folder structure
       } else {
         const errorData = await response.json().catch(() => ({}));
-        alert(`Failed to delete file: ${errorData.message || "Unknown error"}`);
+        alert(`Файлды жою сәтсіз аяқталды: ${errorData.message || "Белгісіз қате"}`);
       }
     } catch (error) {
-      console.error("Error deleting file:", error);
-      alert("Error deleting file");
+      console.error("Файлды жою қатесі:", error);
+      alert("Файлды жою кезінде қате");
     } finally {
       setDeleting((prev) => {
         const newSet = new Set(prev);
@@ -308,15 +306,15 @@ export default function FilesPage() {
 
   // Create folder function
   const createFolder = async (folderName: string) => {
-    if (!token) throw new Error("No authentication token");
-    if (!folderName.trim()) throw new Error("Folder name cannot be empty");
+    if (!token) throw new Error("Аутентификация токені жоқ");
+    if (!folderName.trim()) throw new Error("Папка атауы бос болмауы керек");
 
     const sanitizedName = folderName
       .trim()
       .replace(/[<>:"/\\|?*\x00-\x1f]/g, "")
       .replace(/\s+/g, " ")
       .replace(/ /g, "-");
-    if (!sanitizedName) throw new Error("Invalid folder name");
+    if (!sanitizedName) throw new Error("Жарамсыз папка атауы");
 
     const folderPath = currentPath
       ? `${currentPath}/${sanitizedName}`
@@ -324,7 +322,7 @@ export default function FilesPage() {
 
     // Check if folder already exists
     if (folderStructure[folderPath]) {
-      throw new Error("Folder already exists");
+      throw new Error("Папка әлдеқашан бар");
     }
 
     // Create the folder structure locally
@@ -359,15 +357,15 @@ export default function FilesPage() {
     setCreatingFolder(true);
     try {
       await createFolder(newFolderName);
-      setUploadStatus(`Folder "${newFolderName}" created successfully`);
+      setUploadStatus(`"${newFolderName}" папкасы сәтті құрылды`);
       setNewFolderName("");
       setShowCreateFolder(false);
       setTimeout(() => setUploadStatus(null), 3000);
     } catch (error) {
-      console.error("Error creating folder:", error);
+      console.error("Папка жасау қатесі:", error);
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      setUploadStatus(`Failed to create folder: ${errorMessage}`);
+        error instanceof Error ? error.message : "Белгісіз қате";
+      setUploadStatus(`Папканы құру сәтсіз аяқталды: ${errorMessage}`);
       setTimeout(() => setUploadStatus(null), 5000);
     } finally {
       setCreatingFolder(false);
@@ -422,10 +420,10 @@ export default function FilesPage() {
 
   // Get breadcrumb path
   const getBreadcrumbs = () => {
-    if (!currentPath) return [{ name: "Root", path: "" }];
+    if (!currentPath) return [{ name: "Түбір", path: "" }];
 
     const parts = currentPath.split("/");
-    const breadcrumbs = [{ name: "Root", path: "" }];
+    const breadcrumbs = [{ name: "Түбір", path: "" }];
 
     parts.forEach((part, index) => {
       const path = parts.slice(0, index + 1).join("/");
@@ -508,9 +506,9 @@ export default function FilesPage() {
         <div className="flex flex-1 flex-col p-8">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-bold">Управление файлами</h1>
+              <h1 className="text-2xl font-bold">Файлдарды басқару</h1>
               <p className="text-gray-600 mt-1">
-                Загружайте и управляйте медиафайлами
+                Медиа файлдарды жүктеп, басқарыңыз
               </p>
 
               {/* Breadcrumb Navigation */}
@@ -535,7 +533,7 @@ export default function FilesPage() {
                   <button
                     onClick={navigateUp}
                     className="ml-2 p-1 hover:bg-gray-100 rounded"
-                    title="Подняться на уровень выше"
+                    title="Жоғарғы деңгейге көтерілу"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -546,8 +544,8 @@ export default function FilesPage() {
 
           <Tabs defaultValue="browse" className="flex-1 flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-              <TabsTrigger value="browse">Просмотр файлов</TabsTrigger>
-              <TabsTrigger value="upload">Загрузить новые</TabsTrigger>
+              <TabsTrigger value="browse">Файлдарды қарау</TabsTrigger>
+              <TabsTrigger value="upload">Жаңаларын жүктеу</TabsTrigger>
             </TabsList>
 
             <TabsContent
@@ -559,7 +557,7 @@ export default function FilesPage() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Поиск файлов..."
+                    placeholder="Файлдарды іздеу..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -572,14 +570,14 @@ export default function FilesPage() {
                     size="sm"
                     onClick={() => setFilter("all")}
                   >
-                    Все
+                    Барлығы
                   </Button>
                   <Button
                     variant={filter === "images" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setFilter("images")}
                   >
-                    Изображения
+                    Суреттер
                   </Button>
                   <Button
                     variant={filter === "audio" ? "default" : "outline"}
@@ -595,7 +593,7 @@ export default function FilesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowCreateFolder(!showCreateFolder)}
-                    title="Создать новую папку"
+                    title="Жаңа папка жасау"
                   >
                     <FolderPlus className="h-4 w-4" />
                   </Button>
@@ -621,7 +619,7 @@ export default function FilesPage() {
                 <div className="flex gap-2 items-center p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <FolderPlus className="h-4 w-4 text-blue-600" />
                   <Input
-                    placeholder="Введите название папки..."
+                    placeholder="Папка атауын енгізіңіз..."
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
                     onKeyDown={(e) => {
@@ -656,7 +654,7 @@ export default function FilesPage() {
                     }}
                     disabled={creatingFolder}
                   >
-                    Отмена
+                    Болдырмау
                   </Button>
                 </div>
               )}
@@ -667,18 +665,18 @@ export default function FilesPage() {
                   {loading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-3" />
-                      <div className="text-gray-500">Загрузка файлов...</div>
+                      <div className="text-gray-500">Файлдар жүктелуде...</div>
                     </div>
                   ) : filteredFiles.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <FolderOpen className="h-12 w-12 text-gray-300 mb-3" />
                       <div className="text-gray-500 text-lg mb-2">
-                        Файлы не найдены
+                        Файлдар табылмады
                       </div>
                       <div className="text-gray-400 text-sm">
                         {searchTerm
-                          ? `Нет файлов, соответствующих "${searchTerm}"`
-                          : "Загрузите файлы для начала работы"}
+                          ? `"${searchTerm}" сәйкес файлдар жоқ`
+                          : "Жұмысты бастау үшін файлдарды жүктеңіз"}
                       </div>
                     </div>
                   ) : viewMode === "grid" ? (
@@ -714,7 +712,7 @@ export default function FilesPage() {
                               <div className="flex flex-col items-center gap-3">
                                 <Folder className="h-16 w-16 text-blue-500" />
                                 <span className="text-sm text-gray-600 font-medium">
-                                  Папка
+                                  Қалта
                                 </span>
                               </div>
                             ) : file.name.match(
@@ -735,7 +733,7 @@ export default function FilesPage() {
                                       <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                       </svg>
-                                      <span class="text-sm text-gray-500 text-center">Не удалось загрузить</span>
+                                      <span class="text-sm text-gray-500 text-center">Жүктеу мүмкін болмады</span>
                                     </div>
                                   `;
                                   }
@@ -773,8 +771,8 @@ export default function FilesPage() {
                             )}
                             <div className="text-xs text-gray-400 text-center bg-gray-50 py-1 px-2 rounded">
                               {file.isFolder
-                                ? "Нажмите, чтобы открыть"
-                                : "Нажмите для информации"}
+                                ? "Ашу үшін басыңыз"
+                  : "Ақпарат үшін басыңыз"}
                             </div>
                           </div>
                         </div>
@@ -830,7 +828,7 @@ export default function FilesPage() {
                             </div>
                             <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
                               {file.isFolder ? (
-                                <span>Папка</span>
+                                <span>Қалта</span>
                               ) : (
                                 <>
                                   <span>{formatFileSize(file.size)}</span>
@@ -870,8 +868,8 @@ export default function FilesPage() {
 
                           <div className="flex-shrink-0 text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">
                             {file.isFolder
-                              ? "Нажмите, чтобы открыть"
-                              : "Нажмите для информации"}
+                              ? "Ашу үшін басыңыз"
+                    : "Ақпарат үшін басыңыз"}
                           </div>
                         </div>
                       ))}
@@ -886,7 +884,7 @@ export default function FilesPage() {
                 {/* Current upload path indicator */}
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
                   <p className="text-sm text-blue-800">
-                    <strong>Место загрузки:</strong> /{currentPath || "корень"}
+                    <strong>Жүктеу орны:</strong> /{currentPath || "түбір"}
                   </p>
                   <p className="text-xs text-blue-600 mt-1">
                     Перейдите в разные папки выше, чтобы изменить место загрузки
@@ -896,7 +894,7 @@ export default function FilesPage() {
                 {uploadStatus && (
                   <div
                     className={`p-3 rounded-md ${
-                      uploadStatus.includes("Successfully")
+                      uploadStatus.includes("Сәтті")
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-red-100 text-red-800 border border-red-200"
                     }`}
@@ -920,10 +918,10 @@ export default function FilesPage() {
                     <>
                       <Loader2 className="mx-auto h-12 w-12 text-blue-500 mb-4 animate-spin" />
                       <p className="text-lg font-medium mb-2">
-                        Загрузка файлов...
+                        Файлдар жүктелуде...
                       </p>
                       <p className="text-sm text-gray-500">
-                        Пожалуйста, подождите, пока мы загружаем ваши файлы
+                        Файлдарыңызды жүктеп жатқанда күте тұрыңыз
                       </p>
                     </>
                   ) : (
@@ -931,19 +929,19 @@ export default function FilesPage() {
                       <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-lg font-medium mb-2">
                         {isDragActive
-                          ? "Перетащите файлы сюда..."
-                          : "Перетащите файлы сюда или нажмите для выбора"}
+                          ? "Файлдарды осында сүйреңіз..."
+                  : "Файлдарды осында сүйреңіз немесе таңдау үшін басыңыз"}
                       </p>
                       <p className="text-sm text-gray-500 mb-2">
-                        Поддерживается: Изображения и аудиофайлы
+                        Қолдау көрсетіледі: Суреттер мен аудио файлдар
                       </p>
                       <p className="text-xs text-gray-400">
-                        Максимальный размер файла:{" "}
+                        Файлдың максималды өлшемі:{" "}
                         {formatFileSize(MAX_FILE_SIZE)}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Файлы с одинаковыми именами будут автоматически
-                        переименованы
+                        Бірдей атаулы файлдар автоматты түрде
+                        қайта аталады
                       </p>
                     </>
                   )}
@@ -958,7 +956,7 @@ export default function FilesPage() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   {selectedFile && getFileIcon(selectedFile)}
-                  Информация о файле
+                  Файл туралы ақпарат
                 </DialogTitle>
               </DialogHeader>
 
@@ -990,7 +988,7 @@ export default function FilesPage() {
                     <div className="space-y-3">
                       <div>
                         <label className="text-sm font-medium text-gray-500">
-                          Название
+                          Атауы
                         </label>
                         <p
                           className="text-sm font-mono bg-gray-50 p-2 rounded truncate"
@@ -1001,7 +999,7 @@ export default function FilesPage() {
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500">
-                          Размер
+                          Өлшемі
                         </label>
                         <p className="text-sm flex items-center gap-2">
                           <HardDrive className="h-4 w-4" />
@@ -1021,13 +1019,13 @@ export default function FilesPage() {
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500">
-                          Тип
+                          Түрі
                         </label>
                         <p className="text-sm">
                           {selectedFile.name.match(
                             /\.(jpg|jpeg|png|gif|webp|svg)$/i
                           )
-                            ? "Изображение"
+                            ? "Сурет"
                             : selectedFile.name.match(
                                 /\.(mp3|wav|ogg|m4a|aac)$/i
                               )
@@ -1045,7 +1043,7 @@ export default function FilesPage() {
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
-                      Просмотр
+                      Қарау
                     </Button>
                     <Button
                       variant="outline"
@@ -1058,7 +1056,7 @@ export default function FilesPage() {
                       className="flex items-center gap-2"
                     >
                       <Download className="h-4 w-4" />
-                      Скачать
+                      Жүктеп алу
                     </Button>
                     <Button
                       variant="destructive"
@@ -1074,7 +1072,7 @@ export default function FilesPage() {
                       )}
                     >
                       <Trash2 className="h-4 w-4" />
-                      Удалить
+                      Жою
                     </Button>
                   </div>
                 </div>

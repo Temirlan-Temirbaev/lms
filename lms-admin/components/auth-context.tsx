@@ -69,9 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // Check if user is admin
         if (data.user.role !== "admin") {
           return {
-            success: false,
-            error: "Доступ запрещен. Требуются права администратора.",
-          };
+          success: false,
+          error: "Қатынау тыйым салынған. Әкімші құқықтары қажет.",
+        };
         }
 
         setIsAuthenticated(true);
@@ -82,14 +82,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return { success: true };
       } else {
         return {
-          success: false,
-          error: data.message || "Неверные учетные данные",
-        };
+        success: false,
+        error: data.message || "Қате тіркелгі деректері",
+      };
       }
     } catch (error) {
       return {
         success: false,
-        error: "Ошибка сети. Попробуйте еще раз.",
+        error: "Желі қатесі. Қайта көріңіз.",
       };
     }
   };

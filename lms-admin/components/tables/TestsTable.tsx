@@ -48,21 +48,21 @@ export function TestsTable({
   const baseColumns: ColumnDef<Test>[] = [
     {
       accessorKey: "order",
-      header: "Порядок",
+      header: "Реті",
       cell: ({ row }) => (
         <Badge variant="secondary">{String(row.getValue("order"))}</Badge>
       ),
     },
     {
       accessorKey: "title",
-      header: "Название",
+      header: "Атауы",
       cell: ({ row }) => (
         <div className="font-medium">{String(row.getValue("title"))}</div>
       ),
     },
     {
       accessorKey: "questions",
-      header: "Вопросы",
+      header: "Сұрақтар",
       cell: ({ getValue }) => (
         <Badge variant="outline">{(getValue() as any[])?.length || 0}</Badge>
       ),
@@ -73,36 +73,36 @@ export function TestsTable({
     ...baseColumns,
     {
       accessorKey: "passingScore",
-      header: "Проходной %",
+      header: "Өту %",
       cell: ({ getValue }) => `${Number(getValue()) || 0}%`,
     },
     {
       accessorKey: "timeLimit",
-      header: "Ограничение времени",
+      header: "Уақыт шектеуі",
       cell: ({ getValue }) => `${Number(getValue()) || 0} мин`,
     },
     {
       accessorKey: "isFinal",
-      header: "Тип",
+      header: "Түрі",
       cell: ({ getValue }) =>
         getValue() ? (
-          <Badge variant="destructive">Финальный</Badge>
+          <Badge variant="destructive">Соңғы</Badge>
         ) : (
-          <Badge variant="secondary">Обычный</Badge>
+          <Badge variant="secondary">Қарапайым</Badge>
         ),
     },
   ];
 
   const actionsColumn = createActionsColumn<Test>((test) => [
     {
-      label: "Просмотр/Редактирование",
+      label: "Қарау/Өңдеу",
       onClick: () => handleEditTest(test),
       icon: <Edit className="h-4 w-4" />,
     },
     ...(variant === "detailed"
       ? [
           {
-            label: "Настройки",
+            label: "Баптаулар",
             onClick: () =>
               router.push(`/courses/${courseId}/tests/${test._id}`),
             icon: <Settings className="h-4 w-4" />,
@@ -110,7 +110,7 @@ export function TestsTable({
         ]
       : []),
     {
-      label: "Удалить",
+      label: "Жою",
       onClick: () => onDeleteTest(test._id),
       isDanger: true,
       separator: true,

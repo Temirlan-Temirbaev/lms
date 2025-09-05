@@ -236,7 +236,7 @@ export const ImageInsertDialog: React.FC<ImageInsertDialogProps> = ({
               Cancel
             </Button>
             <Button onClick={handleInsert} disabled={!imageUrl || uploading}>
-              {uploading ? "Загрузка..." : "Вставить изображение"}
+              {uploading ? "Жүктелуде..." : "Сурет кірістіру"}
             </Button>
           </div>
         </div>

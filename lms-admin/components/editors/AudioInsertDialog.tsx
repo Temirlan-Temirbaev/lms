@@ -250,7 +250,7 @@ export const AudioInsertDialog: React.FC<AudioInsertDialogProps> = ({
               Cancel
             </Button>
             <Button onClick={handleInsert} disabled={!audioUrl || uploading}>
-              {uploading ? "Загрузка..." : "Вставить аудио"}
+              {uploading ? "Жүктелуде..." : "Аудио кірістіру"}
             </Button>
           </div>
         </div>
